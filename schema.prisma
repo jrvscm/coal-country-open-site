@@ -1,0 +1,44 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Team {
+  id        Int       @id @default(autoincrement())
+  name      String
+  players   Player[]  // One-to-many relation (Team has many Players)
+  createdAt DateTime  @default(now())
+}
+
+model Player {
+  id                Int       @id @default(autoincrement())
+  name              String
+  email             String    @unique
+  phone             String?
+  teamId            Int?      @relation(fields: [teamId], references: [id])  // Nullable for individual sign-ups
+  team              Team?     @relation("TeamPlayers", fields: [teamId], references: [id])
+  extraDinnerTickets Int      @default(0)
+  derbyEntry        Boolean   @default(false)
+  stripePaymentId   String?   // Stripe Payment ID for tracking
+  paid              Boolean   @default(false)  // Tracks if payment was successful
+  createdAt         DateTime  @default(now())
+}
+
+model Sponsor {
+  id                Int       @id @default(autoincrement())
+  companyName       String
+  contactPerson     String
+  email             String    @unique
+  phone             String?
+  sponsorshipLevel  String    // E.g., Gold, Silver, Bronze
+  stripePaymentId   String?   // Stripe Payment ID for tracking
+  paid              Boolean   @default(false)
+  websiteSponsor    Boolean   @default(false)  // Flag if they are the "Website Sponsor"
+  createdAt         DateTime  @default(now())
+}

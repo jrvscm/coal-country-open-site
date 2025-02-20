@@ -1,6 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Bebas_Neue, Barlow } from "next/font/google";
 import "./globals.css";
+
+const barlow = Barlow({
+  weight: ['400', '500', '600', '700'], // Add desired font weights
+  subsets: ['latin'],
+  variable: '--font-barlow',
+});
+
+const bebasNeue = Bebas_Neue({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-bebas',
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} ${barlow.variable} antialiased`}
       >
         {children}
       </body>
