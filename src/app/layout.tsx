@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Bebas_Neue, Barlow } from "next/font/google";
+import { Geist, Geist_Mono, Bebas_Neue, Barlow, Permanent_Marker } from "next/font/google";
 import "./globals.css";
+import Footer from '@/components/footer';
+
+const permanentMarker = Permanent_Marker({
+  subsets: ['latin'],
+  weight: '400',
+});
 
 const barlow = Barlow({
-  weight: ['400', '500', '600', '700'], // Add desired font weights
+  weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
   variable: '--font-barlow',
 });
@@ -37,9 +43,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} ${barlow.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} ${barlow.variable} ${permanentMarker.variable} antialiased`}
       >
         {children}
+        <Footer />
       </body>
     </html>
   );

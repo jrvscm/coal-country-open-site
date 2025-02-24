@@ -68,7 +68,8 @@ const config: Config = {
   
       fontFamily: {
         heading: ['var(--font-bebas)', 'sans-serif'],
-        text: ['var(--font-barlow)', 'sans-serif'],
+		text: ['var(--font-barlow)', 'sans-serif'],
+		marker: ['"Permanent Marker"', 'cursive'],
       },
       dropShadow: {
         'custom-600': '0 6px 10px rgba(0, 0, 0, 1)',
