@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Bebas_Neue, Barlow, Permanent_Marker } from "next/font/google";
 import "./globals.css";
+import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
 
 const permanentMarker = Permanent_Marker({
@@ -45,6 +46,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} ${barlow.variable} ${permanentMarker.variable} antialiased`}
       >
+        <Navbar />
         {children}
         <Footer />
       </body>

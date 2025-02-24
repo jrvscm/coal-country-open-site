@@ -65,24 +65,6 @@ export default function Hero() {
         {/* Overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-50 z-10" />
 
-        {/* Navbar */}
-        <nav className="absolute top-0 left-0 w-full flex justify-between items-center px-0 py-4 z-30">
-          <Link href="/">
-            <Image
-              src="https://images.ctfassets.net/j2939n6mdbyq/3nVn09ySuMJdpRghyyVqeA/8a0f6cafff701f13c11bcdcb0201f950/modified_logo.png"
-              alt="Tournament Logo"
-              width={150}
-              height={75}
-            />
-          </Link>
-          <ul className="hidden md:flex space-x-8 text-white uppercase mr-[40px]">
-            <li><Link href="/about" className="font-text hover:text-customYellow/90 transition-colors duration-300 cursor-pointer">About</Link></li>
-            <li><Link href="/rules" className="font-text hover:text-customYellow/90 transition-colors duration-300 cursor-pointer">Rules</Link></li>
-            <li><Link href="/register" className="font-text hover:text-customYellow/90 transition-colors duration-300 cursor-pointer">Register</Link></li>
-            <li><Link href="/sponsors" className="font-text hover:text-customYellow/90 transition-colors duration-300 cursor-pointer">Sponsors</Link></li>
-          </ul>
-          <div className="md:hidden text-white">Menu</div>
-        </nav>
 
         {/* Hero Content */}
         <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white z-20 p-4 md:p-0">

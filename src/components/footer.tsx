@@ -6,12 +6,12 @@ export default function Footer() {
   return (
     <footer className="bg-customBackground text-white py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           {/* Newsletter */}
-          <div>
+          <div className="order-last col-span-full xl:order-none xl:col-span-2">
             <h3 className="text-lg font-bold mb-2">Stay Updated</h3>
             <p className="text-sm mb-4">Sign Up For Our Newsletter<br />To Stay Up To Date</p>
-            <div className="flex flex-col md:flex-row gap-2">
+            <div className="flex flex-col md:flex-row gap-2 md:max-w-[300px]">
               <Input
                 type="email"
                 placeholder="example@example.com"
