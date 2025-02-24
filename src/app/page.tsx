@@ -12,29 +12,61 @@ import CountdownSection from '@/components/countdown-section';
 export default function Hero() {
   const [images, setImages] = useState([]);
   const [currentImage, setCurrentImage] = useState(0);
+  const [sponsor, setSponsor] = useState(null);
 
+  // Fetch images from Contentful
   useEffect(() => {
     const fetchImages = async () => {
       try {
         const res = await client.getEntries({
-          content_type: "heroSlideshowImages", 
+          content_type: "homePageHeroCarousel", 
         });
-  
+
         if (res?.items?.length) {
-          const assets = res.items.map((item) => {
-            const imageUrl = item.fields.images?.fields?.file?.url;
+          // Adjusted path for fetching multi-asset images
+          const assets = res.items[0].fields.homePageHeroImages.map((item) => {
+            const imageUrl = item.fields?.file?.url;
             return imageUrl ? `${imageUrl}` : null;
-          }).filter(Boolean);
-  
+          }).filter(Boolean); // Filter out null/undefined
+
           setImages(assets);
         }
       } catch (err) {
         console.error("Error fetching Contentful images:", err);
       }
     };
-  
+
     fetchImages();
-  }, []);  
+  }, []);
+
+    // Fetch Website Sponsor
+    useEffect(() => {
+      const fetchSponsor = async () => {
+        try {
+          const res = await client.getEntries({
+            content_type: "websiteSponsor",
+            limit: 1, // Only one sponsor
+          });
+  
+          if (res?.items?.length) {
+            const sponsorData = res.items[0].fields;
+            const sponsorLogo = sponsorData?.sponsorLogo?.fields?.file?.url;
+            const sponsorLink = sponsorData?.sponsorLink;
+            const sponsorName = sponsorData?.sponsorName;
+  
+            setSponsor({
+              logo: sponsorLogo ? `https:${sponsorLogo}` : null,
+              url: sponsorLink,
+              name: sponsorName,
+            });
+          }
+        } catch (err) {
+          console.error("Error fetching website sponsor:", err);
+        }
+      };
+  
+      fetchSponsor();
+    }, []);
 
   useEffect(() => {
     if (images.length === 0) return;
@@ -79,18 +111,34 @@ export default function Hero() {
                 <Link className="m-0 text-lg md:text-xl font-text" href="/sponsors">Sponsors</Link>
               </Button>
             </div>
+
+            {/* Website Sponsor Section */}
+            {sponsor?.logo && (
+              <div className="mt-8 text-center">
+                <p className="text-sm text-gray-300">Brought To You By</p>
+                <Link href={sponsor.url} target="_blank" rel="noopener noreferrer">
+                  <Image
+                    src={sponsor.logo}
+                    alt={sponsor.name}
+                    width={200}
+                    height={100}
+                    className="mx-auto object-contain"
+                  />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Sidebar Share Buttons */}
         <div className="absolute right-4 bottom-[80px] flex flex-col space-y-4 z-20">
-          <Link href="https://twitter.com" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-300">
+          <Link href="https://twitter.com" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-200 hover border border-customBackground hover:border-customYellow">
             <FaFacebookF className="h-6 w-6 text-customYellow" />
           </Link>
-          <Link href="https://instagram.com" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-300">
+          <Link href="https://instagram.com" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-200 border border-customBackground hover:border-customYellow">
             <FaInstagram className="h-6 w-6 text-customYellow" />
           </Link>
-          <Link href="https://linkedin.com" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-300">
+          <Link href="https://linkedin.com" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-200 border border-customBackground hover:border-customYellow">
             <FaTiktok className="h-6 w-6 text-customYellow" />
           </Link>
         </div>

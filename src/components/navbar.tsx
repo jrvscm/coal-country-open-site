@@ -15,17 +15,17 @@ import { toast } from 'sonner';
 export const Navbar = () => {
   const navigationItems = [
     {
-      title: 'Register',
+      title: 'REGISTER',
       href: '/Register',
       description: ''
     },
     {
-      title: 'Sponsors',
+      title: 'SPONSORS',
       href: '/sponsors',
       description: ''
     },
     {
-      title: 'Rules',
+      title: 'RULES',
       href: '/rules',
       description: ''
     }
