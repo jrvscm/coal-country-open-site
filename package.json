@@ -12,6 +12,7 @@
     "@netlify/functions": "^3.0.0",
     "@prisma/client": "^6.4.0",
     "@radix-ui/react-navigation-menu": "^1.2.5",
+    "@radix-ui/react-select": "^2.1.6",
     "@radix-ui/react-slot": "^1.1.2",
     "@shadcn/ui": "^0.0.4",
     "@stripe/stripe-js": "^5.6.0",

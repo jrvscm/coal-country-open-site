@@ -62,8 +62,10 @@ const config: Config = {
         customBackground: 'hsl(var(--custom-background))',
         customYellow: 'hsl(var(--custom-yellow))',
         customPrimary: 'hsl(var(--custom-primary))',
-        customLightGray: 'hsla(var(--custom-light-gray))'
-
+		customLightGray: 'hsla(var(--custom-light-gray))',
+		customInputFill: 'hsl(var(--custom-input-fill))',
+		customGrayText: 'hsl(var(--custom-gray-text))',
+		customInputBorder: 'hsl(var(--custom-input-border))'
       },
   
       fontFamily: {

@@ -20,7 +20,7 @@ export const Navbar = () => {
       description: ''
     },
     {
-      title: 'SPONSORS',
+      title: 'OUR SPONSORS',
       href: '/sponsors',
       description: ''
     },

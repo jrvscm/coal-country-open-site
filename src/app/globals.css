@@ -39,6 +39,9 @@ body {
     --custom-primary: 141 85% 22%;
     --custom-yellow: 48 100% 50%;
     --custom-light-gray: 0 0% 100% 0.6; 
+    --custom-input-fill: 0 0% 20%;
+    --custom-gray-text: 0 0% 33.3%;
+    --custom-input-border: 0 0% 66.7%;
   }
   .dark {
     --background: 240 10% 3.9%;
