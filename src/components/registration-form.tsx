@@ -45,9 +45,8 @@ export default function RegistrationForm() {
         <h3 className="text-white/80 text-lg font-semibold mt-4">REGISTRATION INCLUDES:</h3>
         <ul className="text-white/60 list-disc pl-5 mt-2 space-y-1 text-lg">
           <li>54 holes of golf and cart</li>
-          <li>Premium gift bag</li>
-          <li>Thursday night social and Saturday banquet at</li>
-          <li>Tech Education Center @ Gillette College; Address 3251 S 4-J Rd</li>
+          <li><span className="font-bold">Premium</span> gift bag</li>
+          <li>Thursday night social and Saturday banquet at Gillette&quot;s Cam-plex</li>
           <li>Flag prizes are awarded for each day</li>
           <li>A Calcutta will take place Friday evening</li>
         </ul>
@@ -75,7 +74,7 @@ export default function RegistrationForm() {
           <div className="space-y-1">
             {[
               { label: 'Current Miner', value: 'currentMiner' },
-              { label: 'Past Board / Past Champion / Retiree', value: 'pastBoard' },
+              { label: 'Past Board / Past Champion / Retiree', value: 'pastBoardPastChampionRetiree' },
               { label: 'General Public', value: 'generalPublic' }
             ].map((option) => (
               <label key={option.value} className="flex items-center justify-between cursor-pointer text-white/60 text-lg">
@@ -108,6 +107,27 @@ export default function RegistrationForm() {
       <div className="col-span-full my-8">
         <hr className="border-t border-white/20" />
       </div>
+
+      {/** Past Board / Past Champion / Retiree Important text */}
+      {formData.participantType === 'pastBoardPastChampionRetiree' && (
+        <div className="col-span-full text-white/60 mb-8">
+          <h3 className="font-bold">IMPORTANT:</h3>
+          <p>
+            Automatic qualifications for initial acceptance to the tournament field are either through being a past Coal Country Open Board Member or a past Coal Country Open overall tournament champion, neither being currently active in the mining industry on either the miner or supplier side of the business.  Additional opportunities for mining industry retirees will be at the Coal Country Open Board&quot;s discretion based on available slots in the field if any remain after all active suppliers and active miners have been accepted.    
+            <span className="font-bold underline bg-customYellow text-black">Deadline for entries is July 1st</span>. Tournament field will open to the non-mining public after July 1. All entries must be mailed or received before July 25. Tournament Placement will be determined by mining affiliation 1st and then to the public as received. All entries are reviewed and entered at the CCO Board discretion. <span className="font-bold underline">Entrants must be 21 years of age</span>.
+          </p>
+        </div>
+      )}
+
+      {/** Current Miner Important Text */}
+      {(formData.participantType === 'currentMiner'  || formData.participantType === 'generalPublic') && (
+        <div className="col-span-full text-white/60 mb-8">
+          <h3 className="font-bold">IMPORTANT:</h3>
+          <p>
+            <span className="font-bold underline bg-customYellow text-black">Deadline for entries is July 1st</span>. Tournament field will open to the non-mining public after July 1st. All entries must be mailed or received before July 25th. Tournament Placement will be determined by mining affiliation 1st and then to the public as received. All entries are reviewed and entered at the CCO Board discretion. <span className="font-bold underline">Entrants must be 21 years of age</span>. 
+          </p>
+        </div>
+      )}
 
       {/* Company Info Group */}
       <div className="col-span-1">
