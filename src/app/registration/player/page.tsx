@@ -35,7 +35,7 @@ export default function Hero() {
                 <div className="absolute top-[-225px] right-[0px] z-20">
                     <CountdownTimer eventDate="2025-05-13T09:00:00"  />
                 </div>
-                <div class="relative">
+                <div className="relative">
                     <h2 className="absolute -rotate-[25deg] left-[2rem] md:left-[-1rem] top-[] md:top-[-1rem] text-lg italic text-customYellow">The</h2>
                     <h1 className="text-5xl md:text-7xl font-heading drop-shadow-custom-600 tracking-tight text-white">Coal Country Open</h1>
                 </div>

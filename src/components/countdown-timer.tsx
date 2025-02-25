@@ -30,7 +30,7 @@ export default function CountdownTimer({ eventDate }: { eventDate: string }) {
 
   return (
     <div className="absolute right-4 top-4 md:static md:mx-auto md:mt-4 bg-customInputFill text-white px-8 py-6 rounded-xl shadow-2xl text-center">
-      <div className="flex justify-center md:justify-center space-x-4 text-8xl font-bold">
+      <div className="flex justify-center md:justify-center space-x-4 text-8xl">
         <div>
           <span className="font-heading drop-shadow-custom-600">{String(timeLeft.days || "00").padStart(2, '0')}</span>
           <div className="text-2xl font-heading drop-shadow-custom-600">DAYS</div>
