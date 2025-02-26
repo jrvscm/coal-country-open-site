@@ -1,12 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
-import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FaLock } from "react-icons/fa";
 import { Button } from '@/components/ui/button';
+import TeamFormFields from '@/components/team-form-fields';
+import DefaultFormFields from '@/components/default-form-fields';
 
 export default function RegistrationForm() {
-  const [formData, setFormData] = useState({
+  // Pricing for each participant type
+  const basePrices = {
+    currentMiner: 250.0,
+    pastBoardPastChampionRetiree: 250.0,
+    generalPublic: 450.0,
+    singlePlayerSponsorEntry: 450.0,
+    teamSponsorEntry: 1000.0,
+  };
+
+  const defaultFormState = {
     name: '',
     email: '',
     phone: '',
@@ -19,22 +29,68 @@ export default function RegistrationForm() {
     shirtSize: '',
     shoeSize: '',
     banquet: '',
-    dinnerTickets: '',
-    derby: '',
-    participantType: ''
-  });
+    dinnerTickets: '0', // Default to 0
+    derby: 'no', // Default to 'no' for derby
+    participantType: 'currentMiner',
 
+    // Sponsor additional fields
+    doorPrize: '',
+    flagPrizeContribution: '',
+
+    // Team sponsor additional fields
+    teamName: '',
+    playerOneName: '',
+    playerTwoName: '',
+    playerThreeName: '',
+    playerOneHandicap: '',
+    playerTwoHandicap: '',
+    playerThreeHandicap: '',
+    playerOneTShirtSize: '',
+    playerTwoTShirtSize: '',
+    playerThreeTShirtSize: '',
+  };
+
+  const [formData, setFormData] = useState(defaultFormState);
+  const [totalPrice, setTotalPrice] = useState(basePrices[formData.participantType]);
+
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // If the participant type changes, reset the form while keeping the new participant type
+    if (name === 'participantType') {
+      setFormData({
+        ...defaultFormState,
+        participantType: value,
+      });
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSelectChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Calculate total price dynamically
+  useEffect(() => {
+    let newTotal = basePrices[formData.participantType] || 0;
+
+    // Add dinner ticket cost ($32 each)
+    newTotal += parseInt(formData.dinnerTickets, 10) * 32.0;
+
+    // Add derby cost ($10) only for single entry types
+    if (formData.participantType !== 'teamSponsorEntry' && formData.derby === 'yes') {
+      newTotal += 10.0;
+    }
+
+    setTotalPrice(newTotal);
+  }, [formData.participantType, formData.dinnerTickets, formData.derby]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log('Form Submitted:', formData);
+    console.log('Total Price:', totalPrice);
   };
 
   return (
@@ -46,7 +102,7 @@ export default function RegistrationForm() {
         <ul className="text-white/60 list-disc pl-5 mt-2 space-y-1 text-lg">
           <li>54 holes of golf and cart</li>
           <li><span className="font-bold">Premium</span> gift bag</li>
-          <li>Thursday night social and Saturday banquet at Gillette&quot;s Cam-plex</li>
+          <li>Thursday night social and Saturday banquet at Gillette&apos;s Camplex</li>
           <li>Flag prizes are awarded for each day</li>
           <li>A Calcutta will take place Friday evening</li>
         </ul>
@@ -62,9 +118,16 @@ export default function RegistrationForm() {
 
         {/* Total Section */}
         <div className="flex justify-start md:justify-end items-start order-1 md:order-2">
-          <div className="flex flex-row justify-center items-center">
-            <h3 className="text-white/80 text-2xl font-semibold mr-2">TOTAL:</h3>
-            <p className="text-2xl text-white font-bold">$250.00</p>
+          <div className="flex flex-col">
+            <div className="flex flex-row justify-center items-center">
+              <h3 className="text-white/80 text-2xl font-semibold mr-2">TOTAL:</h3>
+              <p className="text-2xl text-white font-bold">${totalPrice.toFixed(2)}</p>
+            </div>
+            <div className="flex flex-col">
+              <p className="text-sm text-white/60 mt-1">
+                * Processing fee applied at checkout.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -75,7 +138,9 @@ export default function RegistrationForm() {
             {[
               { label: 'Current Miner', value: 'currentMiner' },
               { label: 'Past Board / Past Champion / Retiree', value: 'pastBoardPastChampionRetiree' },
-              { label: 'General Public', value: 'generalPublic' }
+              { label: 'General Public', value: 'generalPublic' },
+              { label: 'Single Player Sponsor Entry', value: 'singlePlayerSponsorEntry' },
+              { label: 'Team Sponsor Entry', value: 'teamSponsorEntry' }
             ].map((option) => (
               <label key={option.value} className="flex items-center justify-between cursor-pointer text-white/60 text-lg">
                 <span>{option.label}</span>
@@ -87,7 +152,7 @@ export default function RegistrationForm() {
                     value={option.value}
                     checked={formData.participantType === option.value}
                     onChange={handleChange}
-                    className="sr-only peer"
+                    className={"sr-only peer"}
                   />
 
                   {/* Outer Circle */}
@@ -108,227 +173,18 @@ export default function RegistrationForm() {
         <hr className="border-t border-white/20" />
       </div>
 
-      {/** Past Board / Past Champion / Retiree Important text */}
-      {formData.participantType === 'pastBoardPastChampionRetiree' && (
-        <div className="col-span-full text-white/60 mb-8">
-          <h3 className="font-bold">IMPORTANT:</h3>
-          <p>
-            Automatic qualifications for initial acceptance to the tournament field are either through being a past Coal Country Open Board Member or a past Coal Country Open overall tournament champion, neither being currently active in the mining industry on either the miner or supplier side of the business.  Additional opportunities for mining industry retirees will be at the Coal Country Open Board&quot;s discretion based on available slots in the field if any remain after all active suppliers and active miners have been accepted.    
-            <span className="font-bold underline bg-customYellow text-black">Deadline for entries is July 1st</span>. Tournament field will open to the non-mining public after July 1. All entries must be mailed or received before July 25. Tournament Placement will be determined by mining affiliation 1st and then to the public as received. All entries are reviewed and entered at the CCO Board discretion. <span className="font-bold underline">Entrants must be 21 years of age</span>.
-          </p>
-        </div>
+      {formData.participantType === 'teamSponsorEntry' && (
+        <TeamFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} />
       )}
 
-      {/** Current Miner Important Text */}
-      {(formData.participantType === 'currentMiner'  || formData.participantType === 'generalPublic') && (
-        <div className="col-span-full text-white/60 mb-8">
-          <h3 className="font-bold">IMPORTANT:</h3>
-          <p>
-            <span className="font-bold underline bg-customYellow text-black">Deadline for entries is July 1st</span>. Tournament field will open to the non-mining public after July 1st. All entries must be mailed or received before July 25th. Tournament Placement will be determined by mining affiliation 1st and then to the public as received. All entries are reviewed and entered at the CCO Board discretion. <span className="font-bold underline">Entrants must be 21 years of age</span>. 
-          </p>
-        </div>
+      {formData.participantType !== 'teamSponsorEntry' && (
+        <DefaultFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} />
       )}
-
-      {/* Company Info Group */}
-      <div className="col-span-1">
-        <h3 className="text-white/80 text-lg font-semibold mb-2">COMPANY INFO</h3>
-        <label htmlFor="company" className="sr-only block text-sm text-white/60 mb-1">Company Represented</label>
-        <Input
-          id="company"
-          name="company"
-          placeholder="Company Represented"
-          value={formData.company}
-          onChange={handleChange}
-          className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 text-lg focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
-        />
-      </div>
-
-      <div className="col-span-1 relative">
-        <h3 className="text-white/80 text-lg font-semibold mb-2">DERBY</h3>
-        <label htmlFor="derby" className="sr-only block text-lg font-semibold text-white/80 mb-2">Derby</label>
-        <Select onValueChange={(value) => handleSelectChange('derby', value)}>
-          <SelectTrigger className="relative flex justify-start align-center w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg">
-            {/* Placeholder and selected value */}
-            <SelectValue 
-              placeholder="Will you play in the derby?" 
-              className="text-white/60 text-lg" 
-            />
-          </SelectTrigger>
-
-          <SelectContent>
-            <SelectItem value="yes">Yes (+$10.00)</SelectItem>
-            <SelectItem value="no">No</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Personal Info Group */}
-      <div className="col-span-1">
-        <h3 className="text-white/80 text-lg font-semibold mb-2">PERSONAL INFO</h3>
-        <div className="mt-3">
-          <label htmlFor="name" className="sr-only hidden block text-sm text-white/60 mb-1">Name</label>
-          <Input
-            id="name"
-            name="name"
-            placeholder="Enter Your Name"
-            value={formData.name}
-            onChange={handleChange}
-            className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
-          />
-        </div>
-        <div className="mt-3">
-          <label htmlFor="email" className="sr-only hidden block text-sm text-white/60 mb-1">Email</label>
-          <Input
-            id="email"
-            name="email"
-            placeholder="Enter Your Email"
-            value={formData.email}
-            onChange={handleChange}
-            className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg placeholder:text-lg"
-          />
-        </div>
-        <div className="mt-3">
-          <label htmlFor="phone" className="sr-only block text-sm text-white/60 mb-1">Phone</label>
-          <Input
-            id="phone"
-            name="phone"
-            placeholder="Phone"
-            value={formData.phone}
-            onChange={handleChange}
-            className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
-          />
-        </div>
-        <div className="mt-3">
-          <label htmlFor="handicap" className="sr-only block text-sm text-white/60 mb-1">Average Score or Handicap</label>
-          <Input
-            id="handicap"
-            name="handicap"
-            placeholder="Handicap"
-            value={formData.handicap}
-            onChange={handleChange}
-            className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
-          />
-        </div>
-      </div>
-
-
-      {/* Address Info Group */}
-      <div className="col-span-1">
-        <h3 className="text-white/80 text-lg font-semibold mb-2">ADDRESS INFO</h3>
-        <div className="mt-3">
-          <label htmlFor="address" className="sr-only block text-sm text-white/60 mb-1">Address</label>
-          <Input
-            id="address"
-            name="address"
-            placeholder="Address"
-            value={formData.address}
-            onChange={handleChange}
-            className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
-          />
-        </div>
-        <div className="mt-3">
-          <label htmlFor="city" className="sr-only block text-sm text-white/60 mb-1">City</label>
-          <Input
-            id="city"
-            name="city"
-            placeholder="City"
-            value={formData.city}
-            onChange={handleChange}
-            className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
-          />
-        </div>
-        <div className="mt-3">
-          <label htmlFor="state" className="sr-only block text-sm text-white/60 mb-1">State</label>
-          <Input
-            id="state"
-            name="state"
-            placeholder="State"
-            value={formData.state}
-            onChange={handleChange}
-            className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
-          />
-        </div>
-        <div className="mt-3">
-          <label htmlFor="zip" className="sr-only block text-sm text-white/60 mb-1">Zip</label>
-          <Input
-            id="zip"
-            name="zip"
-            placeholder="Zip Code"
-            value={formData.zip}
-            onChange={handleChange}
-            className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
-          />
-        </div>
-      </div>
-
-      {/* Banquet Info Group */}
-      <div className="col-span-1">
-        <h3 className="text-white/80 text-lg font-semibold mb-2">BANQUET</h3>
-        <div className="mt-3">
-          <label className="sr-only block text-sm text-white/60 mb-1">Will You Attend Banquet?</label>
-          <Select onValueChange={(value) => handleSelectChange('banquet', value)}>
-            <SelectTrigger className="relative flex justify-start align-center w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg">
-              <SelectValue placeholder="Will you attend the banquet?" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="yes">Yes</SelectItem>
-              <SelectItem value="no">No</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="mt-3">
-          <label className="sr-only block text-sm text-white/60 mb-1">Additional Dinner Tickets (+$40 each)</label>
-          <Select onValueChange={(value) => handleSelectChange('dinnerTickets', value)}>
-            <SelectTrigger className="relative flex justify-start align-center w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg">
-              <SelectValue placeholder="Additional Dinner Tickets (+$40 each)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1">1</SelectItem>
-              <SelectItem value="2">2</SelectItem>
-              <SelectItem value="3">3</SelectItem>
-              <SelectItem value="4">4</SelectItem>
-              <SelectItem value="5">5</SelectItem>
-              <SelectItem value="6">6</SelectItem>
-              <SelectItem value="7">7</SelectItem>
-              <SelectItem value="8">8</SelectItem>
-              <SelectItem value="9">9</SelectItem>
-              <SelectItem value="10">10</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Sizing Info Group */}
-      <div className="col-span-1">
-        <h3 className="text-white/80 text-lg font-semibold mb-2">SIZING INFO</h3>
-        <div className="mt-3">
-          <label htmlFor="shirtSize" className="sr-only block text-sm text-white/60 mb-1">Shirt Size</label>
-          <Input
-            id="shirtSize"
-            name="shirtSize"
-            placeholder="Enter Your Shirt Size"
-            value={formData.shirtSize}
-            onChange={handleChange}
-            className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
-          />
-        </div>
-        <div className="mt-3">
-          <label htmlFor="shoeSize" className="sr-only block text-sm text-white/60 mb-1">Shoe Size</label>
-          <Input
-            id="shoeSize"
-            name="shoeSize"
-            placeholder="Enter Your Shoe Size"
-            value={formData.shoeSize}
-            onChange={handleChange}
-            className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
-          />
-        </div>
-      </div>
 
       {/* Submit Button */}
       <div className="col-span-full mt-6">
-        <Button type="submit" className="w-full bg-green-600 text-white">
-          Continue to Payment
+        <Button type="submit" className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-full bg-customPrimary hover:bg-customPrimary/60 uppercase font-text font-5xl font-bold flex flex-row justify-center items-center">
+          <FaLock className="h-16 w-16 font-bold" /> Continue to Secure Payment
         </Button>
       </div>
 

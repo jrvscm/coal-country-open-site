@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import CountdownTimer from '@/components/countdown-timer';
 import RegistrationFrom from '@/components/registration-form';
