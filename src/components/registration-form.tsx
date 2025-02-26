@@ -5,6 +5,7 @@ import { FaLock } from "react-icons/fa";
 import { Button } from '@/components/ui/button';
 import TeamFormFields from '@/components/team-form-fields';
 import DefaultFormFields from '@/components/default-form-fields';
+import { loadStripe } from '@stripe/stripe-js';
 
 export default function RegistrationForm() {
   // Pricing for each participant type
@@ -29,7 +30,7 @@ export default function RegistrationForm() {
     shirtSize: '',
     shoeSize: '',
     banquet: '',
-    dinnerTickets: '0', // Default to 0
+    dinnerTickets: '', // Default to 0
     derby: 'no', // Default to 'no' for derby
     participantType: 'currentMiner',
 
@@ -56,7 +57,7 @@ export default function RegistrationForm() {
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-
+ 
     // If the participant type changes, reset the form while keeping the new participant type
     if (name === 'participantType') {
       setFormData({
@@ -76,8 +77,10 @@ export default function RegistrationForm() {
   useEffect(() => {
     let newTotal = basePrices[formData.participantType] || 0;
 
-    // Add dinner ticket cost ($32 each)
-    newTotal += parseInt(formData.dinnerTickets, 10) * 32.0;
+    if(formData.dinnerTickets !== '') {
+      // Add dinner ticket cost ($32 each)
+      newTotal += parseInt(formData.dinnerTickets, 10) * 32.0;
+    }
 
     // Add derby cost ($10) only for single entry types
     if (formData.participantType !== 'teamSponsorEntry' && formData.derby === 'yes') {
@@ -87,14 +90,43 @@ export default function RegistrationForm() {
     setTotalPrice(newTotal);
   }, [formData.participantType, formData.dinnerTickets, formData.derby]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Form Submitted:', formData);
-    console.log('Total Price:', totalPrice);
-  };
 
+
+  //stripe 
+  const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
+  
+  const handleCheckout = async () => {
+    const stripe = await stripePromise;
+  
+    if (!stripe) {
+      console.error("Stripe failed to load.");
+      return;
+    }
+  
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          participantType: formData.participantType,
+          totalPrice,
+        }),
+      });
+  
+      const session = await response.json();
+  
+      if (session.url) {
+        window.location.href = session.url;
+      } else {
+        alert('Error creating Stripe session');
+      }
+    } catch (error) {
+      console.error('Checkout Error:', error);
+    }
+  };
+  
   return (
-    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">
+    <form className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">
 
       {/* Registration Includes Section */}
       <div className="col-span-full">
@@ -183,7 +215,7 @@ export default function RegistrationForm() {
 
       {/* Submit Button */}
       <div className="col-span-full mt-6">
-        <Button type="submit" className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-full bg-customPrimary hover:bg-customPrimary/60 uppercase font-text font-5xl font-bold flex flex-row justify-center items-center">
+        <Button className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-full bg-customPrimary hover:bg-customPrimary/60 uppercase font-text font-5xl font-bold flex flex-row justify-center items-center">
           <FaLock className="h-16 w-16 font-bold" /> Continue to Secure Payment
         </Button>
       </div>

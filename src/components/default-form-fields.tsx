@@ -23,7 +23,7 @@ export default function DefaultFormFields({ formData, handleChange, handleSelect
         <div className="col-span-1 relative">
             <h3 className="text-white/80 text-lg font-semibold mb-2">DERBY</h3>
             <label htmlFor="derby" className="sr-only block text-lg font-semibold text-white/80 mb-2">Derby</label>
-            <Select onValueChange={(value) => handleSelectChange('derby', value)}>
+            <Select value={formData.derby} onValueChange={(value) => handleSelectChange('derby', value)}>
             <SelectTrigger className="relative flex justify-start align-center w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg">
                 {/* Placeholder and selected value */}
                 <SelectValue 
@@ -167,7 +167,7 @@ export default function DefaultFormFields({ formData, handleChange, handleSelect
         <h3 className="text-white/80 text-lg font-semibold mb-2">BANQUET</h3>
         <div className="mt-3">
           <label className="sr-only block text-sm text-white/60 mb-1">Will You Attend Banquet?</label>
-          <Select onValueChange={(value) => handleSelectChange('banquet', value)}>
+          <Select value={formData.banquet} onValueChange={(value) => handleSelectChange('banquet', value)}>
             <SelectTrigger className="relative flex justify-start align-center w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg">
               <SelectValue placeholder="Will you attend the banquet?" />
             </SelectTrigger>
@@ -181,7 +181,7 @@ export default function DefaultFormFields({ formData, handleChange, handleSelect
           <label className="sr-only block text-sm text-white/60 mb-1">{
             `Additional Dinner Tickets ${formData.participantType === 'teamSponsorEntry' ? '3 Included ':'1 Included '}(+$32.00 each)`
           }</label>
-          <Select onValueChange={(value) => handleSelectChange('dinnerTickets', value)}>
+          <Select value={formData.dinnerTickets} onValueChange={(value) => handleSelectChange('dinnerTickets', value)}>
             <SelectTrigger className="relative flex justify-start align-center w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg">
               <SelectValue placeholder={`Additional Dinner Tickets ${formData.participantType === 'teamSponsorEntry' ? '3 Included ':'1 Included '}(+$32.00 each)`} />
             </SelectTrigger>
