@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+const stripe = new Stripe(process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY as string, {
   apiVersion: '2023-10-16',
 });
 
@@ -12,17 +12,23 @@ export async function POST(req: NextRequest) {
   let event;
 
   try {
-    const body = await req.text();
+    const body = await req.text(); // Stripe sends raw text
     event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
   } catch (err: any) {
-    console.error('⚠️ Webhook signature verification failed.', err.message);
+    console.error('⚠️ Webhook signature verification failed:', err.message);
     return NextResponse.json({ error: 'Webhook error' }, { status: 400 });
   }
 
-  // Handle specific webhook events
   if (event.type === 'checkout.session.completed') {
-    console.log('✅ Payment successful:', event.data.object);
-    // Save order details in your database here
+    const session = event.data.object as Stripe.Checkout.Session;
+    const metadata = session.metadata as { playerData: string };
+
+    if (metadata && metadata.playerData) {
+      const playerData = JSON.parse(metadata.playerData);
+      console.log('✅ Payment successful. Received player data:', playerData);
+
+      // TODO: Save playerData to the database here
+    }
   }
 
   return NextResponse.json({ received: true }, { status: 200 });

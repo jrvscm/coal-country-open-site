@@ -95,7 +95,9 @@ export default function RegistrationForm() {
   //stripe 
   const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
   
-  const handleCheckout = async () => {
+  const handleCheckout = async (e) => {
+    e.preventDefault();
+    console.log('ran checkout event');
     const stripe = await stripePromise;
   
     if (!stripe) {
@@ -108,7 +110,7 @@ export default function RegistrationForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          participantType: formData.participantType,
+          formData,
           totalPrice,
         }),
       });
@@ -215,7 +217,7 @@ export default function RegistrationForm() {
 
       {/* Submit Button */}
       <div className="col-span-full mt-6">
-        <Button className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-full bg-customPrimary hover:bg-customPrimary/60 uppercase font-text font-5xl font-bold flex flex-row justify-center items-center">
+        <Button onClick={handleCheckout} className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-full bg-customPrimary hover:bg-customPrimary/60 uppercase font-text font-5xl font-bold flex flex-row justify-center items-center">
           <FaLock className="h-16 w-16 font-bold" /> Continue to Secure Payment
         </Button>
       </div>
