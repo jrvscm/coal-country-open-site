@@ -218,7 +218,7 @@ export default function RegistrationForm() {
       {/* Submit Button */}
       <div className="col-span-full mt-6">
         <Button onClick={handleCheckout} className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-full bg-customPrimary hover:bg-customPrimary/60 uppercase font-text font-5xl font-bold flex flex-row justify-center items-center">
-          <FaLock className="h-16 w-16 font-bold" /> Continue to Secure Payment
+          Continue to Secure Payment <FaLock className="h-16 w-16 font-bold" />
         </Button>
       </div>
 
