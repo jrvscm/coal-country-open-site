@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaLock } from "react-icons/fa";
 import { Button } from '@/components/ui/button';
 import TeamFormFields from '@/components/team-form-fields';
 import DefaultFormFields from '@/components/default-form-fields';
+import SingleEntryFields from '@/components/single-entry-fields';
 import { loadStripe } from '@stripe/stripe-js';
 
 export default function RegistrationForm() {
@@ -30,8 +31,8 @@ export default function RegistrationForm() {
     shirtSize: '',
     shoeSize: '',
     banquet: '',
-    dinnerTickets: '', // Default to 0
-    derby: 'no', // Default to 'no' for derby
+    dinnerTickets: '',
+    derby: 'no',
     participantType: 'currentMiner',
 
     // Sponsor additional fields
@@ -40,6 +41,9 @@ export default function RegistrationForm() {
 
     // Team sponsor additional fields
     teamName: '',
+    teamContactName: '',
+    teamContactPhone: '',
+    teamContactEmail: '',
     playerOneName: '',
     playerTwoName: '',
     playerThreeName: '',
@@ -53,51 +57,163 @@ export default function RegistrationForm() {
 
   const [formData, setFormData] = useState(defaultFormState);
   const [totalPrice, setTotalPrice] = useState(basePrices[formData.participantType]);
+  const [stripeFee, setStripeFee] = useState(0);
+  const [formErrors, setFormErrors] = useState({});
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^\d{10}$/;
+  const zipRegex = /^\d{5}$/;
+  const handicapRegex = /^[+-]?\d+(\.\d{1,2})?$/;
+  const flagPrizeRegex = /^\d+$/;
 
-  // Handle input changes
+  const validateForm = () => {
+    let errors = {};
+
+    if(formData.participantType !== 'teamSponsorEntry') {
+      if (!formData.address) errors.address = "Address is required";
+      if (!formData.name) errors.name = "Name is required";
+      if (!formData.email || !emailRegex.test(formData.email)) errors.email = "Invalid email";
+      if (!formData.phone || !phoneRegex.test(formData.phone.replace(/\D/g, ""))) errors.phone = "Invalid phone number";
+      if (!formData.zip || !zipRegex.test(formData.zip)) errors.zip = "Invalid zip code";
+      if (!formData.handicap || !handicapRegex.test(formData.handicap)) errors.handicap = "Enter a valid handicap";
+      if(!formData.company) errors.company = "Company is required";
+      if(!formData.city) errors.city = "City is required";
+      if(!formData.state) errors.state = "State is required";
+      if(!formData.zip) errors.zip = "Zip is required";
+      if(!formData.shirtSize) errors.shirtSize = "Shirt size is required";
+    }
+
+    if (formData.participantType === "teamSponsorEntry") {
+      if (!formData.teamName) errors.teamName = "Team Name is required";
+      //player names
+      if (!formData.playerOneName) errors.playerOneName = "Player One Name is required";
+      if (!formData.playerTwoName) errors.playerTwoName = "Player Two Name is required";
+      if (!formData.playerThreeName) errors.playerThreeName = "Player Three Name is required";
+      //player handicaps
+      if (!formData.playerOneHandicap || !handicapRegex.test(formData.playerOneHandicap)) errors.playerOneHandicap = "Player One Handicap is required";
+      if (!formData.playerTwoHandicap || !handicapRegex.test(formData.playerTwoHandicap)) errors.playerTwoHandicap = "Player Two Handicap is required";
+      if (!formData.playerThreeHandicap || !handicapRegex.test(formData.playerThreeHandicap)) errors.playerThreeHandicap = "Player Three Handicap is required";
+      //player shirt size
+      if (!formData.playerOneTShirtSize) errors.playerOneTShirtSize = "Player One T-Shirt size is required";
+      if (!formData.playerTwoTShirtSize) errors.playerTwoTShirtSize = "Player Two T-Shirt size is required";
+      if (!formData.playerThreeTShirtSize) errors.playerThreeTShirtSize = "Player Three T-Shirt size is required";
+      //team contact
+      if (!formData.teamContactName) errors.teamContactName = "Team contact name is required";
+      if (!formData.teamContactPhone || !phoneRegex.test(formData.teamContactPhone.replace(/\D/g, ""))) errors.teamContactPhone = "Team contact phone is invalid";
+      if (!formData.teamContactEmail || !emailRegex.test(formData.teamContactEmail)) errors.teamContactEmail = "Team contact email is invalid";
+    }
+
+    if(!formData.banquet) errors.banquet = "Banquet choice is required";
+
+    if(formData.participantType === 'singlePlayerSponsorEntry') {
+      if(!formData.doorPrize) errors.doorPrize = "Door prize contribution is required"
+      if(formData.flagPrizeContribution && !flagPrizeRegex.test(formData.flagPrizeContribution)) errors.flagPrizeContribution = "Use only whole numbers and no decimals"
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
- 
+
     // If the participant type changes, reset the form while keeping the new participant type
     if (name === 'participantType') {
-      setFormData({
-        ...defaultFormState,
-        participantType: value,
-      });
+        setFormData({
+            ...defaultFormState,
+            participantType: value,
+        });
+
+        // Reset all form errors
+        setFormErrors({});
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+        setFormData((prev) => ({ ...prev, [name]: value }));
+
+        // Remove only the error related to the current field
+        setFormErrors((prevErrors) => ({
+            ...prevErrors,
+            [name]: "",
+        }));
     }
   };
 
   const handleSelectChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Remove only the error related to the current field
+    setFormErrors((prevErrors) => ({
+        ...prevErrors,
+        [name]: "",
+    }));
   };
 
-  // Calculate total price dynamically
+  // Pricing breakdown states
+  const [basePrice, setBasePrice] = useState(0);
+  const [dinnerTicketCost, setDinnerTicketCost] = useState(0);
+  const [derbyCost, setDerbyCost] = useState(0);
+  const [flagPrizeCost, setFlagPrizeCost] = useState(0);
+
   useEffect(() => {
-    let newTotal = basePrices[formData.participantType] || 0;
-
-    if(formData.dinnerTickets !== '') {
-      // Add dinner ticket cost ($32 each)
-      newTotal += parseInt(formData.dinnerTickets, 10) * 32.0;
+    let newBasePrice = basePrices[formData.participantType] || 0;
+    let newDinnerTicketCost = 0;
+    let newDerbyCost = 0;
+    let newFlagPrizeCost = 0;
+  
+    if (formData.dinnerTickets !== '') {
+        newDinnerTicketCost = parseInt(formData.dinnerTickets, 10) * 32.0;
     }
 
-    // Add derby cost ($10) only for single entry types
     if (formData.participantType !== 'teamSponsorEntry' && formData.derby === 'yes') {
-      newTotal += 10.0;
+        newDerbyCost = 10.0;
     }
 
+    if (formData.flagPrizeContribution && flagPrizeRegex.test(formData.flagPrizeContribution)) {
+        newFlagPrizeCost = parseInt(formData.flagPrizeContribution, 10);
+    }
+
+    let newTotal = newBasePrice + newDinnerTicketCost + newDerbyCost + newFlagPrizeCost;
+    let newStripeFee = (newTotal * 0.029) + 0.30;
+  
+    // Update state
+    setBasePrice(newBasePrice);
+    setDinnerTicketCost(newDinnerTicketCost);
+    setDerbyCost(newDerbyCost);
+    setFlagPrizeCost(newFlagPrizeCost);
     setTotalPrice(newTotal);
-  }, [formData.participantType, formData.dinnerTickets, formData.derby]);
+    setStripeFee(newStripeFee);
+  }, [formData.participantType, formData.dinnerTickets, formData.derby, formData.flagPrizeContribution]);
 
+  const totalRef = useRef(null);
+  const [isSticky, setIsSticky] = useState(false);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsSticky(!entry.isIntersecting && entry.boundingClientRect.top <= 0);
+      },
+      { root: null, threshold: 0 } // Detect when total section goes out of view
+    );
+
+    if (totalRef.current) {
+      observer.observe(totalRef.current);
+
+      const rect = totalRef.current.getBoundingClientRect();
+      setIsSticky(rect.top <= 0); // If it's out of view, make it sticky
+
+    }
+
+    return () => {
+      if (totalRef.current) observer.unobserve(totalRef.current);
+    };
+  }, []);
 
   //stripe 
   const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
   
   const handleCheckout = async (e) => {
     e.preventDefault();
-    console.log('ran checkout event');
+
+    if(!validateForm()) return;
+
     const stripe = await stripePromise;
   
     if (!stripe) {
@@ -111,7 +227,7 @@ export default function RegistrationForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           formData,
-          totalPrice,
+          totalPrice: (totalPrice + stripeFee).toFixed(2),
         }),
       });
   
@@ -149,20 +265,50 @@ export default function RegistrationForm() {
 
       {/* Participant Type & Total Section Wrapper */}
       <div className="col-span-full grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        {/* Total Section */}
-        <div className="flex justify-start md:justify-end items-start order-1 md:order-2">
+        <div className="relative order-1 md:order-2">
+        {/* Total Section with Breakdown */}
+        <div ref={totalRef} className="flex justify-start md:justify-end items-start order-1 md:order-2">
           <div className="flex flex-col">
-            <div className="flex flex-row justify-center items-center">
+            {/* Main Total Row */}
+            <div className="flex flex-row justify-start md:justify-center items-center">
               <h3 className="text-white/80 text-2xl font-semibold mr-2">TOTAL:</h3>
-              <p className="text-2xl text-white font-bold">${totalPrice.toFixed(2)}</p>
+              <p className="text-2xl text-white font-bold">${(totalPrice + stripeFee).toFixed(2)}</p>
             </div>
-            <div className="flex flex-col">
-              <p className="text-sm text-white/60 mt-1">
-                * Processing fee applied at checkout.
-              </p>
+
+            {/* Pricing Breakdown */}
+            <div className="flex flex-col text-sm text-white/60 mt-2 space-y-1">
+              <p>Base Registration: ${basePrice.toFixed(2)}</p>
+              {dinnerTicketCost > 0 && <p>Dinner Tickets: ${dinnerTicketCost.toFixed(2)}</p>}
+              {derbyCost > 0 && <p>Derby Entry: ${derbyCost.toFixed(2)}</p>}
+              {flagPrizeCost > 0 && <p>Flag Prize Contribution: ${flagPrizeCost.toFixed(2)}</p>}
+              <p className="font-semibold mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
             </div>
           </div>
+        </div>
+
+        {/* Sticky Total Section (when out of view) */}
+        {isSticky && (
+            <div className="transition-all fixed top-[81px] md:top-[65px] left-0 right-0 bg-secondary-foreground md:bg-black/60 md:backdrop-blur-2xl text-white shadow-lg z-50 p-4 transition-transform">
+              <div className="max-w-[1200px] mx-auto flex justify-between items-center">
+                <div className="flex flex-col">
+                  {/* Main Total */}
+                  <div className="flex flex-row justify-between items-center">
+                    <h3 className="text-xl font-bold">TOTAL:</h3>
+                    <p className="text-2xl font-bold">${(totalPrice + stripeFee).toFixed(2)}</p>
+                  </div>
+
+                  {/* Pricing Breakdown */}
+                  <div className="flex flex-col text-sm text-white/60 mt-2 space-y-1">
+                    <p>Base Registration: ${basePrice.toFixed(2)}</p>
+                    {dinnerTicketCost > 0 && <p>Dinner Tickets: ${dinnerTicketCost.toFixed(2)}</p>}
+                    {derbyCost > 0 && <p>Derby Entry: ${derbyCost.toFixed(2)}</p>}
+                    {flagPrizeCost > 0 && <p>Flag Prize Contribution: ${flagPrizeCost.toFixed(2)}</p>}
+                    <p className="font-semibold mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Participant Type */}
@@ -176,26 +322,35 @@ export default function RegistrationForm() {
               { label: 'Single Player Sponsor Entry', value: 'singlePlayerSponsorEntry' },
               { label: 'Team Sponsor Entry', value: 'teamSponsorEntry' }
             ].map((option) => (
-              <label key={option.value} className="flex items-center justify-between cursor-pointer text-white/60 text-lg">
-                <span>{option.label}</span>
-                <div className="relative mr-[12rem]">
-                  {/* Hidden Radio Input */}
-                  <input
-                    type="radio"
-                    name="participantType"
-                    value={option.value}
-                    checked={formData.participantType === option.value}
-                    onChange={handleChange}
-                    className={"sr-only peer"}
-                  />
+              <div className="group" key={option.value}>
+                <label className="
+                  flex items-center justify-between cursor-pointer text-white/60 text-lg pb-2
+                  group-has-[input:checked]:border group-has-[input:checked]:border-customInputBorder group-has-[input:checked]:rounded-lg
+                  group-has-[input:checked]:bg-black/80
+                  hover:border hover:border-customInputBorder hover:bg-black/20 p-2
+                  border border-transparent rounded-lg
+                  transition-all
+                ">
+                  <span>{option.label}</span>
+                  <div className="relative ml-auto">
+                    {/* Hidden Radio Input */}
+                    <input
+                      type="radio"
+                      name="participantType"
+                      value={option.value}
+                      checked={formData.participantType === option.value}
+                      onChange={handleChange}
+                      className={"sr-only peer"}
+                    />
 
-                  {/* Outer Circle */}
-                  <div className="h-6 w-6 rounded-full border-2 border-customInputBorder"></div>
+                    {/* Outer Circle */}
+                    <div className="h-6 w-6 rounded-full border-2 border-customInputBorder"></div>
 
-                  {/* Inner Circle */}
-                  <div className="h-4 w-4 rounded-full bg-customInputBorder absolute top-1 left-1 scale-0 peer-checked:scale-100 transition-transform"></div>
-                </div>
-              </label>
+                    {/* Inner Circle */}
+                    <div className="h-4 w-4 rounded-full bg-customInputBorder absolute top-1 left-1 scale-0 peer-checked:scale-100 transition-transform"></div>
+                  </div>
+                </label>
+              </div>
             ))}
           </div>
         </div>
@@ -208,11 +363,15 @@ export default function RegistrationForm() {
       </div>
 
       {formData.participantType === 'teamSponsorEntry' && (
-        <TeamFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} />
+        <TeamFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
       )}
 
       {formData.participantType !== 'teamSponsorEntry' && (
-        <DefaultFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} />
+        <DefaultFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
+      )}
+
+      {formData.participantType === 'singlePlayerSponsorEntry' && (
+        <SingleEntryFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
       )}
 
       {/* Submit Button */}

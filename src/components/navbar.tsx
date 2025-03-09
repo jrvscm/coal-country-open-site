@@ -8,7 +8,7 @@ import {
   NavigationMenuList
 } from '@/components/ui/navigation-menu';
 import { Menu, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -33,6 +33,20 @@ export const Navbar = () => {
 
   const [isOpen, setOpen] = useState(false);
   const [isScrolled, setScrolled] = useState(false);
+  const navRef = useRef(null);
+
+  useEffect(() => {
+    const checkPosition = () => {
+      if (!navRef.current) return;
+      const rect = navRef.current.getBoundingClientRect();
+      setScrolled(window.scrollY > 50 || rect.top < 0);
+    };
+
+    checkPosition(); // Run once on mount in case of page refresh
+
+    window.addEventListener('scroll', checkPosition);
+    return () => window.removeEventListener('scroll', checkPosition);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,6 +60,7 @@ export const Navbar = () => {
 
   return (
     <header
+      ref={navRef}
       className={`fixed left-0 right-0 top-0 z-40 w-full border-b border-customYellow transition-all duration-300 ${
         isScrolled ? 'lg:bg-black/60 lg:py-2 lg:backdrop-blur-2xl' : 'lg:py-4'
       }`}

@@ -4,20 +4,23 @@
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 
-export default function TeamFormFields({ formData, handleChange, handleSelectChange }) {
+export default function TeamFormFields({ formData, handleChange, handleSelectChange, formErrors }) {
     return (
     <>
         <div className="col-span-1">
             <h3 className="text-white/80 text-lg font-semibold mb-2">TEAM NAME</h3>
             <label htmlFor="teamName" className="sr-only block text-sm text-white/60 mb-1">Team Name</label>
             <Input
-                id="teamName"
-                name="teamName"
-                placeholder="Team Name"
-                value={formData.teamName}
-                onChange={handleChange}
-                className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 text-lg focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
+              id="teamName"
+              name="teamName"
+              placeholder="Team Name"
+              value={formData.teamName}
+              onChange={handleChange}
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+                ${formErrors.teamName ? 'border-red-500' : 'border-customInputBorder'}
+              `} 
             />
+            {formErrors.teamName && <p className="text-red-500 text-sm mt-1">{formErrors.teamName}</p>}
         </div>
 
         <div className="col-span-1 relative">
@@ -50,8 +53,11 @@ export default function TeamFormFields({ formData, handleChange, handleSelectCha
               placeholder="Player One Name"
               value={formData.playerOneName}
               onChange={handleChange}
-              className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+                ${formErrors.playerOneName ? 'border-red-500' : 'border-customInputBorder'}
+              `} 
             />
+            {formErrors.playerOneName && <p className="text-red-500 text-sm mt-1">{formErrors.playerOneName}</p>}
           </div>
           <div className="mt-3">
             <label htmlFor="playerOneHandicap" className="sr-only hidden block text-sm text-white/60 mb-1">Player One Handicap</label>
@@ -61,8 +67,11 @@ export default function TeamFormFields({ formData, handleChange, handleSelectCha
               placeholder="Player One Handicap"
               value={formData.playerOneHandicap}
               onChange={handleChange}
-              className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+                ${formErrors.playerOneHandicap ? 'border-red-500' : 'border-customInputBorder'}
+              `}
             />
+            {formErrors.playerOneHandicap && <p className="text-red-500 text-sm mt-1">{formErrors.playerOneHandicap}</p>}
           </div>
           <div className="mt-3">
             <label htmlFor="playerOneTShirtSize" className="sr-only hidden block text-sm text-white/60 mb-1">Player One T-Shirt Size</label>
@@ -72,8 +81,11 @@ export default function TeamFormFields({ formData, handleChange, handleSelectCha
               placeholder="Player One T-Shirt Size"
               value={formData.playerOneTShirtSize}
               onChange={handleChange}
-              className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+                ${formErrors.playerOneTShirtSize ? 'border-red-500' : 'border-customInputBorder'}
+              `}
             />
+            {formErrors.playerOneTShirtSize && <p className="text-red-500 text-sm mt-1">{formErrors.playerOneTShirtSize}</p>}
           </div>
         </div>
 
@@ -87,8 +99,11 @@ export default function TeamFormFields({ formData, handleChange, handleSelectCha
               placeholder="Player Two Name"
               value={formData.playerTwoName}
               onChange={handleChange}
-              className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+                ${formErrors.playerTwoName ? 'border-red-500' : 'border-customInputBorder'}
+              `}
             />
+            {formErrors.playerTwoName && <p className="text-red-500 text-sm mt-1">{formErrors.playerTwoName}</p>}
           </div>
           <div className="mt-3">
             <label htmlFor="playerTwoHandicap" className="sr-only hidden block text-sm text-white/60 mb-1">Player Two Handicap</label>
@@ -98,8 +113,11 @@ export default function TeamFormFields({ formData, handleChange, handleSelectCha
               placeholder="Player Two Handicap"
               value={formData.playerTwoHandicap}
               onChange={handleChange}
-              className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+                ${formErrors.playerTwoHandicap ? 'border-red-500' : 'border-customInputBorder'}
+              `}
             />
+            {formErrors.playerTwoHandicap && <p className="text-red-500 text-sm mt-1">{formErrors.playerTwoHandicap}</p>}
           </div>
           <div className="mt-3">
             <label htmlFor="playerTwoTShirtSize" className="sr-only hidden block text-sm text-white/60 mb-1">Player Two T-Shirt Size</label>
@@ -109,8 +127,11 @@ export default function TeamFormFields({ formData, handleChange, handleSelectCha
               placeholder="Player Two T-Shirt Size"
               value={formData.playerTwoTShirtSize}
               onChange={handleChange}
-              className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+                ${formErrors.playerTwoTShirtSize ? 'border-red-500' : 'border-customInputBorder'}
+              `}
             />
+            {formErrors.playerTwoTShirtSize && <p className="text-red-500 text-sm mt-1">{formErrors.playerTwoTShirtSize}</p>}
           </div>
         </div>
 
@@ -124,8 +145,11 @@ export default function TeamFormFields({ formData, handleChange, handleSelectCha
               placeholder="Player Three Name"
               value={formData.playerThreeName}
               onChange={handleChange}
-              className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+                ${formErrors.playerThreeName ? 'border-red-500' : 'border-customInputBorder'}
+              `}
             />
+            {formErrors.playerThreeName && <p className="text-red-500 text-sm mt-1">{formErrors.playerThreeName}</p>}
           </div>
           <div className="mt-3">
             <label htmlFor="playerThreeHandicap" className="sr-only hidden block text-sm text-white/60 mb-1">Player Three Handicap</label>
@@ -135,8 +159,11 @@ export default function TeamFormFields({ formData, handleChange, handleSelectCha
               placeholder="Player Three Handicap"
               value={formData.playerThreeHandicap}
               onChange={handleChange}
-              className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+                ${formErrors.playerThreeHandicap ? 'border-red-500' : 'border-customInputBorder'}
+              `}
             />
+            {formErrors.playerThreeHandicap && <p className="text-red-500 text-sm mt-1">{formErrors.playerThreeHandicap}</p>}
           </div>
           <div className="mt-3">
             <label htmlFor="playerThreeTShirtSize" className="sr-only hidden block text-sm text-white/60 mb-1">Player Three T-Shirt Size</label>
@@ -146,8 +173,11 @@ export default function TeamFormFields({ formData, handleChange, handleSelectCha
               placeholder="Player Three T-Shirt Size"
               value={formData.playerThreeTShirtSize}
               onChange={handleChange}
-              className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+                ${formErrors.playerThreeTShirtSize ? 'border-red-500' : 'border-customInputBorder'}
+              `} 
             />
+            {formErrors.playerThreeTShirtSize && <p className="text-red-500 text-sm mt-1">{formErrors.playerThreeTShirtSize}</p>}
           </div>
         </div>
 
@@ -161,8 +191,11 @@ export default function TeamFormFields({ formData, handleChange, handleSelectCha
               placeholder="Team Contact Name"
               value={formData.teamContactName}
               onChange={handleChange}
-              className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+                ${formErrors.teamContactName ? 'border-red-500' : 'border-customInputBorder'}
+              `} 
             />
+            {formErrors.teamContactName && <p className="text-red-500 text-sm mt-1">{formErrors.teamContactName}</p>}
           </div>
 
           <div className="mt-3">
@@ -173,8 +206,25 @@ export default function TeamFormFields({ formData, handleChange, handleSelectCha
               placeholder="Team Contact Phone"
               value={formData.teamContactPhone}
               onChange={handleChange}
-              className="block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg"
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+                ${formErrors.teamContactPhone? 'border-red-500' : 'border-customInputBorder'}
+              `} 
             />
+            {formErrors.teamContactPhone && <p className="text-red-500 text-sm mt-1">{formErrors.teamContactPhone}</p>}
+          </div>
+          <div className="mt-3">
+            <label htmlFor="teamContactEmail" className="sr-only hidden block text-sm text-white/60 mb-1">Team Contact Email</label>
+            <Input
+              id="teamContactEmail"
+              name="teamContactEmail"
+              placeholder="Team Contact Email"
+              value={formData.teamContactEmail}
+              onChange={handleChange}
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+                ${formErrors.teamContactEmail ? 'border-red-500' : 'border-customInputBorder'}
+              `} 
+            />
+            {formErrors.teamContactEmail && <p className="text-red-500 text-sm mt-1">{formErrors.teamContactEmail}</p>}
           </div>
         </div>
 
@@ -182,24 +232,27 @@ export default function TeamFormFields({ formData, handleChange, handleSelectCha
       <div className="col-span-1">
             <h3 className="text-white/80 text-lg font-semibold mb-2">BANQUET</h3>
             <div className="mt-3">
-            <label className="sr-only block text-sm text-white/60 mb-1">Will You Attend Banquet?</label>
-            <Select value={formData.banquet} onValueChange={(value) => handleSelectChange('banquet', value)}>
-                <SelectTrigger className="relative flex justify-start align-center w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg">
-                <SelectValue placeholder="Will you attend the banquet?" />
+              <label className="sr-only block text-sm text-white/60 mb-1">Will You Attend Banquet?</label>
+              <Select value={formData.banquet} onValueChange={(value) => handleSelectChange('banquet', value)}>
+                <SelectTrigger className={`relative flex justify-start align-center w-full bg-customInputFill border p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg 
+                  ${formErrors.banquet ? 'border-red-500' : 'border-customInputBorder'}
+                `}>
+                  <SelectValue placeholder="Will attend the banquet? (3 tickets incl.)" />
                 </SelectTrigger>
                 <SelectContent>
-                <SelectItem value="yes">Yes</SelectItem>
-                <SelectItem value="no">No</SelectItem>
+                  <SelectItem value="yes">Yes</SelectItem>
+                  <SelectItem value="no">No</SelectItem>
                 </SelectContent>
-            </Select>
+              </Select>
+              {formErrors.banquet && <p className="text-red-500 text-sm mt-1">{formErrors.banquet}</p>}
             </div>
             <div className="mt-3">
             <label className="sr-only block text-sm text-white/60 mb-1">{
-                `Additional Dinner Tickets ${formData.participantType === 'teamSponsorEntry' ? '3 Included ':'1 Included '}(+$32.00 each)`
+                `Additional Dinner Tickets (+$32.00 each)`
             }</label>
             <Select value={formData.dinnerTickets} onValueChange={(value) => handleSelectChange('dinnerTickets', value)}>
                 <SelectTrigger className="relative flex justify-start align-center w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg">
-                <SelectValue placeholder={`Additional Dinner Tickets ${formData.participantType === 'teamSponsorEntry' ? '3 Included ':'1 Included '}(+$32.00 each)`} />
+                <SelectValue placeholder={`Additional Dinner Tickets (+$32.00 each)`} />
                 </SelectTrigger>
                 <SelectContent>
                 <SelectItem value="1">1</SelectItem>
