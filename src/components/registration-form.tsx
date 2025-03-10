@@ -211,27 +211,50 @@ export default function RegistrationForm() {
   
   const handleCheckout = async (e) => {
     e.preventDefault();
-
-    if(!validateForm()) return;
-
-    const stripe = await stripePromise;
   
-    if (!stripe) {
-      console.error("Stripe failed to load.");
-      return;
-    }
+    if (!validateForm()) return;
   
     try {
-      const response = await fetch('/api/checkout', {
+      // **Step 1: Save registration and get UID**
+      const registrationResponse = await fetch('/api/registration/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ formData }),
+      });
+  
+      const registrationResult = await registrationResponse.json();
+  
+      if (!registrationResponse.ok || !registrationResult.uid) {
+        console.error('Failed to add registration:', registrationResult.error);
+        alert('Failed to save your registration. Please try again.');
+        return;
+      }
+  
+      console.log('✅ Registration saved successfully with UID:', registrationResult.uid);
+  
+      // **Step 2: Proceed to Stripe checkout**
+      const stripe = await stripePromise;
+      if (!stripe) {
+        console.error("Stripe failed to load.");
+        return;
+      }
+  
+      const checkoutResponse = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          formData,
+          uid: registrationResult.uid, // Pass the UID from Google Sheets
           totalPrice: (totalPrice + stripeFee).toFixed(2),
+          breakdown: {
+            basePrice: basePrice.toFixed(2),
+            dinnerTickets: dinnerTicketCost.toFixed(2),
+            derby: derbyCost.toFixed(2),
+            flagPrize: flagPrizeCost.toFixed(2),
+          },
         }),
       });
   
-      const session = await response.json();
+      const session = await checkoutResponse.json();
   
       if (session.url) {
         window.location.href = session.url;
@@ -241,7 +264,7 @@ export default function RegistrationForm() {
     } catch (error) {
       console.error('Checkout Error:', error);
     }
-  };
+  };  
   
   return (
     <form className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">

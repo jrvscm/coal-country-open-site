@@ -1,38 +1,46 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY as string, {
   apiVersion: '2023-10-16',
 });
 
 export async function POST(req: Request) {
   try {
-    const { formData, totalPrice } = await req.json();
+    const { totalPrice, uid, breakdown } = await req.json(); // Receive UID from the frontend
 
-    // Create a checkout session
+    if (!uid) {
+      return NextResponse.json({ error: 'UID is required' }, { status: 400 });
+    }
+
+    // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cancel`,
       line_items: [
         {
           price_data: {
             currency: 'usd',
-            product_data: { name: `Tournament Registration - ${formData.participantType}` },
-            unit_amount: Math.round(totalPrice * 100), // Convert to cents
+            product_data: {
+              name: 'Coal Country Open Registration',
+            },
+            unit_amount: Math.round(parseFloat(totalPrice) * 100), // Convert to cents
           },
           quantity: 1,
         },
       ],
       metadata: {
-        playerData: JSON.stringify(formData), // Attach player data as metadata
+        uid, // Unique ID for matching the payment in Google Sheets
+        totalPrice,
+        breakdown: JSON.stringify(breakdown), // Store breakdown as a JSON string
       },
     });
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error('Stripe Checkout Error:', error);
-    return NextResponse.json({ error: 'Failed to create Stripe session' }, { status: 500 });
+    return NextResponse.json({ error: 'Stripe checkout failed' }, { status: 500 });
   }
 }

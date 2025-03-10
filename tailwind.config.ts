@@ -9,6 +9,7 @@ const config: Config = {
     './src/**/*.{js,ts,jsx,tsx}',      // If you're using a src directory
     './node_modules/@shadcn/ui/**/*.{js,ts,jsx,tsx}' // For Shadcn components
   ],
+  mode: 'jit', // Add this if missing
   theme: {
   	extend: {
   		borderRadius: {

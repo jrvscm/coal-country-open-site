@@ -1,10 +1,32 @@
-'use client'
+'use client';
 
+import { useEffect, useState } from 'react';
 import Image from "next/image";
 import CountdownTimer from '@/components/countdown-timer';
-import RegistrationFrom from '@/components/registration-form';
+import RegistrationForm from '@/components/registration-form';
+import { ArrowDown } from 'lucide-react';
 
 export default function Hero() {
+  const [registrationCount, setRegistrationCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchRegistrations = async () => {
+      try {
+        const response = await fetch('/api/registration/players-count');
+        const data = await response.json();
+        setRegistrationCount(data.count ?? null); // Ensure 0 updates UI
+      } catch (error) {
+        console.error('Error fetching registration count:', error);
+      }
+    };
+
+    fetchRegistrations();
+  }, []);
+
+  const handleScrollDown = () => {
+    document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <>
       {/* Hero Section */}
@@ -22,8 +44,12 @@ export default function Hero() {
 
         {/* Hero Content */}
         <div className="relative inset-0 flex flex-col justify-center items-center text-center text-white z-20 p-4 md:p-0">
-          <h2 className="absolute top-[15vh] left-6 md:top-[20vh] md:left-[12vw] font-marker drop-shadow-2xl text-3xl md:text-5xl font-bold italic transform -rotate-6 z-30">
-            Register Today!
+          <h2 className="absolute top-[15vh] left-6 md:top-[20vh] md:left-[12vw] font-marker drop-shadow-custom-600 text-3xl md:text-6xl font-bold italic transform -rotate-6 z-30">
+            Register Today!<br/>
+            {/* Dynamic Registration Count */}
+            {registrationCount !== null && (
+              <span className="text-xl md:text-4xl"><span className="font-heading">{registrationCount}</span> already registered!</span>
+            )}
           </h2>
         </div>
       </div>
@@ -43,7 +69,17 @@ export default function Hero() {
             </h1>
           </div>
         </div>
-        <RegistrationFrom />
+        <RegistrationForm />
+      </div>
+
+      {/* Scroll Indicator - Only visible on desktop */}
+      <div className="hidden md:flex flex-col items-center absolute bottom-[10vh] left-[12vw] z-20 cursor-pointer"
+           onClick={handleScrollDown}
+      >
+        {/* Animated Arrow */}
+        <div className="animate-bounce hover:opacity-70 rounded-[100%] hover:shadow-[0px_10px_30px_rgba(255,255,255,0.5)] transition-opacity transition-duration-300">
+          <ArrowDown className="h-16 w-16 text-white" />
+        </div>
       </div>
     </>
   );
