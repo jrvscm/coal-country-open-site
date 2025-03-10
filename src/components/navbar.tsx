@@ -11,6 +11,7 @@ import { Menu, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import Image from 'next/image'
 
 export const Navbar = () => {
   const navigationItems = [
@@ -33,19 +34,19 @@ export const Navbar = () => {
 
   const [isOpen, setOpen] = useState(false);
   const [isScrolled, setScrolled] = useState(false);
-  const navRef = useRef(null);
+  const navRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const checkPosition = () => {
       if (!navRef.current) return;
-      const rect = navRef.current.getBoundingClientRect();
+      const rect = navRef.current.getBoundingClientRect(); // ✅ No more TS error
       setScrolled(window.scrollY > 50 || rect.top < 0);
     };
 
     checkPosition(); // Run once on mount in case of page refresh
 
-    window.addEventListener('scroll', checkPosition);
-    return () => window.removeEventListener('scroll', checkPosition);
+    window.addEventListener("scroll", checkPosition);
+    return () => window.removeEventListener("scroll", checkPosition);
   }, []);
 
   useEffect(() => {
@@ -69,9 +70,11 @@ export const Navbar = () => {
         {/* Logo Section */}
         <div className="flex hidden items-center justify-center lg:block">
           <Link href="/">
-            <img
-              src="//images.ctfassets.net/j2939n6mdbyq/3nVn09ySuMJdpRghyyVqeA/8a0f6cafff701f13c11bcdcb0201f950/modified_logo.png"
+            <Image
+              src="https://images.ctfassets.net/j2939n6mdbyq/3nVn09ySuMJdpRghyyVqeA/8a0f6cafff701f13c11bcdcb0201f950/modified_logo.png"
               alt="Coal Country Open Logo"
+              width={200}  
+              height={100} 
               className={`transition-all duration-300 ${
                 isScrolled ? 'lg:h-12' : 'lg:h-24'
               } w-auto object-contain cursor-pointer`}
@@ -115,8 +118,10 @@ export const Navbar = () => {
           <div className="flex items-center justify-between border-b border-customYellow px-4 py-4">
             {/* Logo on the left */}
             <Link href="/" className="flex items-center">
-              <img
-                src="//images.ctfassets.net/j2939n6mdbyq/3nVn09ySuMJdpRghyyVqeA/8a0f6cafff701f13c11bcdcb0201f950/modified_logo.png"
+              <Image
+                width={200}  
+                height={100} 
+                src="https://images.ctfassets.net/j2939n6mdbyq/3nVn09ySuMJdpRghyyVqeA/8a0f6cafff701f13c11bcdcb0201f950/modified_logo.png"
                 alt="Coal Country Open Logo"
                 className="h-12 w-auto object-contain"
               />

@@ -1,10 +1,39 @@
-// DefaultFormFields.js
 'use client';
 
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 
-export default function DefaultFormFields({ formData, handleChange, handleSelectChange, formErrors }) {
+interface FormErrors {
+  [key: string]: string;
+}
+
+interface DefaultFormFieldsProps {
+  formData: {
+    company: string;
+    name: string;
+    email: string;
+    phone: string;
+    handicap: string;
+    address: string;
+    city: string;
+    state: string;
+    zip: string;
+    shirtSize: string;
+    banquet: string;
+    dinnerTickets: string;
+    derby: string;
+  };
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleSelectChange: (name: string, value: string) => void;
+  formErrors: FormErrors;
+}
+
+export default function DefaultFormFields({
+  formData,
+  handleChange,
+  handleSelectChange,
+  formErrors
+}: DefaultFormFieldsProps) {
   return (
     <>
         <div className="col-span-1">

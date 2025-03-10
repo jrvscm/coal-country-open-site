@@ -8,36 +8,66 @@ import Link from "next/link";
 import client from "@/lib/contentful";
 import Schedule from '@/components/schedule';
 import CountdownSection from '@/components/countdown-section';
+import { Asset } from 'contentful';
 
 export default function Hero() {
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState<string[]>([]);
   const [currentImage, setCurrentImage] = useState(0);
-  const [sponsor, setSponsor] = useState(null);
 
-  // Fetch images from Contentful
-  useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const res = await client.getEntries({
-          content_type: "homePageHeroCarousel", 
-        });
+  type SponsorData = {
+    logo: string | null;
+    url?: string;
+    name?: string;
+  };
 
-        if (res?.items?.length) {
-          // Adjusted path for fetching multi-asset images
-          const assets = res.items[0].fields.homePageHeroImages.map((item) => {
-            const imageUrl = item.fields?.file?.url;
-            return imageUrl ? `${imageUrl}` : null;
-          }).filter(Boolean); // Filter out null/undefined
+  const [sponsor, setSponsor] = useState<SponsorData | null>(null);
 
-          setImages(assets);
+    // Fetch images from Contentful
+    useEffect(() => {
+      const fetchImages = async () => {
+        try {
+          const res = await client.getEntries({
+            content_type: "homePageHeroCarousel",
+          });
+      
+          if (res?.items?.length) {
+            const imagesArray = res.items[0]?.fields?.homePageHeroImages;
+      
+            // Ensure imagesArray is an array before proceeding
+            if (Array.isArray(imagesArray)) {
+              const assets = imagesArray
+                .map((item) => {
+                  if (
+                    item &&
+                    typeof item === "object" &&
+                    "fields" in item &&
+                    item.fields &&
+                    typeof item.fields === "object" &&
+                    "file" in item.fields &&
+                    item.fields.file &&
+                    typeof item.fields.file === "object" &&
+                    "url" in item.fields.file &&
+                    typeof item.fields.file.url === "string"
+                  ) {
+                    return item.fields.file.url;
+                  }
+                  return null;
+                })
+                .filter((url): url is string => Boolean(url)); // Ensure valid URLs only
+      
+              setImages(assets);
+            } else {
+              console.warn("homePageHeroImages is not an array:", imagesArray);
+              setImages([]); // Fallback to empty array if data is incorrect
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching Contentful images:", err);
         }
-      } catch (err) {
-        console.error("Error fetching Contentful images:", err);
-      }
-    };
-
-    fetchImages();
-  }, []);
+      };
+      
+      fetchImages();                
+    }, []);
 
     // Fetch Website Sponsor
     useEffect(() => {
@@ -47,25 +77,29 @@ export default function Hero() {
             content_type: "websiteSponsor",
             limit: 1, // Only one sponsor
           });
-  
+      
           if (res?.items?.length) {
             const sponsorData = res.items[0].fields;
-            const sponsorLogo = sponsorData?.sponsorLogo?.fields?.file?.url;
-            const sponsorLink = sponsorData?.sponsorLink;
-            const sponsorName = sponsorData?.sponsorName;
-  
+      
+            // Ensure sponsorLogo is treated as a Contentful Asset before accessing fields
+            const sponsorLogoAsset = sponsorData?.sponsorLogo as Asset | undefined;
+      
+            const sponsorLogo = sponsorLogoAsset?.fields?.file?.url;
+            const sponsorLink = typeof sponsorData?.sponsorLink === "string" ? sponsorData.sponsorLink : undefined;
+            const sponsorName = typeof sponsorData?.sponsorName === "string" ? sponsorData.sponsorName : undefined;
+      
             setSponsor({
               logo: sponsorLogo ? `https:${sponsorLogo}` : null,
-              url: sponsorLink,
-              name: sponsorName,
+              url: sponsorLink, // Now guaranteed to be string | undefined
+              name: sponsorName, // Now guaranteed to be string | undefined
             });
           }
         } catch (err) {
           console.error("Error fetching website sponsor:", err);
         }
       };
-  
-      fetchSponsor();
+      
+      fetchSponsor();         
     }, []);
 
   useEffect(() => {
@@ -86,9 +120,8 @@ export default function Hero() {
             key={index}
             src={`https:${img}`} 
             alt={`Slide ${index + 1}`}
-            layout="fill"
-            objectFit="cover"
-            className={`absolute transition-opacity duration-1000 ease-in-out ${
+            fill={true}
+            className={`object-cover absolute transition-opacity duration-1000 ease-in-out ${
               index === currentImage ? "opacity-100" : "opacity-0"
             }`}
           />
@@ -115,7 +148,7 @@ export default function Hero() {
             </div>
 
             {/* Website Sponsor Section */}
-            {sponsor?.logo && (
+            {sponsor?.url && sponsor.logo && sponsor.name ? (
               <div className="mt-8 text-center">
                 <p className="text-sm text-gray-300">Brought To You By</p>
                 <Link href={sponsor.url} target="_blank" rel="noopener noreferrer">
@@ -128,7 +161,7 @@ export default function Hero() {
                   />
                 </Link>
               </div>
-            )}
+            ) : <></>}
           </div>
         </div>
 

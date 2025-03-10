@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 export default function CountdownTimer({ eventDate }: { eventDate: string }) {
   const [isFixed, setIsFixed] = useState(true);
@@ -8,7 +8,7 @@ export default function CountdownTimer({ eventDate }: { eventDate: string }) {
   const timerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
 
-  const calculateTimeLeft = () => {
+  const calculateTimeLeft = useCallback(() => {
     const difference = +new Date(eventDate) - +new Date();
     return difference > 0
       ? {
@@ -17,7 +17,7 @@ export default function CountdownTimer({ eventDate }: { eventDate: string }) {
           minutes: Math.floor((difference / 1000 / 60) % 60),
         }
       : { days: 0, hours: 0, minutes: 0 };
-  };
+  }, [eventDate]); 
 
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
@@ -26,7 +26,7 @@ export default function CountdownTimer({ eventDate }: { eventDate: string }) {
       setTimeLeft(calculateTimeLeft());
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [calculateTimeLeft]);
 
   useEffect(() => {
     if (!timerRef.current || !heroRef.current) return;

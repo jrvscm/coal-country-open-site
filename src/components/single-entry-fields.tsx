@@ -2,8 +2,15 @@
 'use client';
 
 import { Input } from '@/components/ui/input';
+import { FormDataType } from '@/components/registration-form';
+interface SingleEntryFieldsProps {
+    formData: FormDataType;
+    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleSelectChange: (name: string, value: string) => void; // Add this line
+    formErrors: Partial<FormDataType>;
+}
 
-export default function SingleEntryFields({ formData, handleChange, handleSelectChange, formErrors }) {
+const SingleEntryFields: React.FC<SingleEntryFieldsProps> = ({ formData, handleChange, formErrors }) => {
   return (
     <>
         <div className="col-span-1">
@@ -40,3 +47,5 @@ export default function SingleEntryFields({ formData, handleChange, handleSelect
     </>
   );
 }
+
+export default SingleEntryFields

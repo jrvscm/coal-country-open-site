@@ -1,26 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { IoIosArrowRoundForward } from "react-icons/io";
 import Image from "next/image";
 
-const CountdownTimer = ({ eventDate }) => {
-  const calculateTimeLeft = () => {
+type TimeLeft = {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+};
+
+const CountdownTimer = ({ eventDate }: { eventDate: string }) => {
+  const calculateTimeLeft = useCallback((): TimeLeft => {
     const difference = +new Date(eventDate) - +new Date();
-    let timeLeft = {};
+    return difference > 0
+      ? {
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        }
+      : { days: 0, hours: 0, minutes: 0, seconds: 0 };
+  }, [eventDate]); 
 
-    if (difference > 0) {
-      timeLeft = {
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((difference / 1000 / 60) % 60),
-        seconds: Math.floor((difference / 1000) % 60),
-      };
-    }
-
-    return timeLeft;
-  };
-
-  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>(calculateTimeLeft());
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -28,9 +31,9 @@ const CountdownTimer = ({ eventDate }) => {
     }, 1000); // Updates every second
 
     return () => clearInterval(timer);
-  }, []);
+  }, [calculateTimeLeft]);
 
-  const timeUnits = ["days", "hours", "minutes", "seconds"];
+  const timeUnits: (keyof TimeLeft)[] = ["days", "hours", "minutes", "seconds"];
 
   return (
     <section className="relative w-full h-screen overflow-hidden">
@@ -38,9 +41,8 @@ const CountdownTimer = ({ eventDate }) => {
       <Image
         src={`https://images.ctfassets.net/j2939n6mdbyq/3PMA6TdlWeRokSvdLbFFMZ/347925bd4ef40e7b665d8c990fd955f0/CCO24-395.jpg`}
         alt={`Golf carts parked in a line`}
-        layout="fill"
-        objectFit="cover"
-        className="absolute top-0 left-0 w-full h-full object-cover z-0"
+        fill={true}
+        className="object-cover absolute top-0 left-0 w-full h-full object-cover z-0"
       />
 
       {/* Overlay */}
@@ -67,7 +69,7 @@ const CountdownTimer = ({ eventDate }) => {
                   backdropFilter: "blur(4px)",
                 }} className="w-full flex flex-col items-center justify-center px-[2rem] py-[3rem] rounded-lg shadow-2xl">
                   <span className="font-heading text-5xl md:text-7xl font-bold drop-shadow-2xl">
-                    {timeLeft[unit] !== undefined ? timeLeft[unit].toString().padStart(2, "0") : "00"}
+                    {timeLeft[unit]?.toString().padStart(2, "0")}
                   </span>
                   <span className="font-heading uppercase text-xl md:text-2xl mt-2 drop-shadow-2xl">{unit}</span>
                 </div>

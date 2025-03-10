@@ -1,8 +1,10 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import { NextConfig } from 'next';
+import { Configuration } from 'webpack';
+
+const nextConfig: NextConfig = {
   reactStrictMode: true,
 
-  webpack: (config, { dev, isServer }) => {
+  webpack: (config: Configuration, { dev, isServer }: { dev: boolean; isServer: boolean }) => {
     if (dev && !isServer) {
       config.watchOptions = {
         poll: 1000, // Check for changes every second
@@ -29,4 +31,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

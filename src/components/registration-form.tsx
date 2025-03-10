@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { FaLock } from "react-icons/fa";
 import { Button } from '@/components/ui/button';
 import TeamFormFields from '@/components/team-form-fields';
@@ -8,17 +8,52 @@ import DefaultFormFields from '@/components/default-form-fields';
 import SingleEntryFields from '@/components/single-entry-fields';
 import { loadStripe } from '@stripe/stripe-js';
 
+export type FormDataType = {
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  handicap: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  shirtSize: string;
+  shoeSize: string;
+  banquet: string;
+  dinnerTickets: string;
+  derby: string;
+  participantType: string;
+  doorPrize?: string;
+  flagPrizeContribution?: string;
+  teamName?: string;
+  teamContactName?: string;
+  teamContactPhone?: string;
+  teamContactEmail?: string;
+  playerOneName?: string;
+  playerTwoName?: string;
+  playerThreeName?: string;
+  playerOneHandicap?: string;
+  playerTwoHandicap?: string;
+  playerThreeHandicap?: string;
+  playerOneTShirtSize?: string;
+  playerTwoTShirtSize?: string;
+  playerThreeTShirtSize?: string;
+};
+
 export default function RegistrationForm() {
   // Pricing for each participant type
-  const basePrices = {
+  const basePrices = useMemo(() => ({
     currentMiner: 250.0,
     pastBoardPastChampionRetiree: 250.0,
     generalPublic: 450.0,
     singlePlayerSponsorEntry: 450.0,
     teamSponsorEntry: 1000.0,
-  };
+  }), []);
 
-  const defaultFormState = {
+  type FormErrorsType = Partial<Record<keyof FormDataType, string>>;
+
+  const defaultFormState: FormDataType = {
     name: '',
     email: '',
     phone: '',
@@ -34,12 +69,8 @@ export default function RegistrationForm() {
     dinnerTickets: '',
     derby: 'no',
     participantType: 'currentMiner',
-
-    // Sponsor additional fields
     doorPrize: '',
     flagPrizeContribution: '',
-
-    // Team sponsor additional fields
     teamName: '',
     teamContactName: '',
     teamContactPhone: '',
@@ -54,19 +85,19 @@ export default function RegistrationForm() {
     playerTwoTShirtSize: '',
     playerThreeTShirtSize: '',
   };
-
-  const [formData, setFormData] = useState(defaultFormState);
-  const [totalPrice, setTotalPrice] = useState(basePrices[formData.participantType]);
+  
+  const [formData, setFormData] = useState<FormDataType>(defaultFormState);
+  const [formErrors, setFormErrors] = useState<FormErrorsType>({} as FormErrorsType);
+  const [totalPrice, setTotalPrice] = useState(basePrices[formData.participantType as keyof typeof basePrices]);
   const [stripeFee, setStripeFee] = useState(0);
-  const [formErrors, setFormErrors] = useState({});
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const phoneRegex = /^\d{10}$/;
   const zipRegex = /^\d{5}$/;
   const handicapRegex = /^[+-]?\d+(\.\d{1,2})?$/;
-  const flagPrizeRegex = /^\d+$/;
+  const flagPrizeRegex = useMemo(() => (/^\d+$/), [])
 
   const validateForm = () => {
-    let errors = {};
+    const errors: FormErrorsType = {}; 
 
     if(formData.participantType !== 'teamSponsorEntry') {
       if (!formData.address) errors.address = "Address is required";
@@ -113,7 +144,7 @@ export default function RegistrationForm() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
     // If the participant type changes, reset the form while keeping the new participant type
@@ -136,7 +167,7 @@ export default function RegistrationForm() {
     }
   };
 
-  const handleSelectChange = (name, value) => {
+  const handleSelectChange = (name: keyof FormDataType | string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     // Remove only the error related to the current field
@@ -153,7 +184,7 @@ export default function RegistrationForm() {
   const [flagPrizeCost, setFlagPrizeCost] = useState(0);
 
   useEffect(() => {
-    let newBasePrice = basePrices[formData.participantType] || 0;
+    const newBasePrice = basePrices[formData.participantType as keyof typeof basePrices] || 0;
     let newDinnerTicketCost = 0;
     let newDerbyCost = 0;
     let newFlagPrizeCost = 0;
@@ -170,8 +201,8 @@ export default function RegistrationForm() {
         newFlagPrizeCost = parseInt(formData.flagPrizeContribution, 10);
     }
 
-    let newTotal = newBasePrice + newDinnerTicketCost + newDerbyCost + newFlagPrizeCost;
-    let newStripeFee = (newTotal * 0.029) + 0.30;
+    const newTotal = newBasePrice + newDinnerTicketCost + newDerbyCost + newFlagPrizeCost;
+    const newStripeFee = (newTotal * 0.029) + 0.30;
   
     // Update state
     setBasePrice(newBasePrice);
@@ -180,9 +211,9 @@ export default function RegistrationForm() {
     setFlagPrizeCost(newFlagPrizeCost);
     setTotalPrice(newTotal);
     setStripeFee(newStripeFee);
-  }, [formData.participantType, formData.dinnerTickets, formData.derby, formData.flagPrizeContribution]);
+  }, [basePrices, flagPrizeRegex, formData.participantType, formData.dinnerTickets, formData.derby, formData.flagPrizeContribution]);
 
-  const totalRef = useRef(null);
+  const totalRef = useRef<HTMLDivElement | null>(null);
   const [isSticky, setIsSticky] = useState(false);
 
   useEffect(() => {
@@ -190,26 +221,27 @@ export default function RegistrationForm() {
       ([entry]) => {
         setIsSticky(!entry.isIntersecting && entry.boundingClientRect.top <= 0);
       },
-      { root: null, threshold: 0 } // Detect when total section goes out of view
+      { root: null, threshold: 0 }
     );
-
-    if (totalRef.current) {
-      observer.observe(totalRef.current);
-
-      const rect = totalRef.current.getBoundingClientRect();
-      setIsSticky(rect.top <= 0); // If it's out of view, make it sticky
-
+  
+    const currentRef = totalRef.current;
+  
+    if (currentRef instanceof HTMLElement) {
+      observer.observe(currentRef);
+  
+      const rect = currentRef.getBoundingClientRect();
+      setIsSticky(rect.top <= 0);
     }
-
+  
     return () => {
-      if (totalRef.current) observer.unobserve(totalRef.current);
+      if (currentRef) observer.unobserve(currentRef);
     };
-  }, []);
-
+  }, [totalRef]); 
+  
   //stripe 
   const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
   
-  const handleCheckout = async (e) => {
+  const handleCheckout = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
   
     if (!validateForm()) return;

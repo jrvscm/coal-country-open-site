@@ -1,10 +1,17 @@
 // TeamFormFields.js
 'use client';
-
+import React from 'react';
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { FormDataType } from '@/components/registration-form';
+interface TeamFormFieldsProps {
+  formData: FormDataType;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleSelectChange: (name: string, value: string) => void; // Add this line
+  formErrors: Partial<FormDataType>;
+}
 
-export default function TeamFormFields({ formData, handleChange, handleSelectChange, formErrors }) {
+const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange, handleSelectChange, formErrors }) => {
     return (
     <>
         <div className="col-span-1">
@@ -273,3 +280,4 @@ export default function TeamFormFields({ formData, handleChange, handleSelectCha
     );
 }
 
+export default TeamFormFields;
