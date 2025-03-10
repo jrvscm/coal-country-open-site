@@ -4,18 +4,3 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-  Content-Security-Policy = "script-src 'self' https://js.stripe.com; connect-src 'self' https://api.stripe.com;"
-
-[[headers]]
-  for = "/api/*"
-  [headers.values]
-  Access-Control-Allow-Origin = "*"
-
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
