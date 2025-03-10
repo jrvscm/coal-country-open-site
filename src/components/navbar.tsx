@@ -17,17 +17,17 @@ export const Navbar = () => {
   const navigationItems = [
     {
       title: 'REGISTER',
-      href: '/Register',
+      href: '/registration/player',
       description: ''
     },
     {
       title: 'OUR SPONSORS',
-      href: '/sponsors',
+      href: '/registration/player',
       description: ''
     },
     {
       title: 'RULES',
-      href: '/rules',
+      href: '/registration/player',
       description: ''
     }
   ];
