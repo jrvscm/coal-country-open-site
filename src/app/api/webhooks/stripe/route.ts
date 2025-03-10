@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { google } from 'googleapis';
 
-const stripe = new Stripe(process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY as string);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
-const SHEET_ID = process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID!;
+const SHEET_ID = process.env.GOOGLE_SHEET_ID!;
 
 export async function POST(req: NextRequest) {
   const sig = req.headers.get('stripe-signature') as string;
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       try {
         // Authenticate Google Sheets API
         const auth = new google.auth.GoogleAuth({
-          credentials: JSON.parse(process.env.NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_KEY!),
+          credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY!),
           scopes: ['https://www.googleapis.com/auth/spreadsheets'],
         });
 

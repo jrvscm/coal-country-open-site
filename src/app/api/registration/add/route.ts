@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 
-const SHEET_ID = process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID!;
+const SHEET_ID = process.env.GOOGLE_SHEET_ID!;
 const SHEET_RANGE = 'Registrations!A:AF'; // Ensure this matches your sheet's structure
 
 export async function POST(req: Request) {
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
 
     // Authenticate with Google Sheets API using Service Account
     const auth = new google.auth.GoogleAuth({
-      credentials: JSON.parse(process.env.NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_KEY!),
+      credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY!),
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 

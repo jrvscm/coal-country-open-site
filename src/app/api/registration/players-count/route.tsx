@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 
 // Read environment variables
-const SHEET_ID = process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID!;
+const SHEET_ID = process.env.GOOGLE_SHEET_ID!;
 const SHEET_RANGE = 'Registrations!A:A'; // Adjust based on where UID is stored
 
 export async function GET() {
   try {
     // Authenticate with Google Sheets API
     const auth = new google.auth.GoogleAuth({
-        credentials: JSON.parse(process.env.NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_KEY || '{}'), // Ensure fallback
+        credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY || '{}'), // Ensure fallback
         scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
 
