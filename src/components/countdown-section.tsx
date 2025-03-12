@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { IoIosArrowRoundForward } from "react-icons/io";
 import Image from "next/image";
 import { useTournamentDate } from '@/context/TournamentDateContext';
+import { formatTournamentDate } from '@/lib/utils';
+import Link from 'next/link';
 
 type TimeLeft = {
   days: number;
@@ -12,7 +14,7 @@ type TimeLeft = {
 };
 
 const CountdownTimer = ({ eventDate }: { eventDate: string }) => {
-  const tournamentStartDate = useTournamentDate();
+  const tournamentDate = useTournamentDate();
   const calculateTimeLeft = useCallback((): TimeLeft => {
     const difference = +new Date(eventDate) - +new Date();
     return difference > 0
@@ -85,10 +87,12 @@ const CountdownTimer = ({ eventDate }: { eventDate: string }) => {
           </div>
 
           {/* Event Date */}
-          <p className="font-heading text-3xl md:text-5xl font-bold mt-16 mb-6 md:mb-0 drop-shadow-2xl">{tournamentStartDate} {new Date(Date.now()).getFullYear()}</p>
-          <Button variant="outline" className="p-0 md:p-6 font-text mt-6 bg-transparent border transition-all border-customYellow hover:bg-customYellow/60 text-customYellow hover:text-white uppercase md:w-[250px] w-full text-lg md:text-xl font-text">
-            Register <IoIosArrowRoundForward size={'16px'} />
-          </Button>
+          <p className="font-heading text-3xl md:text-5xl font-bold mt-16 mb-6 md:mb-0 drop-shadow-2xl">{tournamentDate} {new Date(Date.now()).getFullYear()}</p>
+          <Link href={'/registration/player'}>
+            <Button variant="outline" className="p-0 md:p-6 font-text mt-6 bg-transparent border transition-all border-customYellow hover:bg-customYellow/60 text-customYellow hover:text-white uppercase md:w-[250px] w-full text-lg md:text-xl font-text">
+              Register <IoIosArrowRoundForward size={'16px'} />
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
@@ -96,5 +100,6 @@ const CountdownTimer = ({ eventDate }: { eventDate: string }) => {
 };
 
 export default function CountdownSection() {
-  return <CountdownTimer eventDate="2025-05-13T09:00:00" />;
+  const tournamentStartDate = useTournamentDate();
+  return <CountdownTimer eventDate={formatTournamentDate(tournamentStartDate)} />;
 }

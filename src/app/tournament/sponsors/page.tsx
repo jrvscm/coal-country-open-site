@@ -1,33 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Image from "next/image";
 import CountdownTimer from '@/components/countdown-timer';
-import RegistrationForm from '@/components/registration-form';
+import SponsorContent from '@/components/sponsor-content';
 import { ArrowDown } from 'lucide-react';
-import { formatTournamentDate } from '@/lib/utils';
 import { useTournamentDate } from '@/context/TournamentDateContext';
+import { formatTournamentDate } from '@/lib/utils';
 
 export default function Hero() {
   const tournamentDate = useTournamentDate();
-  const [registrationCount, setRegistrationCount] = useState<number | null>(null);
-
-  useEffect(() => {
-    const fetchRegistrations = async () => {
-      try {
-        const response = await fetch('/api/registration/players-count');
-        const data = await response.json();
-        setRegistrationCount(data.count ?? null); // Ensure 0 updates UI
-      } catch (error) {
-        console.error('Error fetching registration count:', error);
-      }
-    };
-
-    fetchRegistrations();
-  }, []);
 
   const handleScrollDown = () => {
-    document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('sponsors-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -35,8 +19,8 @@ export default function Hero() {
       {/* Hero Section */}
       <div className="relative w-full h-screen overflow-hidden">
         <Image
-          src={`https://images.ctfassets.net/j2939n6mdbyq/3i6cXbMjJ1sXUGoYWdcAXk/9a32c4601e5e33006be9b7c9d60a608b/CCO24-462.jpg`}
-          alt={`Players on a golf green smiling`}
+          src={`https://downloads.ctfassets.net/j2939n6mdbyq/7HxRCz9nIWxUSkszQlIplN/528be1739be8f4b5c65f30102e2af61b/CCO24-071.jpg`}
+          alt={`Golf carts parked at a teebox.`}
           fill={true}
           className="object-cover absolute"
         />
@@ -47,19 +31,16 @@ export default function Hero() {
         {/* Hero Content */}
         <div className="relative inset-0 flex flex-col justify-center items-center text-center text-white z-20 p-4 md:p-0">
           <h2 className="absolute top-[15vh] left-6 md:top-[20vh] md:left-[12vw] font-marker drop-shadow-custom-600 text-3xl md:text-6xl font-bold italic transform -rotate-6 z-30">
-            Register Today!<br/>
-            {/* Dynamic Registration Count */}
-            {registrationCount !== null && registrationCount !== 0 && (
-              <span className="text-xl md:text-4xl"><span className="font-heading">{registrationCount}</span> already registered!</span>
-            )}
+            A Huge Thank You<br/>
+            To Our Sponsors!!
           </h2>
         </div>
       </div>
 
-      <CountdownTimer eventDate={formatTournamentDate(tournamentDate)}/>
+      {tournamentDate && <CountdownTimer eventDate={formatTournamentDate(tournamentDate)} />}
 
       {/* Registration Section */}
-      <div id="registration-section" className="w-full h-full bg-customBackground relative pt-32 pb-8 pr-[1rem] pl-[1rem] md:pr-0 md:pl-0">
+      <div id="sponsors-section" className="w-full h-full bg-customBackground relative pt-32 pb-8 pr-[1rem] pl-[1rem] md:pr-0 md:pl-0">
         <div className="relative max-w-[1200px] m-auto">
           {/* Stopping Point Reference for Timer */}
           <div id="registration-heading" className="relative">
@@ -69,9 +50,12 @@ export default function Hero() {
             <h1 className="ml-[1rem] md:ml-[0rem] text-5xl md:text-7xl font-heading drop-shadow-custom-600 tracking-tight text-white">
               Coal Country Open
             </h1>
+            <h2 className=" text-lg italic text-customYellow">
+              Our sponsors that make it all possible!
+            </h2>
           </div>
         </div>
-        <RegistrationForm />
+        <SponsorContent />
       </div>
 
       {/* Scroll Indicator - Only visible on desktop */}
@@ -79,7 +63,7 @@ export default function Hero() {
            onClick={handleScrollDown}
       >
         {/* Animated Arrow */}
-        <div className="animate-bounce hover:opacity-70 rounded-[100%] hover:shadow-[0px_10px_30px_rgba(255,255,255,0.5)] transition-opacity transition-duration-300 cursor-pointer">
+        <div className="animate-bounce hover:opacity-70 rounded-[100%] shadow-[0px_10px_30px_rgba(255,255,255,0.7)] transition-opacity transition-duration-300 cursor-pointer">
           <ArrowDown className="h-16 w-16 text-white" />
         </div>
       </div>
