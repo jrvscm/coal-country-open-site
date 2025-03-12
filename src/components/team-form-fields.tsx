@@ -193,8 +193,8 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
           <div className="mt-3">
             <label htmlFor="teamContactName" className="sr-only hidden block text-sm text-white/60 mb-1">Team Contact Name</label>
             <Input
-              id="playerThreeTShirtSize"
-              name="playerThreeTShirtSize"
+              id="teamContactName"
+              name="teamContactName"
               placeholder="Team Contact Name"
               value={formData.teamContactName}
               onChange={handleChange}

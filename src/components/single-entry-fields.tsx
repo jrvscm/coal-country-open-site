@@ -16,10 +16,10 @@ const SingleEntryFields: React.FC<SingleEntryFieldsProps> = ({ formData, handleC
         <div className="col-span-1">
             <h3 className="text-white/80 text-lg font-semibold mb-2">CONTRIBUTION INFO</h3>
             <div className="mt-3">
-                <label htmlFor="state" className="sr-only block text-sm text-white/60 mb-1">Door Prize Contribution</label>
+                <label htmlFor="doorPrize" className="sr-only block text-sm text-white/60 mb-1">Door Prize Contribution</label>
                 <Input
-                id="state"
-                name="state"
+                id="doorPrize"
+                name="doorPrize"
                 placeholder="Door Prize (please name)"
                 value={formData.doorPrize}
                 onChange={handleChange}
