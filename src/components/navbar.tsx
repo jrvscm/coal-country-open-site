@@ -16,18 +16,23 @@ import Image from 'next/image'
 export const Navbar = () => {
   const navigationItems = [
     {
+      title: 'HOME',
+      href: '/',
+      description: ''
+    },
+    {
       title: 'REGISTER',
       href: '/registration/player',
       description: ''
     },
     {
       title: 'OUR SPONSORS',
-      href: '/registration/player',
+      href: '/tournament/sponsors',
       description: ''
     },
     {
       title: 'RULES',
-      href: '/registration/player',
+      href: '/tournament/rules',
       description: ''
     }
   ];
@@ -39,11 +44,11 @@ export const Navbar = () => {
   useEffect(() => {
     const checkPosition = () => {
       if (!navRef.current) return;
-      const rect = navRef.current.getBoundingClientRect(); // ✅ No more TS error
+      const rect = navRef.current.getBoundingClientRect(); 
       setScrolled(window.scrollY > 50 || rect.top < 0);
     };
 
-    checkPosition(); // Run once on mount in case of page refresh
+    checkPosition(); 
 
     window.addEventListener("scroll", checkPosition);
     return () => window.removeEventListener("scroll", checkPosition);
@@ -88,13 +93,14 @@ export const Navbar = () => {
               {navigationItems.map((item) => (
                 <NavigationMenuItem key={item.title}>
                   <NavigationMenuLink>
-                    <Button
-                      onClick={() => toast.success('Site is in demo mode')}
-                      variant="ghostMuted"
-                      className="hover:text-customYellow"
-                    >
-                      {item.title}
-                    </Button>
+                    <Link href={item.href}>
+                      <Button
+                        variant="ghostMuted"
+                        className="hover:text-customYellow"
+                      >
+                        {item.title}
+                      </Button>
+                    </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
               ))}
@@ -107,7 +113,7 @@ export const Navbar = () => {
           <Button variant="ghostMuted" className="hidden lg:inline hover:text-customYellow" asChild>
             <a href="tel:+13078889999">(307) 888-9999</a>
           </Button>
-          <Link href={'/register'}>
+          <Link href={'/registration/player'}>
             <Button className="uppercase font-text border border-customPrimary bg-customPrimary hover:bg-customPrimary/60">register</Button>
           </Link>
         </div>
@@ -153,13 +159,11 @@ export const Navbar = () => {
               {navigationItems.map((item) => (
                 <Link
                   key={item.title}
-                  // href={item.href}
-                  href={''}
+                  href={item.href}
                   className="text-lg font-medium text-white transition-colors hover:text-primary"
                   onClick={() => {
-                    toast.success('Site is in demo mode');
                     setOpen(false);
-                  }} // Close menu when clicked
+                  }}
                 >
                   {item.title}
                 </Link>
@@ -169,7 +173,7 @@ export const Navbar = () => {
             {/* Buttons at the bottom */}
             <div className="flex flex-col gap-4">
               {
-                <Link href="/register">
+                <Link href="/registration/player">
                   <Button className="w-full bg-customPrimary" onClick={() => setOpen(false)}>
                     Register
                   </Button>

@@ -51,7 +51,7 @@ const CountdownTimer = ({ eventDate }: { eventDate: string }) => {
       {/* Content Wrapper */}
       <div className="relative z-20 flex flex-col items-center justify-center h-full text-white text-center px-4">
         {/* Register Today! Heading */}
-        <h2 className="hidden md:block absolute top-[110px] md:top-[100px] left-[16px] md:left-[150px] font-marker drop-shadow-2xl text-4xl md:text-5xl font-bold italic transform -rotate-6 mb-16">
+        <h2 className="hidden md:block absolute top-[110px] md:top-[100px] left-[16px] md:left-[150px] font-marker drop-shadow-custom-600 text-4xl md:text-5xl font-bold italic transform -rotate-6 mb-16">
           Register Today!
         </h2>
 
