@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 import { FaLock, FaRegCheckCircle } from "react-icons/fa";
 import { Button } from '@/components/ui/button';
 import TeamFormFields from '@/components/team-form-fields';
@@ -44,10 +44,17 @@ export type FormDataType = {
 };
 
 export default function RegistrationForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegistrationFormContent />
+    </Suspense>
+  );
+}
+
+function RegistrationFormContent() {
   const tournamentStartDate = useTournamentDate();
   const params = useSearchParams();
   const [registrationStatus, setRegistrationStatus] = useState<'idle' | 'success' | 'canceled'>('idle');
-  const resetForm = () => setFormData(defaultFormState);
 
   // Pricing for each participant type
   const basePrices = useMemo(() => ({
@@ -60,7 +67,7 @@ export default function RegistrationForm() {
 
   type FormErrorsType = Partial<Record<keyof FormDataType, string>>;
 
-  const defaultFormState: FormDataType = {
+  const defaultFormState = useMemo<FormDataType>(() => ({
     name: '',
     email: '',
     phone: '',
@@ -91,8 +98,9 @@ export default function RegistrationForm() {
     playerOneTShirtSize: '',
     playerTwoTShirtSize: '',
     playerThreeTShirtSize: '',
-  };
-  
+}), []);
+
+  const resetForm = useCallback(() => setFormData(defaultFormState), [defaultFormState]);
   const [formData, setFormData] = useState<FormDataType>(defaultFormState);
   const [formErrors, setFormErrors] = useState<FormErrorsType>({} as FormErrorsType);
   const [totalPrice, setTotalPrice] = useState(basePrices[formData.participantType as keyof typeof basePrices]);
@@ -337,7 +345,7 @@ export default function RegistrationForm() {
         alert('Something went wrong, please try again.');
       });
     }
-  }, [params]);
+  }, [resetForm, params]);
 
   if (registrationStatus === 'success') {
     return (
@@ -347,7 +355,7 @@ export default function RegistrationForm() {
       </div>
       <div className="flex flex-col items-center justify-center min-h-[50vh]">
         <div className="text-center text-white">
-          <h2 className="text-3xl font-bold mb-3"><FaRegCheckCircle className="h-16 w-16 font-bold text-customPrimary ml-auto mr-auto mb-3"/>You're all set!</h2>
+          <h2 className="text-3xl font-bold mb-3"><FaRegCheckCircle className="h-16 w-16 font-bold text-customPrimary ml-auto mr-auto mb-3"/>You&apos;re all set!</h2>
           <p className="mb-3 text-lg">See you at the tournament on {tournamentStartDate} {new Date(Date.now()).getFullYear()}.</p>
           <p className="text-lg mt-2">Check your email for the receipt and details.</p>
         </div>
@@ -477,7 +485,7 @@ export default function RegistrationForm() {
         {formData.participantType === 'pastBoardPastChampionRetiree' && (
           <p>Automatic qualifications for initial acceptance to the tournament field are either through being a past Coal Country Open Board
           Member or a past Coal Country Open overall tournament champion, neither being currently active in the mining industry on either the
-          miner or supplier side of the business. Additional opportunities for mining industry retirees will be at the Coal Country Open Board’s
+          miner or supplier side of the business. Additional opportunities for mining industry retirees will be at the Coal Country Open Board&apos;s
           discretion based on available slots in the field if any remain after all active suppliers and active miners have been accepted.
           <span className="bg-customYellow text-secondary-foreground font-bold">Deadline for entries is July 1st</span>. Tournament field will open to the non-mining public after July 1. All entries must be mailed or
           received before July 25th. Tournament Placement will be determined by mining affiliation 1st and then to the public as received. All
@@ -506,7 +514,7 @@ export default function RegistrationForm() {
               <li>
                 For any door prizes dropped off at various locations, attaching a business card to make
                 sure we have recognized your support correctly.
-                Thank you again for your continued support and we look forward to seeing you at this year’s
+                Thank you again for your continued support and we look forward to seeing you at this year&apos;s
                 tournament.
               </li>
             </ul>

@@ -21,7 +21,10 @@ export const fetchSchedule = async () => {
     });
   
     const entry = response.items[0];
-    return entry?.fields?.startDate || 'Unknown Date';
-  }
+  
+    return typeof entry?.fields?.startDate === 'string'
+      ? entry.fields.startDate
+      : String(entry?.fields?.startDate || 'Unknown Date');
+  }  
 
 export default client;

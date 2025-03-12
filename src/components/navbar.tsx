@@ -10,7 +10,6 @@ import {
 import { Menu, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { toast } from 'sonner';
 import Image from 'next/image'
 
 export const Navbar = () => {
