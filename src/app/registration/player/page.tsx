@@ -46,7 +46,7 @@ export default function Hero() {
           <h2 className="absolute top-[15vh] left-6 md:top-[20vh] md:left-[12vw] font-marker drop-shadow-custom-600 text-3xl md:text-6xl font-bold italic transform -rotate-6 z-30">
             Register Today!<br/>
             {/* Dynamic Registration Count */}
-            {registrationCount !== null && (
+            {registrationCount !== null && registrationCount !== 0 && (
               <span className="text-xl md:text-4xl"><span className="font-heading">{registrationCount}</span> already registered!</span>
             )}
           </h2>

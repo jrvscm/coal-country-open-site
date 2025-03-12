@@ -10,7 +10,7 @@ export default function Footer() {
           {/* Newsletter */}
           <div className="order-last col-span-full xl:order-none xl:col-span-2">
             <h3 className="text-lg font-bold mb-2">Stay Updated</h3>
-            <p className="text-sm mb-4">Sign Up For Our Newsletter<br />To Stay Up To Date</p>
+            <p className="text-sm mb-4">Sign up for our newsletter<br />to stay up to date.</p>
             <div className="flex flex-col md:flex-row gap-2 md:max-w-[300px]">
               <Input
                 type="email"

@@ -1,4 +1,3 @@
-// lib/contentful.js
 import { createClient } from 'contentful';
 
 const client = createClient({
@@ -14,5 +13,15 @@ export const fetchSchedule = async () => {
     const scheduleData = res.items[0]?.fields?.events || [];
     return scheduleData;
   };
+  
+  export async function fetchTournamentStartDate(): Promise<string> {
+    const response = await client.getEntries({
+      content_type: 'tournamentStartDate', 
+      limit: 1,
+    });
+  
+    const entry = response.items[0];
+    return entry?.fields?.startDate || 'Unknown Date';
+  }
 
 export default client;

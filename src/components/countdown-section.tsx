@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { IoIosArrowRoundForward } from "react-icons/io";
 import Image from "next/image";
+import { useTournamentDate } from '@/context/TournamentDateContext';
 
 type TimeLeft = {
   days: number;
@@ -11,6 +12,7 @@ type TimeLeft = {
 };
 
 const CountdownTimer = ({ eventDate }: { eventDate: string }) => {
+  const tournamentStartDate = useTournamentDate();
   const calculateTimeLeft = useCallback((): TimeLeft => {
     const difference = +new Date(eventDate) - +new Date();
     return difference > 0
@@ -28,7 +30,7 @@ const CountdownTimer = ({ eventDate }: { eventDate: string }) => {
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft());
-    }, 1000); // Updates every second
+    }, 1000); 
 
     return () => clearInterval(timer);
   }, [calculateTimeLeft]);
@@ -83,7 +85,7 @@ const CountdownTimer = ({ eventDate }: { eventDate: string }) => {
           </div>
 
           {/* Event Date */}
-          <p className="font-heading text-3xl md:text-5xl font-bold mt-16 mb-6 md:mb-0 drop-shadow-2xl">May 13-15, 2025</p>
+          <p className="font-heading text-3xl md:text-5xl font-bold mt-16 mb-6 md:mb-0 drop-shadow-2xl">{tournamentStartDate} {new Date(Date.now()).getFullYear()}</p>
           <Button variant="outline" className="p-0 md:p-6 font-text mt-6 bg-transparent border transition-all border-customYellow hover:bg-customYellow/60 text-customYellow hover:text-white uppercase md:w-[250px] w-full text-lg md:text-xl font-text">
             Register <IoIosArrowRoundForward size={'16px'} />
           </Button>

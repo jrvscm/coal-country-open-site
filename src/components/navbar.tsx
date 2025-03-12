@@ -92,16 +92,16 @@ export const Navbar = () => {
             <NavigationMenuList className="flex gap-4">
               {navigationItems.map((item) => (
                 <NavigationMenuItem key={item.title}>
-                  <NavigationMenuLink>
-                    <Link href={item.href}>
+                  <Link href={item.href} passHref legacyBehavior>
+                    <NavigationMenuLink asChild>
                       <Button
                         variant="ghostMuted"
                         className="hover:text-customYellow"
                       >
                         {item.title}
                       </Button>
-                    </Link>
-                  </NavigationMenuLink>
+                    </NavigationMenuLink>
+                  </Link>
                 </NavigationMenuItem>
               ))}
             </NavigationMenuList>

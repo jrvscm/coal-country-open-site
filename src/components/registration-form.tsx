@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { FaLock } from "react-icons/fa";
+import { FaLock, FaRegCheckCircle } from "react-icons/fa";
 import { Button } from '@/components/ui/button';
 import TeamFormFields from '@/components/team-form-fields';
 import DefaultFormFields from '@/components/default-form-fields';
 import SingleEntryFields from '@/components/single-entry-fields';
 import { loadStripe } from '@stripe/stripe-js';
+import { useSearchParams } from 'next/navigation';
+import { useTournamentDate } from '@/context/TournamentDateContext';
 
 export type FormDataType = {
   name: string;
@@ -42,6 +44,11 @@ export type FormDataType = {
 };
 
 export default function RegistrationForm() {
+  const tournamentStartDate = useTournamentDate();
+  const params = useSearchParams();
+  const [registrationStatus, setRegistrationStatus] = useState<'idle' | 'success' | 'canceled'>('idle');
+  const resetForm = () => setFormData(defaultFormState);
+
   // Pricing for each participant type
   const basePrices = useMemo(() => ({
     currentMiner: 250.0,
@@ -297,6 +304,60 @@ export default function RegistrationForm() {
       console.error('Checkout Error:', error);
     }
   };  
+
+  const handleScrollDown = () => {
+    document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    const confirmed = params.get('confirmed');
+    const canceledUid = params.get('canceled');
+  
+    if (confirmed) {
+      setRegistrationStatus('success');
+      handleScrollDown();
+    } else if (canceledUid) {
+      fetch('/api/registration/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: canceledUid }),
+      })
+      .then(async (res) => {
+        const result = await res.json();
+        if (res.ok) {
+          setRegistrationStatus('canceled');
+          resetForm();
+        } else {
+          console.error('Removal failed:', result.error);
+          alert('Error removing your registration. Please contact support.');
+        }
+      })
+      .catch((error) => {
+        console.error('Network Error:', error);
+        alert('Something went wrong, please try again.');
+      });
+    }
+  }, [params]);
+
+  if (registrationStatus === 'success') {
+    return (
+      <>
+      <div className="col-span-full my-8">
+        <hr className="border-t border-white/20" />
+      </div>
+      <div className="flex flex-col items-center justify-center min-h-[50vh]">
+        <div className="text-center text-white">
+          <h2 className="text-3xl font-bold mb-3"><FaRegCheckCircle className="h-16 w-16 font-bold text-customPrimary ml-auto mr-auto mb-3"/>You're all set!</h2>
+          <p className="mb-3 text-lg">See you at the tournament on {tournamentStartDate} {new Date(Date.now()).getFullYear()}.</p>
+          <p className="text-lg mt-2">Check your email for the receipt and details.</p>
+        </div>
+      </div>
+      <div className="col-span-full my-8">
+        <hr className="border-t border-white/20" />
+      </div>
+      </>
+    );
+  }
   
   return (
     <form className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">

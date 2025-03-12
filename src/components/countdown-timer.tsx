@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useTournamentDate } from '@/context/TournamentDateContext';
 
 export default function CountdownTimer({ eventDate }: { eventDate: string }) {
+  const tournamentStartDate = useTournamentDate();
   const [isFixed, setIsFixed] = useState(true);
   const [isStopped, setIsStopped] = useState(false);
   const timerRef = useRef<HTMLDivElement>(null);
@@ -98,7 +100,7 @@ export default function CountdownTimer({ eventDate }: { eventDate: string }) {
             </div>
           </div>
           <div className="mt-4 text-xl md:text-2xl font-semibold font-heading">
-            <h4 className="drop-shadow-custom-600">MAY 13-15, 2025</h4>
+            <h4 className="drop-shadow-custom-600">{tournamentStartDate} {new Date(Date.now()).getFullYear()}</h4>
           </div>
         </div>
 

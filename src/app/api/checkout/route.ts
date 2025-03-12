@@ -15,8 +15,8 @@ export async function POST(req: Request) {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cancel`,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/registration/player?confirmed=1`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/registration/player?canceled=${uid}`,
       line_items: [
         {
           price_data: {

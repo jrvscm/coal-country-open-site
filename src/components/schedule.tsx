@@ -50,9 +50,9 @@ export default function Schedule() {
                     })),
                 };
               }
-              return null; // Remove invalid items
+              return null; 
             })
-            .filter((item): item is EventType => item !== null); // ✅ Remove null values safely
+            .filter((item): item is EventType => item !== null);
   
           setEvents(formattedEvents);
         } else {
