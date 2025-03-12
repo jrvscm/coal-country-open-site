@@ -366,7 +366,7 @@ export default function RegistrationForm() {
       <div className="col-span-full">
         <h3 className="text-white/80 text-lg font-semibold mt-4">REGISTRATION INCLUDES:</h3>
         <ul className="text-white/60 list-disc pl-5 mt-2 space-y-1 text-lg">
-          <li>54 holes of golf and cart</li>
+          <li>54 holes of golf on two courses (cart included)</li>
           <li><span className="font-bold">Premium</span> gift bag</li>
           <li>Thursday night social and Saturday banquet at Gillette&apos;s Camplex</li>
           <li>Flag prizes are awarded for each day</li>
@@ -470,9 +470,49 @@ export default function RegistrationForm() {
             ))}
           </div>
         </div>
-
       </div>
 
+      {/** About selection type text */}
+      <div className="text-customInputBorder col-span-full p-2 text-xs md:text-sm">
+        {formData.participantType === 'pastBoardPastChampionRetiree' && (
+          <p>Automatic qualifications for initial acceptance to the tournament field are either through being a past Coal Country Open Board
+          Member or a past Coal Country Open overall tournament champion, neither being currently active in the mining industry on either the
+          miner or supplier side of the business. Additional opportunities for mining industry retirees will be at the Coal Country Open Board’s
+          discretion based on available slots in the field if any remain after all active suppliers and active miners have been accepted.
+          <span className="bg-customYellow text-secondary-foreground font-bold">Deadline for entries is July 1st</span>. Tournament field will open to the non-mining public after July 1. All entries must be mailed or
+          received before July 25th. Tournament Placement will be determined by mining affiliation 1st and then to the public as received. All
+          entries are reviewed and entered at the CCO Board discretion. <span className="underline font-bold">Entrants must be 21 years of age</span>.</p>
+        )}
+
+        {(formData.participantType === 'generalPublic' || formData.participantType == 'currentMiner' || formData.participantType == 'singlePlayerSponsorEntry' || formData.participantType == 'teamSponsorEntry') && (
+          <p><span className="bg-customYellow text-secondary-foreground font-bold">Deadline for entries is July 1st</span>. Tournament field will open to the non-mining public after July 1. All entries must be mailed or
+          received before July 25. Tournament Placement will be determined by mining affiliation 1st and then to the public as received. All
+          entries are reviewed and entered at the CCO Board discretion. <span className="underline font-bold">Entrants must be 21 years of age</span>.</p>
+        )}
+
+        {formData.participantType == 'singlePlayerSponsorEntry' && (
+          <p>
+            In addition to the sponsorship fee, we encourage you to make donations of cash or gifts to be
+            given as door prizes at the banquet. To better ensure we correctly recognize your company for
+            these donations, we are asking for some additional support during the planning phase of the
+            event in the following areas:<br /><br />
+            <ul>
+              <li>
+                Early notification of what your donation will consist of. This can be done using the
+                designated section of the attached form or through email notification. For door prizes,
+                what you anticipate on the door prize being. Having this information before <span className="font-bold underline">AUGUST
+                1st, 2021</span> would be greatly appreciated.
+              </li><br/>
+              <li>
+                For any door prizes dropped off at various locations, attaching a business card to make
+                sure we have recognized your support correctly.
+                Thank you again for your continued support and we look forward to seeing you at this year’s
+                tournament.
+              </li>
+            </ul>
+          </p>
+        )}
+      </div>
       {/* Divider */}
       <div className="col-span-full my-8">
         <hr className="border-t border-white/20" />
