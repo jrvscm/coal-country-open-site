@@ -24,7 +24,6 @@ export type FormDataType = {
   shoeSize: string;
   banquet: string;
   dinnerTickets: string;
-  derby: string;
   participantType: string;
   doorPrize?: string;
   flagPrizeContribution?: string;
@@ -81,7 +80,6 @@ function RegistrationFormContent() {
     shoeSize: '',
     banquet: '',
     dinnerTickets: '',
-    derby: 'no',
     participantType: 'currentMiner',
     doorPrize: '',
     flagPrizeContribution: '',
@@ -195,38 +193,31 @@ function RegistrationFormContent() {
   // Pricing breakdown states
   const [basePrice, setBasePrice] = useState(0);
   const [dinnerTicketCost, setDinnerTicketCost] = useState(0);
-  const [derbyCost, setDerbyCost] = useState(0);
   const [flagPrizeCost, setFlagPrizeCost] = useState(0);
 
   useEffect(() => {
     const newBasePrice = basePrices[formData.participantType as keyof typeof basePrices] || 0;
     let newDinnerTicketCost = 0;
-    let newDerbyCost = 0;
     let newFlagPrizeCost = 0;
   
     if (formData.dinnerTickets !== '') {
         newDinnerTicketCost = parseInt(formData.dinnerTickets, 10) * 32.0;
     }
 
-    if (formData.participantType !== 'teamSponsorEntry' && formData.derby === 'yes') {
-        newDerbyCost = 10.0;
-    }
-
     if (formData.flagPrizeContribution && flagPrizeRegex.test(formData.flagPrizeContribution)) {
         newFlagPrizeCost = parseInt(formData.flagPrizeContribution, 10);
     }
 
-    const newTotal = newBasePrice + newDinnerTicketCost + newDerbyCost + newFlagPrizeCost;
+    const newTotal = newBasePrice + newDinnerTicketCost + newFlagPrizeCost;
     const newStripeFee = (newTotal * 0.029) + 0.30;
   
     // Update state
     setBasePrice(newBasePrice);
     setDinnerTicketCost(newDinnerTicketCost);
-    setDerbyCost(newDerbyCost);
     setFlagPrizeCost(newFlagPrizeCost);
     setTotalPrice(newTotal);
     setStripeFee(newStripeFee);
-  }, [basePrices, flagPrizeRegex, formData.participantType, formData.dinnerTickets, formData.derby, formData.flagPrizeContribution]);
+  }, [basePrices, flagPrizeRegex, formData.participantType, formData.dinnerTickets, formData.flagPrizeContribution]);
 
   const totalRef = useRef<HTMLDivElement | null>(null);
   const [isSticky, setIsSticky] = useState(false);
@@ -295,7 +286,6 @@ function RegistrationFormContent() {
           breakdown: {
             basePrice: basePrice.toFixed(2),
             dinnerTickets: dinnerTicketCost.toFixed(2),
-            derby: derbyCost.toFixed(2),
             flagPrize: flagPrizeCost.toFixed(2),
           },
         }),
@@ -403,7 +393,6 @@ function RegistrationFormContent() {
             <div className="flex flex-col text-sm text-white/60 mt-2 space-y-1">
               <p>Base Registration: ${basePrice.toFixed(2)}</p>
               {dinnerTicketCost > 0 && <p>Dinner Tickets: ${dinnerTicketCost.toFixed(2)}</p>}
-              {derbyCost > 0 && <p>Derby Entry: ${derbyCost.toFixed(2)}</p>}
               {flagPrizeCost > 0 && <p>Flag Prize Contribution: ${flagPrizeCost.toFixed(2)}</p>}
               <p className="font-semibold mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
             </div>
@@ -425,7 +414,6 @@ function RegistrationFormContent() {
                   <div className="flex flex-col text-sm text-white/60 mt-2 space-y-1">
                     <p>Base Registration: ${basePrice.toFixed(2)}</p>
                     {dinnerTicketCost > 0 && <p>Dinner Tickets: ${dinnerTicketCost.toFixed(2)}</p>}
-                    {derbyCost > 0 && <p>Derby Entry: ${derbyCost.toFixed(2)}</p>}
                     {flagPrizeCost > 0 && <p>Flag Prize Contribution: ${flagPrizeCost.toFixed(2)}</p>}
                     <p className="font-semibold mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
                   </div>

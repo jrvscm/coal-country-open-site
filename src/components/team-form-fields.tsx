@@ -7,14 +7,14 @@ import { FormDataType } from '@/components/registration-form';
 interface TeamFormFieldsProps {
   formData: FormDataType;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleSelectChange: (name: string, value: string) => void; // Add this line
+  handleSelectChange: (name: string, value: string) => void; 
   formErrors: Partial<FormDataType>;
 }
 
 const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange, handleSelectChange, formErrors }) => {
     return (
     <>
-        <div className="col-span-1">
+        <div className="col-span-2">
             <h3 className="text-white/80 text-lg font-semibold mb-2">TEAM NAME</h3>
             <label htmlFor="teamName" className="sr-only block text-sm text-white/60 mb-1">Team Name</label>
             <Input
@@ -30,27 +30,7 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
             {formErrors.teamName && <p className="text-red-500 text-sm mt-1">{formErrors.teamName}</p>}
         </div>
 
-        <div className="col-span-1 relative">
-            <h3 className="text-white/80 text-lg font-semibold mb-2">DERBY</h3>
-            <label htmlFor="derby" className="sr-only block text-lg font-semibold text-white/80 mb-2">Derby</label>
-            <Select value={formData.derby} onValueChange={(value) => handleSelectChange('derby', value)}>
-            <SelectTrigger className="relative flex justify-start align-center w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg">
-                {/* Placeholder and selected value */}
-                <SelectValue 
-                placeholder="Will you play in the derby?" 
-                className="text-white/60 text-lg" 
-                />
-            </SelectTrigger>
-
-            <SelectContent>
-                <SelectItem value="yes">Yes</SelectItem>
-                <SelectItem value="no">No</SelectItem>
-            </SelectContent>
-            </Select>
-        </div>
-     
-
-        <div className="col-span-1">
+        <div className="col-span-2">
             <h3 className="text-white/80 text-lg font-semibold mb-2">PLAYER ONE</h3>
           <div className="mt-3">
             <label htmlFor="playerOneName" className="sr-only hidden block text-sm text-white/60 mb-1">Player One Name</label>
@@ -96,7 +76,7 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
           </div>
         </div>
 
-        <div className="col-span-1">
+        <div className="col-span-2">
           <h3 className="text-white/80 text-lg font-semibold mb-2">PLAYER TWO</h3>
           <div className="mt-3">
             <label htmlFor="playerTwoName" className="sr-only hidden block text-sm text-white/60 mb-1">Player Two Name</label>
@@ -142,7 +122,7 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
           </div>
         </div>
 
-        <div className="col-span-1">
+        <div className="col-span-2">
           <h3 className="text-white/80 text-lg font-semibold mb-2">PLAYER THREE</h3>
           <div className="mt-3">
             <label htmlFor="playerThreeName" className="sr-only hidden block text-sm text-white/60 mb-1">Player Three Name</label>
@@ -188,7 +168,7 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
           </div>
         </div>
 
-        <div className="col-span-1">
+        <div className="col-span-2">
           <h3 className="text-white/80 text-lg font-semibold mb-2">TEAM CONTACT</h3>
           <div className="mt-3">
             <label htmlFor="teamContactName" className="sr-only hidden block text-sm text-white/60 mb-1">Team Contact Name</label>
@@ -236,7 +216,7 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
         </div>
 
       {/* Banquet Info Group */}
-      <div className="col-span-1">
+      <div className="col-span-2">
             <h3 className="text-white/80 text-lg font-semibold mb-2">BANQUET</h3>
             <div className="mt-3">
               <label className="sr-only block text-sm text-white/60 mb-1">Will You Attend Banquet?</label>

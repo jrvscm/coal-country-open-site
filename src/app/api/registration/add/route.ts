@@ -34,7 +34,6 @@ export async function POST(req: Request) {
       formData.shirtSize || '',
       formData.banquet || '',
       formData.dinnerTickets || '',
-      formData.derby || '',
       formData.doorPrize || '',
       formData.flagPrizeContribution || '',
       formData.teamName || '',

@@ -21,7 +21,6 @@ interface DefaultFormFieldsProps {
     shirtSize: string;
     banquet: string;
     dinnerTickets: string;
-    derby: string;
   };
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: (name: string, value: string) => void;
@@ -36,7 +35,7 @@ export default function DefaultFormFields({
 }: DefaultFormFieldsProps) {
   return (
     <>
-        <div className="col-span-1">
+        <div className="col-span-2">
           <h3 className="text-white/80 text-lg font-semibold mb-2">COMPANY INFO</h3>
           <label htmlFor="company" className="sr-only block text-sm text-white/60 mb-1">Company Represented</label>
           <Input
@@ -52,26 +51,7 @@ export default function DefaultFormFields({
           {formErrors.company && <p className="text-red-500 text-sm mt-1">{formErrors.company}</p>}
         </div>
 
-        <div className="col-span-1 relative">
-            <h3 className="text-white/80 text-lg font-semibold mb-2">DERBY</h3>
-            <label htmlFor="derby" className="sr-only block text-lg font-semibold text-white/80 mb-2">Derby</label>
-            <Select value={formData.derby} onValueChange={(value) => handleSelectChange('derby', value)}>
-            <SelectTrigger className="relative flex justify-start align-center w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg">
-                {/* Placeholder and selected value */}
-                <SelectValue 
-                placeholder="Will you play in the derby?" 
-                className="text-white/60 text-lg" 
-                />
-            </SelectTrigger>
-
-            <SelectContent>
-                <SelectItem value="yes">Yes (+$10.00)</SelectItem>
-                <SelectItem value="no">No</SelectItem>
-            </SelectContent>
-            </Select>
-        </div>
-
-        <div className="col-span-1">
+        <div className="col-span-2">
           <h3 className="text-white/80 text-lg font-semibold mb-2">PERSONAL INFO</h3>
           <div className="mt-3">
             <label htmlFor="name" className="sr-only hidden block text-sm text-white/60 mb-1">Name</label>
@@ -131,69 +111,8 @@ export default function DefaultFormFields({
           </div>
         </div>
 
-        {/* Address Info Group */}
-        <div className="col-span-1">
-          <h3 className="text-white/80 text-lg font-semibold mb-2">ADDRESS INFO</h3>
-          <div className="mt-3">
-            <label htmlFor="address" className="sr-only block text-sm text-white/60 mb-1">Address</label>
-            <Input
-              id="address"
-              name="address"
-              placeholder="Address"
-              value={formData.address}
-              onChange={handleChange}
-              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.address ? 'border-red-500' : 'border-customInputBorder'}
-              `}  
-            />
-            {formErrors.address && <p className="text-red-500 text-sm mt-1">{formErrors.address}</p>}
-          </div>
-          <div className="mt-3">
-            <label htmlFor="city" className="sr-only block text-sm text-white/60 mb-1">City</label>
-            <Input
-              id="city"
-              name="city"
-              placeholder="City"
-              value={formData.city}
-              onChange={handleChange}
-              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.city ? 'border-red-500' : 'border-customInputBorder'}
-              `}  
-            />
-            {formErrors.city && <p className="text-red-500 text-sm mt-1">{formErrors.city}</p>}
-          </div>
-          <div className="mt-3">
-            <label htmlFor="state" className="sr-only block text-sm text-white/60 mb-1">State</label>
-            <Input
-              id="state"
-              name="state"
-              placeholder="State"
-              value={formData.state}
-              onChange={handleChange}
-              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.state ? 'border-red-500' : 'border-customInputBorder'}
-              `}  
-            />
-            {formErrors.state && <p className="text-red-500 text-sm mt-1">{formErrors.state}</p>}
-          </div>
-          <div className="mt-3">
-            <label htmlFor="zip" className="sr-only block text-sm text-white/60 mb-1">Zip</label>
-            <Input
-              id="zip"
-              name="zip"
-              placeholder="Zip Code"
-              value={formData.zip}
-              onChange={handleChange}
-              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.zip ? 'border-red-500' : 'border-customInputBorder'}
-              `}  
-            />
-            {formErrors.zip && <p className="text-red-500 text-sm mt-1">{formErrors.zip}</p>}
-          </div>
-        </div>
-
      {/* Banquet Info Group */}
-     <div className="col-span-1">
+     <div className="col-span-2">
         <h3 className="text-white/80 text-lg font-semibold mb-2">BANQUET</h3>
         <div className="mt-3">
           <label className="sr-only block text-sm text-white/60 mb-1">Will You Attend Banquet?</label>
@@ -233,7 +152,7 @@ export default function DefaultFormFields({
           </Select>
         </div>
       </div>
-      <div className="col-span-1">
+      <div className="col-span-2">
         <h3 className="text-white/80 text-lg font-semibold mb-2">SIZING INFO</h3>
         <div className="mt-3">
           <label htmlFor="shirtSize" className="sr-only block text-sm text-white/60 mb-1">Shirt Size</label>
