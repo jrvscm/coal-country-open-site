@@ -404,7 +404,7 @@ function RegistrationFormContent() {
               <p>Base Registration: ${basePrice.toFixed(2)}</p>
               {dinnerTicketCost > 0 && <p>Dinner Tickets: ${dinnerTicketCost.toFixed(2)}</p>}
               {flagPrizeCost > 0 && <p>Flag Prize Contribution: ${flagPrizeCost.toFixed(2)}</p>}
-              <p className="font-semibold mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
+              <p className="mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
             </div>
           </div>
         </div>
@@ -425,7 +425,7 @@ function RegistrationFormContent() {
                     <p>Base Registration: ${basePrice.toFixed(2)}</p>
                     {dinnerTicketCost > 0 && <p>Dinner Tickets: ${dinnerTicketCost.toFixed(2)}</p>}
                     {flagPrizeCost > 0 && <p>Flag Prize Contribution: ${flagPrizeCost.toFixed(2)}</p>}
-                    <p className="font-semibold mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
+                    <p className="mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
