@@ -9,6 +9,7 @@ import { TournamentDateProvider } from '@/context/TournamentDateContext';
 const permanentMarker = Permanent_Marker({
   subsets: ['latin'],
   weight: '400',
+  variable: '--font-marker',
 });
 
 const barlow = Barlow({
@@ -37,7 +38,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${bebasNeue.variable} ${barlow.variable} ${permanentMarker} antialiased`}
+        className={`${bebasNeue.variable} ${barlow.variable} ${permanentMarker.variable} antialiased`}
       >
         <TournamentDateProvider date={tournamentDate}>
           <Navbar />

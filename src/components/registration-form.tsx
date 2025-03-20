@@ -540,10 +540,10 @@ function RegistrationFormContent() {
             <AccordionContent>
               <div className="space-y-1">
                 {[
-                  { label: 'Tee Box Sponsor (You own the box!)', value: 'teeBoxSponsorship', details: 'Recognition at banquet, name listed in tournament brochure, and your logo on hole flag of the tee box which is yours to keep. $500 of this will go to the club house fees if you sponsor a tent on your tee box to offer refreshments.'},
-                  { label: 'Driving Range Sponsor', value: 'drivingRangeSponsorship', details: 'Recognition at banquet, name listed in tournament brochure, sign placed on driving range'},
-                  { label: 'Hole Flag Sponsor', value: 'holeFlagSponsorship', details: 'Name listed in tournament brochure, flag on hole that will be yours at end of tournament'},
-                  { label: 'Flag Prize Sponsor', value: 'flagPrizeSponsorship', details: 'Recognition at banquet, Name listed in tournament brochure'}
+                  { label: `Tee Box Sponsor ($${basePrices['teeBoxSponsorship']} You own the box!)`, value: 'teeBoxSponsorship', details: 'Recognition at banquet, name listed in tournament brochure, and your logo on hole flag of the tee box which is yours to keep. $500 of this will go to the club house fees if you sponsor a tent on your tee box to offer refreshments.'},
+                  { label: `Driving Range Sponsor ($${basePrices['drivingRangeSponsorship']})`, value: 'drivingRangeSponsorship', details: 'Recognition at banquet, name listed in tournament brochure, sign placed on driving range'},
+                  { label: `Hole Flag Sponsor ($${basePrices['holeFlagSponsorship']})`, value: 'holeFlagSponsorship', details: 'Name listed in tournament brochure, flag on hole that will be yours at end of tournament'},
+                  { label: `Flag Prize Sponsor ($${basePrices['flagPrizeSponsorship']})`, value: 'flagPrizeSponsorship', details: 'Recognition at banquet, Name listed in tournament brochure'}
                 ].map((option) => (
                   <div className="group" key={option.value}>
                     <label className="flex flex-col cursor-pointer text-white/60 text-lg pb-2
