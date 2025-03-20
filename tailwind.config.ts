@@ -76,7 +76,7 @@ const config: Config = {
   				'sans-serif'
   			],
   			marker: [
-  				'Permanent Marker"',
+  				'var(--font-marker)',
   				'cursive'
   			]
   		},
