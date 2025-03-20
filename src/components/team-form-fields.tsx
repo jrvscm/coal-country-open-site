@@ -4,6 +4,7 @@ import React from 'react';
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { FormDataType } from '@/components/registration-form';
+
 interface TeamFormFieldsProps {
   formData: FormDataType;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;

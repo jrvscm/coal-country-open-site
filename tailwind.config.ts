@@ -57,26 +57,54 @@ const config: Config = {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
-        },
-        
-        //custom colors
-        customBackground: 'hsl(var(--custom-background))',
-        customYellow: 'hsl(var(--custom-yellow))',
-        customPrimary: 'hsl(var(--custom-primary))',
-		customLightGray: 'hsla(var(--custom-light-gray))',
-		customInputFill: 'hsl(var(--custom-input-fill))',
-		customGrayText: 'hsl(var(--custom-gray-text))',
-		customInputBorder: 'hsl(var(--custom-input-border))'
-      },
-  
-      fontFamily: {
-        heading: ['var(--font-bebas)', 'sans-serif'],
-		text: ['var(--font-barlow)', 'sans-serif'],
-		marker: ['"Permanent Marker"', 'cursive'],
-      },
-      dropShadow: {
-        'custom-600': '0 6px 10px rgba(0, 0, 0, 1)',
-      }
+  			},
+  			customBackground: 'hsl(var(--custom-background))',
+  			customYellow: 'hsl(var(--custom-yellow))',
+  			customPrimary: 'hsl(var(--custom-primary))',
+  			customLightGray: 'hsla(var(--custom-light-gray))',
+  			customInputFill: 'hsl(var(--custom-input-fill))',
+  			customGrayText: 'hsl(var(--custom-gray-text))',
+  			customInputBorder: 'hsl(var(--custom-input-border))'
+  		},
+  		fontFamily: {
+  			heading: [
+  				'var(--font-bebas)',
+  				'sans-serif'
+  			],
+  			text: [
+  				'var(--font-barlow)',
+  				'sans-serif'
+  			],
+  			marker: [
+  				'Permanent Marker"',
+  				'cursive'
+  			]
+  		},
+  		dropShadow: {
+  			'custom-600': '0 6px 10px rgba(0, 0, 0, 1)'
+  		},
+  		keyframes: {
+  			'accordion-down': {
+  				from: {
+  					height: '0'
+  				},
+  				to: {
+  					height: 'var(--radix-accordion-content-height)'
+  				}
+  			},
+  			'accordion-up': {
+  				from: {
+  					height: 'var(--radix-accordion-content-height)'
+  				},
+  				to: {
+  					height: '0'
+  				}
+  			}
+  		},
+  		animation: {
+  			'accordion-down': 'accordion-down 0.2s ease-out',
+  			'accordion-up': 'accordion-up 0.2s ease-out'
+  		}
   	}
   },
   plugins: [require("tailwindcss-animate")],

@@ -2,10 +2,7 @@
 
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-
-interface FormErrors {
-  [key: string]: string;
-}
+import { FormDataType } from '@/components/registration-form';
 
 interface DefaultFormFieldsProps {
   formData: {
@@ -24,7 +21,7 @@ interface DefaultFormFieldsProps {
   };
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: (name: string, value: string) => void;
-  formErrors: FormErrors;
+  formErrors: Partial<FormDataType>;
 }
 
 export default function DefaultFormFields({

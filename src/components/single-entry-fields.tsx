@@ -3,10 +3,11 @@
 
 import { Input } from '@/components/ui/input';
 import { FormDataType } from '@/components/registration-form';
+
 interface SingleEntryFieldsProps {
     formData: FormDataType;
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    handleSelectChange: (name: string, value: string) => void; // Add this line
+    handleSelectChange: (name: string, value: string) => void; 
     formErrors: Partial<FormDataType>;
 }
 

@@ -9,6 +9,7 @@ import SingleEntryFields from '@/components/single-entry-fields';
 import { loadStripe } from '@stripe/stripe-js';
 import { useSearchParams } from 'next/navigation';
 import { useTournamentDate } from '@/context/TournamentDateContext';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 export type FormDataType = {
   name: string;
@@ -60,8 +61,17 @@ function RegistrationFormContent() {
     currentMiner: 250.0,
     pastBoardPastChampionRetiree: 250.0,
     generalPublic: 450.0,
+    //packages
+    platinumSponsorship: 5000.0,
+    goldSponsorship: 3000.0,
+    silverSponsorship: 1500,
     singlePlayerSponsorEntry: 450.0,
     teamSponsorEntry: 1000.0,
+    //products
+    teeBoxSponsorship: 1250.0,
+    drivingRangeSponsorship: 1200.0,
+    holeFlagSponsorship: 250.0,
+    flagPrizeSponsorship: 150.0
   }), []);
 
   type FormErrorsType = Partial<Record<keyof FormDataType, string>>;
@@ -358,7 +368,7 @@ function RegistrationFormContent() {
   }
   
   return (
-    <form className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">
+    <form className="grid grid-cols-1 md:grid-cols-2 md:gap-y-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">
 
       {/* Registration Includes Section */}
       <div className="col-span-full">
@@ -423,49 +433,157 @@ function RegistrationFormContent() {
           )}
         </div>
 
-        {/* Participant Type */}
-        <div className="order-2 md:order-1">
-          <h3 className="text-white/80 text-lg font-semibold mb-2">SELECT PARTICIPANT TYPE:</h3>
-          <div className="space-y-1">
-            {[
-              { label: 'Current Miner', value: 'currentMiner' },
-              { label: 'Past Board / Past Champion / Retiree', value: 'pastBoardPastChampionRetiree' },
-              { label: 'General Public', value: 'generalPublic' },
-              { label: 'Single Player Sponsor Entry', value: 'singlePlayerSponsorEntry' },
-              { label: 'Team Sponsor Entry', value: 'teamSponsorEntry' }
-            ].map((option) => (
-              <div className="group" key={option.value}>
-                <label className="
-                  flex items-center justify-between cursor-pointer text-white/60 text-lg pb-2
-                  group-has-[input:checked]:border group-has-[input:checked]:border-customInputBorder group-has-[input:checked]:rounded-lg
-                  group-has-[input:checked]:bg-black/80
-                  hover:border hover:border-customInputBorder hover:bg-black/20 p-2
-                  border border-transparent rounded-lg
-                  transition-all
-                ">
-                  <span>{option.label}</span>
-                  <div className="relative ml-auto">
-                    {/* Hidden Radio Input */}
-                    <input
-                      type="radio"
-                      name="participantType"
-                      value={option.value}
-                      checked={formData.participantType === option.value}
-                      onChange={handleChange}
-                      className={"sr-only peer"}
-                    />
-
-                    {/* Outer Circle */}
-                    <div className="h-6 w-6 rounded-full border-2 border-customInputBorder"></div>
-
-                    {/* Inner Circle */}
-                    <div className="h-4 w-4 rounded-full bg-customInputBorder absolute top-1 left-1 scale-0 peer-checked:scale-100 transition-transform"></div>
+        <Accordion type="single" collapsible defaultValue="individual-participants" className="w-full">
+          {/* Individual Participants */}
+          <AccordionItem value="individual-participants" className="border-t border-white/80">
+            <AccordionTrigger className="text-white/80 text-lg font-semibold [&>svg]:w-8 [&>svg]:h-8 [&>svg]:text-white/80">INDIVIDUAL PARTICIPANTS:</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-1">
+                {[
+                  { label: `Current Miner ($${basePrices['currentMiner']})`, value: 'currentMiner', details: '54 holes of golf and cart, premium gift bag, Thursday night social and Saturday banquet at Gillette’s Cam-plex. Flag prizes are awarded for each day. A Calcutta will take place Friday evening.' },
+                  { label: `Past Board / Past Champion / Retiree ($${basePrices['pastBoardPastChampionRetiree']})`, value: 'pastBoardPastChampionRetiree', details: '54 holes of golf and cart, premium gift bag, Thursday night social and Saturday banquet at Gillette’s Cam-plex. Flag prizes are awarded for each day. A Calcutta will take place Friday evening.' },
+                  { label: `General Public ($${basePrices['generalPublic']})`, value: 'generalPublic', details: '54 holes of golf and cart, premium gift bag, Thursday night social and Saturday banquet at Gillette’s Cam-plex. Flag prizes are awarded for each day. A Calcutta will take place Friday evening.'},
+                ].map((option) => (
+                  <div className="group" key={option.value}>
+                    <label className="flex flex-col cursor-pointer text-white/60 text-lg pb-2
+                      group-has-[input:checked]:border group-has-[input:checked]:border-customInputBorder group-has-[input:checked]:rounded-lg
+                      group-has-[input:checked]:bg-black/80
+                      hover:border hover:border-customInputBorder hover:bg-black/20 p-2
+                      border border-transparent rounded-lg transition-all">
+                      
+                      {/* Main Selection */}
+                      <div className="flex items-center justify-between">
+                        <span>{option.label}</span>
+                        <div className="relative ml-auto">
+                          {/* Hidden Radio Input */}
+                          <input
+                            type="radio"
+                            name="participantType"
+                            value={option.value}
+                            checked={formData.participantType === option.value}
+                            onChange={handleChange}
+                            className="sr-only peer"
+                          />
+                          {/* Outer Circle */}
+                          <div className="h-6 w-6 rounded-full border-2 border-customInputBorder"></div>
+                          {/* Inner Circle */}
+                          <div className="h-4 w-4 rounded-full bg-customInputBorder absolute top-1 left-1 scale-0 peer-checked:scale-100 transition-transform"></div>
+                        </div>
+                      </div>
+              
+                      {/* Additional Details (Hidden by default, shows when selected) */}
+                      {formData.participantType === option.value && <div className="mt-2 text-sm text-white/60">
+                        {option.details}
+                      </div>}
+              
+                    </label>
                   </div>
-                </label>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Sponsor Packages */}
+          <AccordionItem value="sponsor-packages" className="border-white/80">
+            <AccordionTrigger className="text-white/80 text-lg font-semibold [&>svg]:w-8 [&>svg]:h-8 [&>svg]:text-white/80">SPONSORSHIP PACKAGES:</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-1">
+                {[
+                  { label: `Platinum Sponsor Package ($${basePrices['platinumSponsorship']})`, value: 'platinumSponsorship', details: 'Recognition at banquet, name listed in tournament brochure, logo on flag which is yours to keep, UP TO 10 GOLFERS'},
+                  { label: `Gold Sponsor Package ($${basePrices['goldSponsorship']})`, value: 'goldSponsorship', details: 'Recognition at banquet, name listed in tournament brochure, logo on flag which is yours to keep, UP TO 5 GOLFERS' },
+                  { label: `Silver Sponsor Package ($${basePrices['silverSponsorship']})`, value: 'silverSponsorship', details: 'Recognition at banquet, name listed in tournament brochure, logo on flag which is yours to keep, UP TO 2 GOLFERS' },
+                  { label: `Single Player Sponsor Entry ($${basePrices['singlePlayerSponsorEntry']})`, value: 'singlePlayerSponsorEntry', details: '18 holes of golf per day for ONE player. Premium gift bag, Thursday night social and Saturday banquet at Gillette’s Cam-plex. Flag prizes are awarded for each day. A Calcutta will take place Friday evening.' },
+                  { label: `Single Team Sponsor Entry ($${basePrices['teamSponsorEntry']})`, value: 'teamSponsorEntry', details: '18 holes of golf per day for THREE players total. Premium gift bag, Thursday night social and Saturday banquet at Gillette’s Cam-plex. Flag prizes are awarded for each day. A Calcutta will take place Friday evening.' }
+                ].map((option) => (
+                  <div className="group" key={option.value}>
+                    <label className="flex flex-col cursor-pointer text-white/60 text-lg pb-2
+                      group-has-[input:checked]:border group-has-[input:checked]:border-customInputBorder group-has-[input:checked]:rounded-lg
+                      group-has-[input:checked]:bg-black/80
+                      hover:border hover:border-customInputBorder hover:bg-black/20 p-2
+                      border border-transparent rounded-lg transition-all">
+                      
+                      {/* Main Selection */}
+                      <div className="flex items-center justify-between">
+                        <span>{option.label}</span>
+                        <div className="relative ml-auto">
+                          {/* Hidden Radio Input */}
+                          <input
+                            type="radio"
+                            name="participantType"
+                            value={option.value}
+                            checked={formData.participantType === option.value}
+                            onChange={handleChange}
+                            className="sr-only peer"
+                          />
+                          {/* Outer Circle */}
+                          <div className="h-6 w-6 rounded-full border-2 border-customInputBorder"></div>
+                          {/* Inner Circle */}
+                          <div className="h-4 w-4 rounded-full bg-customInputBorder absolute top-1 left-1 scale-0 peer-checked:scale-100 transition-transform"></div>
+                        </div>
+                      </div>
+              
+                      {/* Additional Details (Hidden by default, shows when selected) */}
+                      {formData.participantType === option.value && <div className="mt-2 text-sm text-white/60">
+                        {option.details}
+                      </div>}
+              
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Individual Sponsorship Items */}
+          <AccordionItem value="individual-sponsorship" className="border-white/80">
+            <AccordionTrigger className="text-white/80 text-lg font-semibold border-white/20 [&>svg]:w-8 [&>svg]:h-8 [&>svg]:text-white/80">SPONSORSHIP PRODUCTS:</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-1">
+                {[
+                  { label: 'Tee Box Sponsor (You own the box!)', value: 'teeBoxSponsorship', details: 'Recognition at banquet, name listed in tournament brochure, and your logo on hole flag of the tee box which is yours to keep. $500 of this will go to the club house fees if you sponsor a tent on your tee box to offer refreshments.'},
+                  { label: 'Driving Range Sponsor', value: 'drivingRangeSponsorship', details: 'Recognition at banquet, name listed in tournament brochure, sign placed on driving range'},
+                  { label: 'Hole Flag Sponsor', value: 'holeFlagSponsorship', details: 'Name listed in tournament brochure, flag on hole that will be yours at end of tournament'},
+                  { label: 'Flag Prize Sponsor', value: 'flagPrizeSponsorship', details: 'Recognition at banquet, Name listed in tournament brochure'}
+                ].map((option) => (
+                  <div className="group" key={option.value}>
+                    <label className="flex flex-col cursor-pointer text-white/60 text-lg pb-2
+                      group-has-[input:checked]:border group-has-[input:checked]:border-customInputBorder group-has-[input:checked]:rounded-lg
+                      group-has-[input:checked]:bg-black/80
+                      hover:border hover:border-customInputBorder hover:bg-black/20 p-2
+                      border border-transparent rounded-lg transition-all">
+                      
+                      {/* Main Selection */}
+                      <div className="flex items-center justify-between">
+                        <span>{option.label}</span>
+                        <div className="relative ml-auto">
+                          {/* Hidden Radio Input */}
+                          <input
+                            type="radio"
+                            name="participantType"
+                            value={option.value}
+                            checked={formData.participantType === option.value}
+                            onChange={handleChange}
+                            className="sr-only peer"
+                          />
+                          {/* Outer Circle */}
+                          <div className="h-6 w-6 rounded-full border-2 border-customInputBorder"></div>
+                          {/* Inner Circle */}
+                          <div className="h-4 w-4 rounded-full bg-customInputBorder absolute top-1 left-1 scale-0 peer-checked:scale-100 transition-transform"></div>
+                        </div>
+                      </div>
+              
+                      {/* Additional Details (Hidden by default, shows when selected) */}
+                      {formData.participantType === option.value && <div className="mt-2 text-sm text-white/60">
+                        {option.details}
+                      </div>}
+              
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
 
       {/** About selection type text */}
@@ -492,20 +610,17 @@ function RegistrationFormContent() {
             given as door prizes at the banquet. To better ensure we correctly recognize your company for
             these donations, we are asking for some additional support during the planning phase of the
             event in the following areas:<br /><br />
-            <ul>
-              <li>
-                Early notification of what your donation will consist of. This can be done using the
-                designated section of the attached form or through email notification. For door prizes,
-                what you anticipate on the door prize being. Having this information before <span className="font-bold underline">AUGUST
-                1st, 2021</span> would be greatly appreciated.
-              </li><br/>
-              <li>
-                For any door prizes dropped off at various locations, attaching a business card to make
-                sure we have recognized your support correctly.
-                Thank you again for your continued support and we look forward to seeing you at this year&apos;s
-                tournament.
-              </li>
-            </ul>
+
+            Early notification of what your donation will consist of. This can be done using the
+            designated section of the attached form or through email notification. For door prizes,
+            what you anticipate on the door prize being. Having this information before <span className="font-bold underline">AUGUST
+            1st, 2021</span> would be greatly appreciated.
+              <br/><br/>
+             
+            For any door prizes dropped off at various locations, attaching a business card to make
+            sure we have recognized your support correctly.
+            Thank you again for your continued support and we look forward to seeing you at this year&apos;s
+            tournament.
           </p>
         )}
       </div>
