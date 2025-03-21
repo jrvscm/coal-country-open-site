@@ -11,10 +11,6 @@ interface DefaultFormFieldsProps {
     email: string;
     phone: string;
     handicap: string;
-    address: string;
-    city: string;
-    state: string;
-    zip: string;
     shirtSize: string;
     banquet: string;
     dinnerTickets: string;

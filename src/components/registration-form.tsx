@@ -10,17 +10,21 @@ import { loadStripe } from '@stripe/stripe-js';
 import { useSearchParams } from 'next/navigation';
 import { useTournamentDate } from '@/context/TournamentDateContext';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import GolfersFormFields from '@/components/golfers-form-fields';
+
+type Golfer = {
+  name: string;
+  handicap: string;
+  tShirtSize: string;
+};
 
 export type FormDataType = {
+  golfers: Array<Golfer>;
   name: string;
   email: string;
   phone: string;
   company: string;
   handicap: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
   shirtSize: string;
   shoeSize: string;
   banquet: string;
@@ -32,15 +36,15 @@ export type FormDataType = {
   teamContactName?: string;
   teamContactPhone?: string;
   teamContactEmail?: string;
-  playerOneName?: string;
-  playerTwoName?: string;
-  playerThreeName?: string;
-  playerOneHandicap?: string;
-  playerTwoHandicap?: string;
-  playerThreeHandicap?: string;
-  playerOneTShirtSize?: string;
-  playerTwoTShirtSize?: string;
-  playerThreeTShirtSize?: string;
+  player1Name?: string;
+  player2Name?: string;
+  player3Name?: string;
+  player1Handicap?: string;
+  player2Handicap?: string;
+  player3Handicap?: string;
+  player1TShirtSize?: string;
+  player2TShirtSize?: string;
+  player3TShirtSize?: string;
 };
 
 export default function RegistrationForm() {
@@ -77,15 +81,12 @@ function RegistrationFormContent() {
   type FormErrorsType = Partial<Record<keyof FormDataType, string>>;
 
   const defaultFormState = useMemo<FormDataType>(() => ({
+    golfers: Array(3).fill({ name: "", handicap: "", tShirtSize: "" }), 
     name: '',
     email: '',
     phone: '',
     company: '',
     handicap: '',
-    address: '',
-    city: '',
-    state: '',
-    zip: '',
     shirtSize: '',
     shoeSize: '',
     banquet: '',
@@ -97,15 +98,15 @@ function RegistrationFormContent() {
     teamContactName: '',
     teamContactPhone: '',
     teamContactEmail: '',
-    playerOneName: '',
-    playerTwoName: '',
-    playerThreeName: '',
-    playerOneHandicap: '',
-    playerTwoHandicap: '',
-    playerThreeHandicap: '',
-    playerOneTShirtSize: '',
-    playerTwoTShirtSize: '',
-    playerThreeTShirtSize: '',
+    player1Name: '',
+    player2Name: '',
+    player3Name: '',
+    player1Handicap: '',
+    player2Handicap: '',
+    player3Handicap: '',
+    player1TShirtSize: '',
+    player2TShirtSize: '',
+    player3TShirtSize: '',
 }), []);
 
   const resetForm = useCallback(() => setFormData(defaultFormState), [defaultFormState]);
@@ -115,45 +116,55 @@ function RegistrationFormContent() {
   const [stripeFee, setStripeFee] = useState(0);
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const phoneRegex = /^\d{10}$/;
-  const zipRegex = /^\d{5}$/;
   const handicapRegex = /^[+-]?\d+(\.\d{1,2})?$/;
   const flagPrizeRegex = useMemo(() => (/^\d+$/), [])
 
   const validateForm = () => {
     const errors: FormErrorsType = {}; 
 
-    if(formData.participantType !== 'teamSponsorEntry') {
-      if (!formData.address) errors.address = "Address is required";
+    if(formData.participantType !== 'teamSponsorEntry' && !["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType)) {
       if (!formData.name) errors.name = "Name is required";
       if (!formData.email || !emailRegex.test(formData.email)) errors.email = "Invalid email";
       if (!formData.phone || !phoneRegex.test(formData.phone.replace(/\D/g, ""))) errors.phone = "Invalid phone number";
-      if (!formData.zip || !zipRegex.test(formData.zip)) errors.zip = "Invalid zip code";
       if (!formData.handicap || !handicapRegex.test(formData.handicap)) errors.handicap = "Enter a valid handicap";
       if(!formData.company) errors.company = "Company is required";
-      if(!formData.city) errors.city = "City is required";
-      if(!formData.state) errors.state = "State is required";
-      if(!formData.zip) errors.zip = "Zip is required";
       if(!formData.shirtSize) errors.shirtSize = "Shirt size is required";
     }
 
-    if (formData.participantType === "teamSponsorEntry") {
+    if (formData.participantType === "teamSponsorEntry" && !["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType)) {
       if (!formData.teamName) errors.teamName = "Team Name is required";
       //player names
-      if (!formData.playerOneName) errors.playerOneName = "Player One Name is required";
-      if (!formData.playerTwoName) errors.playerTwoName = "Player Two Name is required";
-      if (!formData.playerThreeName) errors.playerThreeName = "Player Three Name is required";
+      if (!formData.player1Name) errors.player1Name = "Player One Name is required";
+      if (!formData.player2Name) errors.player2Name = "Player Two Name is required";
+      if (!formData.player3Name) errors.player3Name = "Player Three Name is required";
       //player handicaps
-      if (!formData.playerOneHandicap || !handicapRegex.test(formData.playerOneHandicap)) errors.playerOneHandicap = "Player One Handicap is required";
-      if (!formData.playerTwoHandicap || !handicapRegex.test(formData.playerTwoHandicap)) errors.playerTwoHandicap = "Player Two Handicap is required";
-      if (!formData.playerThreeHandicap || !handicapRegex.test(formData.playerThreeHandicap)) errors.playerThreeHandicap = "Player Three Handicap is required";
+      if (!formData.player1Handicap || !handicapRegex.test(formData.player1Handicap)) errors.player1Handicap = "Player One Handicap is required";
+      if (!formData.player2Handicap || !handicapRegex.test(formData.player2Handicap)) errors.player2Handicap = "Player Two Handicap is required";
+      if (!formData.player3Handicap || !handicapRegex.test(formData.player3Handicap)) errors.player3Handicap = "Player Three Handicap is required";
       //player shirt size
-      if (!formData.playerOneTShirtSize) errors.playerOneTShirtSize = "Player One T-Shirt size is required";
-      if (!formData.playerTwoTShirtSize) errors.playerTwoTShirtSize = "Player Two T-Shirt size is required";
-      if (!formData.playerThreeTShirtSize) errors.playerThreeTShirtSize = "Player Three T-Shirt size is required";
+      if (!formData.player1TShirtSize) errors.player1TShirtSize = "Player One T-Shirt size is required";
+      if (!formData.player2TShirtSize) errors.player2TShirtSize = "Player Two T-Shirt size is required";
+      if (!formData.player3TShirtSize) errors.player3TShirtSize = "Player Three T-Shirt size is required";
       //team contact
       if (!formData.teamContactName) errors.teamContactName = "Team contact name is required";
       if (!formData.teamContactPhone || !phoneRegex.test(formData.teamContactPhone.replace(/\D/g, ""))) errors.teamContactPhone = "Team contact phone is invalid";
       if (!formData.teamContactEmail || !emailRegex.test(formData.teamContactEmail)) errors.teamContactEmail = "Team contact email is invalid";
+    }
+
+    if(["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType)) {
+      //team contact
+      if (!formData.company) errors.company = "Company is required";
+      if (!formData.teamContactName) errors.teamContactName = "Team contact name is required";
+      if (!formData.teamContactPhone || !phoneRegex.test(formData.teamContactPhone.replace(/\D/g, ""))) errors.teamContactPhone = "Team contact phone is invalid";
+      if (!formData.teamContactEmail || !emailRegex.test(formData.teamContactEmail)) errors.teamContactEmail = "Team contact email is invalid";
+
+      // Validate golfers dynamically
+      formData.golfers.forEach((golfer, index) => {
+        if (!golfer.name) errors[`golfers.${index}.name`] = `Player ${index + 1} Name is required`;
+        if (!golfer.handicap || (!handicapRegex.test(golfer.handicap) && golfer.handicap.toString().toLowerCase() !== 'placeholder')) {
+          errors[`golfers.${index}.handicap`] = `Player ${index + 1} Handicap is required`;
+        }        if (!golfer.tShirtSize) errors[`golfers.${index}.tShirtSize`] = `Player ${index + 1} T-Shirt Size is required`;
+      });
     }
 
     if(!formData.banquet) errors.banquet = "Banquet choice is required";
@@ -168,18 +179,18 @@ function RegistrationFormContent() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+      const { name, value } = e.target;
 
-    // If the participant type changes, reset the form while keeping the new participant type
-    if (name === 'participantType') {
+      // If the participant type changes, reset the form while keeping the new participant type
+      if (name === 'participantType') {
         setFormData({
-            ...defaultFormState,
-            participantType: value,
+          ...defaultFormState,
+          participantType: value,
+          golfers: Array(2).fill({ name: "", handicap: "", tShirtSize: "" }) // Always reset to 2 golfers
         });
-
-        // Reset all form errors
+      
         setFormErrors({});
-    } else {
+      } else {
         setFormData((prev) => ({ ...prev, [name]: value }));
 
         // Remove only the error related to the current field
@@ -259,15 +270,33 @@ function RegistrationFormContent() {
   
   const handleCheckout = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-  
     if (!validateForm()) return;
-  
+
+    const maxGolfers = formData.participantType === "platinumSponsorship" ? 10 :
+                   formData.participantType === "goldSponsorship" ? 5 :
+                   formData.participantType === "silverSponsorship" ? 2 : 0;
+
     try {
-      // **Step 1: Save registration and get UID**
+      const formattedFormData = {
+        ...formData,
+        ...Object.fromEntries(
+          Array.from({ length: maxGolfers }, (_, i) => {
+            const golfer = formData.golfers[i] || { name: "", handicap: "", tShirtSize: "" };
+            return [
+              [`player${i + 1}Name`, golfer.name],
+              [`player${i + 1}Handicap`, golfer.handicap],
+              [`player${i + 1}TShirtSize`, golfer.tShirtSize]
+            ];
+          }).flat()
+        )
+      };
+  
+      console.log(formattedFormData)
+      return
       const registrationResponse = await fetch('/api/registration/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formData }),
+        body: JSON.stringify({ formData: formattedFormData }),
       });
   
       const registrationResult = await registrationResponse.json();
@@ -280,7 +309,7 @@ function RegistrationFormContent() {
   
       console.log('✅ Registration saved successfully with UID:', registrationResult.uid);
   
-      // **Step 2: Proceed to Stripe checkout**
+      // Proceed to checkout
       const stripe = await stripePromise;
       if (!stripe) {
         console.error("Stripe failed to load.");
@@ -291,7 +320,7 @@ function RegistrationFormContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          uid: registrationResult.uid, // Pass the UID from Google Sheets
+          uid: registrationResult.uid,
           totalPrice: (totalPrice + stripeFee).toFixed(2),
           breakdown: {
             basePrice: basePrice.toFixed(2),
@@ -311,7 +340,7 @@ function RegistrationFormContent() {
     } catch (error) {
       console.error('Checkout Error:', error);
     }
-  };  
+  };
 
   const handleScrollDown = () => {
     document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth' });
@@ -604,7 +633,7 @@ function RegistrationFormContent() {
           entries are reviewed and entered at the CCO Board discretion. <span className="underline font-bold">Entrants must be 21 years of age</span>.</p>
         )}
 
-        {formData.participantType == 'singlePlayerSponsorEntry' && (
+        {formData.participantType === 'singlePlayerSponsorEntry' && (
           <p>
             In addition to the sponsorship fee, we encourage you to make donations of cash or gifts to be
             given as door prizes at the banquet. To better ensure we correctly recognize your company for
@@ -623,22 +652,43 @@ function RegistrationFormContent() {
             tournament.
           </p>
         )}
+
+        {["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType) && (
+          <p className="p-2 md:text-lg bg-customYellow text-secondary-foreground font-bold">IF YOU DO NOT KNOW WHO WILL PLAY ON YOU YOUR TEAM AT THE TIME OF SIGNUP; TYPE THE WORD <span className="underline">PLACEHOLDER</span> IN ALL PLAYER FIELDS. YOU WILL NEED TO CONTACT THE TOURNAMENT BOARD IN PERSON TO ADD PLAYERS.</p>
+        )}
       </div>
       {/* Divider */}
       <div className="col-span-full my-8">
         <hr className="border-t border-white/20" />
       </div>
 
-      {formData.participantType === 'teamSponsorEntry' && (
+      {formData.participantType === 'teamSponsorEntry' && !["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType) && (
         <TeamFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
       )}
 
-      {formData.participantType !== 'teamSponsorEntry' && (
+      {formData.participantType !== 'teamSponsorEntry' && !["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType) && (
         <DefaultFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
       )}
 
-      {formData.participantType === 'singlePlayerSponsorEntry' && (
+      {formData.participantType === 'singlePlayerSponsorEntry' && !["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType) && (
         <SingleEntryFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
+      )}
+
+      {["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType) && (
+        <GolfersFormFields
+          setFormErrors={setFormErrors}
+          handleSelectChange={handleSelectChange}
+          handleChange={handleChange}
+          golfers={formData.golfers}
+          setFormData={setFormData}
+          formErrors={formErrors}
+          formData={formData}
+          maxGolfers={
+            formData.participantType === "platinumSponsorship" ? 10 :
+            formData.participantType === "goldSponsorship" ? 5 :
+            formData.participantType === "silverSponsorship" ? 2 : 0
+          }
+        />
       )}
 
       {/* Submit Button */}

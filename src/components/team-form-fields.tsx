@@ -32,140 +32,140 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
         </div>
 
         <div className="col-span-2">
-            <h3 className="text-white/80 text-lg font-semibold mb-2">PLAYER ONE</h3>
+          <h3 className="text-white/80 text-lg font-semibold mb-2">PLAYER ONE</h3>
           <div className="mt-3">
-            <label htmlFor="playerOneName" className="sr-only hidden block text-sm text-white/60 mb-1">Player One Name</label>
+            <label htmlFor="player1Name" className="sr-only hidden block text-sm text-white/60 mb-1">Player One Name</label>
             <Input
-              id="playerOneName"
-              name="playerOneName"
+              id="player1Name"
+              name="player1Name"
               placeholder="Player One Name"
-              value={formData.playerOneName}
+              value={formData.player1Name}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.playerOneName ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.player1Name ? 'border-red-500' : 'border-customInputBorder'}
               `} 
             />
-            {formErrors.playerOneName && <p className="text-red-500 text-sm mt-1">{formErrors.playerOneName}</p>}
+            {formErrors.player1Name && <p className="text-red-500 text-sm mt-1">{formErrors.player1Name}</p>}
           </div>
           <div className="mt-3">
-            <label htmlFor="playerOneHandicap" className="sr-only hidden block text-sm text-white/60 mb-1">Player One Handicap</label>
+            <label htmlFor="player1Handicap" className="sr-only hidden block text-sm text-white/60 mb-1">Player One Handicap</label>
             <Input
-              id="playerOneHandicap"
-              name="playerOneHandicap"
+              id="player1Handicap"
+              name="player1Handicap"
               placeholder="Player One Handicap"
-              value={formData.playerOneHandicap}
+              value={formData.player1Handicap}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.playerOneHandicap ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.player1Handicap ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
-            {formErrors.playerOneHandicap && <p className="text-red-500 text-sm mt-1">{formErrors.playerOneHandicap}</p>}
+            {formErrors.player1Handicap && <p className="text-red-500 text-sm mt-1">{formErrors.player1Handicap}</p>}
           </div>
           <div className="mt-3">
-            <label htmlFor="playerOneTShirtSize" className="sr-only hidden block text-sm text-white/60 mb-1">Player One T-Shirt Size</label>
+            <label htmlFor="player1TShirtSize" className="sr-only hidden block text-sm text-white/60 mb-1">Player One T-Shirt Size</label>
             <Input
-              id="playerOneTShirtSize"
-              name="playerOneTShirtSize"
+              id="player1TShirtSize"
+              name="player1TShirtSize"
               placeholder="Player One T-Shirt Size"
-              value={formData.playerOneTShirtSize}
+              value={formData.player1TShirtSize}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.playerOneTShirtSize ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.player1TShirtSize ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
-            {formErrors.playerOneTShirtSize && <p className="text-red-500 text-sm mt-1">{formErrors.playerOneTShirtSize}</p>}
+            {formErrors.player1TShirtSize && <p className="text-red-500 text-sm mt-1">{formErrors.player1TShirtSize}</p>}
           </div>
         </div>
 
         <div className="col-span-2">
           <h3 className="text-white/80 text-lg font-semibold mb-2">PLAYER TWO</h3>
           <div className="mt-3">
-            <label htmlFor="playerTwoName" className="sr-only hidden block text-sm text-white/60 mb-1">Player Two Name</label>
+            <label htmlFor="player2Name" className="sr-only hidden block text-sm text-white/60 mb-1">Player Two Name</label>
             <Input
-              id="playerTwoName"
-              name="playerTwoName"
+              id="player2Name"
+              name="player2Name"
               placeholder="Player Two Name"
-              value={formData.playerTwoName}
+              value={formData.player2Name}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.playerTwoName ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.player2Name ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
-            {formErrors.playerTwoName && <p className="text-red-500 text-sm mt-1">{formErrors.playerTwoName}</p>}
+            {formErrors.player2Name && <p className="text-red-500 text-sm mt-1">{formErrors.player2Name}</p>}
           </div>
           <div className="mt-3">
-            <label htmlFor="playerTwoHandicap" className="sr-only hidden block text-sm text-white/60 mb-1">Player Two Handicap</label>
+            <label htmlFor="player2Handicap" className="sr-only hidden block text-sm text-white/60 mb-1">Player Two Handicap</label>
             <Input
-              id="playerTwoHandicap"
-              name="playerTwoHandicap"
+              id="player2Handicap"
+              name="player2Handicap"
               placeholder="Player Two Handicap"
-              value={formData.playerTwoHandicap}
+              value={formData.player2Handicap}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.playerTwoHandicap ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.player2Handicap ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
-            {formErrors.playerTwoHandicap && <p className="text-red-500 text-sm mt-1">{formErrors.playerTwoHandicap}</p>}
+            {formErrors.player2Handicap && <p className="text-red-500 text-sm mt-1">{formErrors.player2Handicap}</p>}
           </div>
           <div className="mt-3">
-            <label htmlFor="playerTwoTShirtSize" className="sr-only hidden block text-sm text-white/60 mb-1">Player Two T-Shirt Size</label>
+            <label htmlFor="player2TShirtSize" className="sr-only hidden block text-sm text-white/60 mb-1">Player Two T-Shirt Size</label>
             <Input
-              id="playerTwoTShirtSize"
-              name="playerTwoTShirtSize"
+              id="player2TShirtSize"
+              name="player2TShirtSize"
               placeholder="Player Two T-Shirt Size"
-              value={formData.playerTwoTShirtSize}
+              value={formData.player2TShirtSize}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.playerTwoTShirtSize ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.player2TShirtSize ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
-            {formErrors.playerTwoTShirtSize && <p className="text-red-500 text-sm mt-1">{formErrors.playerTwoTShirtSize}</p>}
+            {formErrors.player2TShirtSize && <p className="text-red-500 text-sm mt-1">{formErrors.player2TShirtSize}</p>}
           </div>
         </div>
 
         <div className="col-span-2">
           <h3 className="text-white/80 text-lg font-semibold mb-2">PLAYER THREE</h3>
           <div className="mt-3">
-            <label htmlFor="playerThreeName" className="sr-only hidden block text-sm text-white/60 mb-1">Player Three Name</label>
+            <label htmlFor="player3Name" className="sr-only hidden block text-sm text-white/60 mb-1">Player Three Name</label>
             <Input
-              id="playerThreeName"
-              name="playerThreeName"
+              id="player3Name"
+              name="player3Name"
               placeholder="Player Three Name"
-              value={formData.playerThreeName}
+              value={formData.player3Name}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.playerThreeName ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.player3Name ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
-            {formErrors.playerThreeName && <p className="text-red-500 text-sm mt-1">{formErrors.playerThreeName}</p>}
+            {formErrors.player3Name && <p className="text-red-500 text-sm mt-1">{formErrors.player3Name}</p>}
           </div>
           <div className="mt-3">
-            <label htmlFor="playerThreeHandicap" className="sr-only hidden block text-sm text-white/60 mb-1">Player Three Handicap</label>
+            <label htmlFor="player3Handicap" className="sr-only hidden block text-sm text-white/60 mb-1">Player Three Handicap</label>
             <Input
-              id="playerThreeHandicap"
-              name="playerThreeHandicap"
+              id="player3Handicap"
+              name="player3Handicap"
               placeholder="Player Three Handicap"
-              value={formData.playerThreeHandicap}
+              value={formData.player3Handicap}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.playerThreeHandicap ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.player3Handicap ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
-            {formErrors.playerThreeHandicap && <p className="text-red-500 text-sm mt-1">{formErrors.playerThreeHandicap}</p>}
+            {formErrors.player3Handicap && <p className="text-red-500 text-sm mt-1">{formErrors.player3Handicap}</p>}
           </div>
           <div className="mt-3">
-            <label htmlFor="playerThreeTShirtSize" className="sr-only hidden block text-sm text-white/60 mb-1">Player Three T-Shirt Size</label>
+            <label htmlFor="player3TShirtSize" className="sr-only hidden block text-sm text-white/60 mb-1">Player Three T-Shirt Size</label>
             <Input
-              id="playerThreeTShirtSize"
-              name="playerThreeTShirtSize"
+              id="player3TShirtSize"
+              name="player3TShirtSize"
               placeholder="Player Three T-Shirt Size"
-              value={formData.playerThreeTShirtSize}
+              value={formData.player3TShirtSize}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.playerThreeTShirtSize ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.player3TShirtSize ? 'border-red-500' : 'border-customInputBorder'}
               `} 
             />
-            {formErrors.playerThreeTShirtSize && <p className="text-red-500 text-sm mt-1">{formErrors.playerThreeTShirtSize}</p>}
+            {formErrors.player3TShirtSize && <p className="text-red-500 text-sm mt-1">{formErrors.player3TShirtSize}</p>}
           </div>
         </div>
 
@@ -216,8 +216,8 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
           </div>
         </div>
 
-      {/* Banquet Info Group */}
-      <div className="col-span-2">
+        {/* Banquet Info Group */}
+        <div className="col-span-2">
             <h3 className="text-white/80 text-lg font-semibold mb-2">BANQUET</h3>
             <div className="mt-3">
               <label className="sr-only block text-sm text-white/60 mb-1">Will You Attend Banquet?</label>
