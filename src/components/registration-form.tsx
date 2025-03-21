@@ -654,7 +654,7 @@ function RegistrationFormContent() {
         )}
 
         {["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType) && (
-          <p className="p-2 md:text-lg bg-customYellow text-secondary-foreground font-bold">IF YOU DO NOT KNOW WHO WILL PLAY ON YOU YOUR TEAM AT THE TIME OF SIGNUP; TYPE THE WORD <span className="underline">PLACEHOLDER</span> IN ALL PLAYER FIELDS. YOU WILL NEED TO CONTACT THE TOURNAMENT BOARD IN PERSON TO ADD PLAYERS.</p>
+          <p className="p-2 mt-6 md:text-lg bg-customYellow text-secondary-foreground font-bold">IF YOU DO NOT KNOW WHO WILL PLAY ON YOUR SPONSORSHIP AT THE TIME OF SIGNUP; TYPE THE WORD <span className="underline">PLACEHOLDER</span> IN ALL PLAYER FIELDS FOR AS MANY PLAYERS AS YOU ARE EXPECTING. YOU WILL NEED TO CONTACT THE TOURNAMENT BOARD TO ADD YOUR PLAYERS BEFORE THE TOURNAMENT.</p>
         )}
       </div>
       {/* Divider */}
