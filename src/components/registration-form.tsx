@@ -169,6 +169,9 @@ function RegistrationFormContent() {
 
     if(formData.participantType === 'singlePlayerSponsorEntry') {
       if(!formData.doorPrize) errors.doorPrize = "Door prize contribution is required"
+    }
+    
+    if(formData.participantType === 'singlePlayerSponsorEntry' || ["platinumSponsorship", "goldSponsorship", "silverSponsorship", "flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship"].includes(formData.participantType)) {
       if(formData.flagPrizeContribution && !flagPrizeRegex.test(formData.flagPrizeContribution)) errors.flagPrizeContribution = "Use only whole numbers and no decimals"
     }
 

@@ -1,5 +1,33 @@
 
+'use client'
+import { useEffect, useState } from 'react';
+import { fetchSponsors } from '@/lib/contentful';
+
 export default function SponsorContent() {
+  const [sponsors, setSponsors] = useState([])
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadSponsors = async () => {
+      try {
+        const data = await fetchSponsors();
+        if (isMounted) {
+          setSponsors(data);
+        }
+      } catch (err) {
+        console.error('Failed to load sponsors:', err);
+      } finally {
+        // if (isMounted) setLoading(false);
+      }
+    };
+
+    loadSponsors();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+  // console.log(sponsors)
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">
 
@@ -20,7 +48,16 @@ export default function SponsorContent() {
         <hr className="border-t border-white/20" />
       </div>
 
-      {/** SPONSORS GO HERE DYNAMIC CTFUL THAT SHIT */}
+      <div className="col-span-full grid grid-cols-2 md:grid-cols-4 gap-4 place-items-center">
+        {sponsors.map((sponsor, index) => (
+          <img
+            key={`sponsor-${index}`}
+            src={sponsor.logo}
+            alt={'description'}
+            className="w-full max-h-24 object-contain filter grayscale hover:grayscale-0 transition"
+          />
+        ))}
+      </div>
 
       {/* Divider */}
       <div className="col-span-full my-8">

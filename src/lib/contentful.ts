@@ -27,4 +27,18 @@ export const fetchSchedule = async () => {
       : String(entry?.fields?.startDate || 'Unknown Date');
   }  
 
+  export const fetchSponsors = async () => {
+    const res = await client.getEntries({
+      content_type: 'sponsorLogos', // Replace with your actual Content Model ID
+    });
+
+    const sponsors = res.items?.[0]?.fields?.['sponsorLogos'].map((item) => ({
+      href: item.fields.description,
+      logo: item.fields.file.url, // Adjust field name if needed
+    }));
+  
+    return sponsors;
+  };
+  
+
 export default client;
