@@ -4,7 +4,7 @@ import React from 'react';
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { FormDataType } from '@/components/registration-form';
-
+import SingleEntryFields from '@/components/single-entry-fields';
 interface TeamFormFieldsProps {
   formData: FormDataType;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -257,6 +257,8 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
             </Select>
             </div>
         </div>
+        <SingleEntryFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
+
     </>
     );
 }
