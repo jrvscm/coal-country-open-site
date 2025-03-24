@@ -172,47 +172,47 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
         <div className="col-span-2">
           <h3 className="text-white/80 text-lg font-semibold mb-2">TEAM CONTACT</h3>
           <div className="mt-3">
-            <label htmlFor="teamContactName" className="sr-only hidden block text-sm text-white/60 mb-1">Team Contact Name</label>
+            <label htmlFor="contactName" className="sr-only hidden block text-sm text-white/60 mb-1">Team Contact Name</label>
             <Input
-              id="teamContactName"
-              name="teamContactName"
+              id="contactName"
+              name="contactName"
               placeholder="Team Contact Name"
-              value={formData.teamContactName}
+              value={formData.contactName}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.teamContactName ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.contactName ? 'border-red-500' : 'border-customInputBorder'}
               `} 
             />
-            {formErrors.teamContactName && <p className="text-red-500 text-sm mt-1">{formErrors.teamContactName}</p>}
+            {formErrors.contactName && <p className="text-red-500 text-sm mt-1">{formErrors.contactName}</p>}
           </div>
 
           <div className="mt-3">
-            <label htmlFor="teamContactPhone" className="sr-only hidden block text-sm text-white/60 mb-1">Team Contact Phone</label>
+            <label htmlFor="contactPhone" className="sr-only hidden block text-sm text-white/60 mb-1">Team Contact Phone</label>
             <Input
-              id="teamContactPhone"
-              name="teamContactPhone"
+              id="contactPhone"
+              name="contactPhone"
               placeholder="Team Contact Phone"
-              value={formData.teamContactPhone}
+              value={formData.contactPhone}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.teamContactPhone? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.contactPhone? 'border-red-500' : 'border-customInputBorder'}
               `} 
             />
-            {formErrors.teamContactPhone && <p className="text-red-500 text-sm mt-1">{formErrors.teamContactPhone}</p>}
+            {formErrors.contactPhone && <p className="text-red-500 text-sm mt-1">{formErrors.contactPhone}</p>}
           </div>
           <div className="mt-3">
-            <label htmlFor="teamContactEmail" className="sr-only hidden block text-sm text-white/60 mb-1">Team Contact Email</label>
+            <label htmlFor="contactEmail" className="sr-only hidden block text-sm text-white/60 mb-1">Team Contact Email</label>
             <Input
-              id="teamContactEmail"
-              name="teamContactEmail"
+              id="contactEmail"
+              name="contactEmail"
               placeholder="Team Contact Email"
-              value={formData.teamContactEmail}
+              value={formData.contactEmail}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.teamContactEmail ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.contactEmail ? 'border-red-500' : 'border-customInputBorder'}
               `} 
             />
-            {formErrors.teamContactEmail && <p className="text-red-500 text-sm mt-1">{formErrors.teamContactEmail}</p>}
+            {formErrors.contactEmail && <p className="text-red-500 text-sm mt-1">{formErrors.contactEmail}</p>}
           </div>
         </div>
 

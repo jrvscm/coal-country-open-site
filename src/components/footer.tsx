@@ -27,8 +27,8 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-bold mb-2">About</h3>
             <ul className="space-y-2">
-              <li><Link href="/register" className="hover:text-gray-400">Register</Link></li>
-              <li><Link href="/sponsors" className="hover:text-gray-400">Sponsors</Link></li>
+              <li><Link href="/registration/player" className="hover:text-gray-400">Register</Link></li>
+              <li><Link href="/registration/sponsor" className="hover:text-gray-400">Sponsors</Link></li>
               <li><Link href="/rules" className="hover:text-gray-400">Rules</Link></li>
             </ul>
           </div>
@@ -37,9 +37,8 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-bold mb-2">Follow Us</h3>
             <ul className="space-y-2">
-              <li><a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">Instagram</a></li>
-              <li><a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">TikTok</a></li>
-              <li><a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">Facebook</a></li>
+              <li><a href="https://www.tiktok.com/@coal.country.open" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">TikTok</a></li>
+              <li><a href="https://www.facebook.com/p/Coal-Country-Open-100057272935201/" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">Facebook</a></li>
             </ul>
           </div>
 

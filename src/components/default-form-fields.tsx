@@ -7,11 +7,11 @@ import { FormDataType } from '@/components/registration-form';
 interface DefaultFormFieldsProps {
   formData: {
     company: string;
-    name: string;
-    email: string;
-    phone: string;
-    handicap: string;
-    shirtSize: string;
+    contactEmail: string;
+    contactPhone: string;
+    player1Name: string;
+    player1Handicap: string;
+    player1TShirtSize: string;
     banquet: string;
     dinnerTickets: string;
   };
@@ -47,60 +47,60 @@ export default function DefaultFormFields({
         <div className="col-span-2">
           <h3 className="text-white/80 text-lg font-semibold mb-2">PERSONAL INFO</h3>
           <div className="mt-3">
-            <label htmlFor="name" className="sr-only hidden block text-sm text-white/60 mb-1">Name</label>
+            <label htmlFor="player1Name" className="sr-only hidden block text-sm text-white/60 mb-1">Name</label>
             <Input
-              id="name"
-              name="name"
+              id="player1Name"
+              name="player1Name"
               placeholder="Enter Your Name"
-              value={formData.name}
+              value={formData.player1Name}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.name ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.contactName ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
-            {formErrors.name && <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>}
+            {formErrors.player1Name && <p className="text-red-500 text-sm mt-1">{formErrors.player1Name}</p>}
           </div>
           <div className="mt-3">
-            <label htmlFor="email" className="sr-only hidden block text-sm text-white/60 mb-1">Email</label>
+            <label htmlFor="contactEmail" className="sr-only hidden block text-sm text-white/60 mb-1">Email</label>
             <Input
-              id="email"
-              name="email"
+              id="contactEmail"
+              name="contactEmail"
               placeholder="Enter Your Email"
-              value={formData.email}
+              value={formData.contactEmail}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.email ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.contactEmail ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
-            {formErrors.email && <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>}
+            {formErrors.contactEmail && <p className="text-red-500 text-sm mt-1">{formErrors.contactEmail}</p>}
           </div>
           <div className="mt-3">
-            <label htmlFor="phone" className="sr-only block text-sm text-white/60 mb-1">Phone</label>
+            <label htmlFor="contactPhone" className="sr-only block text-sm text-white/60 mb-1">Phone</label>
             <Input
-              id="phone"
-              name="phone"
-              placeholder="Phone"
-              value={formData.phone}
+              id="contactPhone"
+              name="contactPhone"
+              placeholder="Phone Number"
+              value={formData.contactPhone}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.phone ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.contactPhone ? 'border-red-500' : 'border-customInputBorder'}
               `}            
             />
-            {formErrors.phone && <p className="text-red-500 text-sm mt-1">{formErrors.phone}</p>}
+            {formErrors.contactPhone && <p className="text-red-500 text-sm mt-1">{formErrors.contactPhone}</p>}
           </div>
           <div className="mt-3">
-            <label htmlFor="handicap" className="sr-only block text-sm text-white/60 mb-1">Average Score or Handicap</label>
+            <label htmlFor="player1Handicap" className="sr-only block text-sm text-white/60 mb-1">Average Score or Handicap</label>
             <Input
-              id="handicap"
-              name="handicap"
+              id="player1Handicap"
+              name="player1Handicap"
               placeholder="Handicap"
-              value={formData.handicap}
+              value={formData.player1Handicap}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.handicap ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.player1Handicap ? 'border-red-500' : 'border-customInputBorder'}
               `}  
             />
-            {formErrors.handicap && <p className="text-red-500 text-sm mt-1">{formErrors.handicap}</p>}
+            {formErrors.player1Handicap && <p className="text-red-500 text-sm mt-1">{formErrors.player1Handicap}</p>}
           </div>
         </div>
 
@@ -148,18 +148,18 @@ export default function DefaultFormFields({
       <div className="col-span-2">
         <h3 className="text-white/80 text-lg font-semibold mb-2">SIZING INFO</h3>
         <div className="mt-3">
-          <label htmlFor="shirtSize" className="sr-only block text-sm text-white/60 mb-1">Shirt Size</label>
+          <label htmlFor="player1TShirtSize" className="sr-only block text-sm text-white/60 mb-1">Shirt Size</label>
           <Input
-            id="shirtSize"
-            name="shirtSize"
+            id="player1TShirtSize"
+            name="player1TShirtSize"
             placeholder="Enter Your Shirt Size"
-            value={formData.shirtSize}
+            value={formData.player1TShirtSize}
             onChange={handleChange}
             className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-              ${formErrors.shirtSize ? 'border-red-500' : 'border-customInputBorder'}
+              ${formErrors.player1TShirtSize ? 'border-red-500' : 'border-customInputBorder'}
             `}  
           />
-          {formErrors.shirtSize && <p className="text-red-500 text-sm mt-1">{formErrors.shirtSize}</p>}
+          {formErrors.player1TShirtSize && <p className="text-red-500 text-sm mt-1">{formErrors.player1TShirtSize}</p>}
         </div>
       </div>
     </>

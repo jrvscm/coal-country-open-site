@@ -2,6 +2,9 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import FormDataType from '@/components/registration-form';
+import SingleEntryFields from '@/components/single-entry-fields';
+import { MdClose } from "react-icons/md";
+import { TiUserAddOutline } from "react-icons/ti";
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface GolfersFormProps {
@@ -73,50 +76,52 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
         <div className="col-span-2">
           <h3 className="text-white/80 text-lg font-semibold mb-2">COMPANY CONTACT</h3>
           <div className="mt-3">
-            <label htmlFor="teamContactName" className="sr-only hidden block text-sm text-white/60 mb-1">Contact Name</label>
+            <label htmlFor="contactName" className="sr-only hidden block text-sm text-white/60 mb-1">Contact Name</label>
             <Input
-              id="teamContactName"
-              name="teamContactName"
+              id="contactName"
+              name="contactName"
               placeholder="Contact Name"
-              value={formData.teamContactName}
+              value={formData.contactName}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.teamContactName ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.contactName ? 'border-red-500' : 'border-customInputBorder'}
               `} 
             />
-            {formErrors.teamContactName && <p className="text-red-500 text-sm mt-1">{formErrors.teamContactName}</p>}
+            {formErrors.contactName && <p className="text-red-500 text-sm mt-1">{formErrors.contactName}</p>}
           </div>
 
           <div className="mt-3">
-            <label htmlFor="teamContactPhone" className="sr-only hidden block text-sm text-white/60 mb-1">Contact Phone</label>
+            <label htmlFor="contactPhone" className="sr-only hidden block text-sm text-white/60 mb-1">Contact Phone</label>
             <Input
-              id="teamContactPhone"
-              name="teamContactPhone"
+              id="contactPhone"
+              name="contactPhone"
               placeholder="Contact Phone"
-              value={formData.teamContactPhone}
+              value={formData.contactPhone}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.teamContactPhone? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.contactPhone? 'border-red-500' : 'border-customInputBorder'}
               `} 
             />
-            {formErrors.teamContactPhone && <p className="text-red-500 text-sm mt-1">{formErrors.teamContactPhone}</p>}
+            {formErrors.contactPhone && <p className="text-red-500 text-sm mt-1">{formErrors.contactPhone}</p>}
           </div>
 
           <div className="mt-3">
-            <label htmlFor="teamContactEmail" className="sr-only hidden block text-sm text-white/60 mb-1">Contact Email</label>
+            <label htmlFor="contactEmail" className="sr-only hidden block text-sm text-white/60 mb-1">Contact Email</label>
             <Input
-              id="teamContactEmail"
-              name="teamContactEmail"
+              id="contactEmail"
+              name="contactEmail"
               placeholder="Contact Email"
-              value={formData.teamContactEmail}
+              value={formData.contactEmail}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                ${formErrors.teamContactEmail ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.contactEmail ? 'border-red-500' : 'border-customInputBorder'}
               `} 
             />
-            {formErrors.teamContactEmail && <p className="text-red-500 text-sm mt-1">{formErrors.teamContactEmail}</p>}
+            {formErrors.contactEmail && <p className="text-red-500 text-sm mt-1">{formErrors.contactEmail}</p>}
           </div>
         </div>
+
+        <SingleEntryFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
 
         <div className="col-span-2">
             <h3 className="text-white/80 text-lg font-semibold mb-2">BANQUET</h3>
@@ -205,9 +210,12 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
                     <Button
                     type="button"
                     onClick={() => removeGolfer(index)}
-                    className="mt-2 text-sm text-red-500 underline"
+                    className="mt-2 text-sm text-white/80 hover:text-white/30 bg-transparent hover:bg-transparent 
+                      border border-customInputBorder rounded-lg
+                      hover:border-customInputBorder/50
+                    "
                     >
-                    Remove Player {index + 1}
+                      <MdClose /> Delete Player
                     </Button>
                 )}
             </div>
@@ -219,9 +227,9 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
                 <Button
                 type="button"
                 onClick={addGolfer}
-                className="mt-6 bg-customPrimary text-white px-4 py-2 rounded-lg hover:bg-customPrimary/80"
+                className="bg-customPrimary text-white px-4 py-2 rounded-lg hover:bg-customPrimary/80"
                 >
-                + Add Golfer
+                <TiUserAddOutline /> Add Golfer
                 </Button>
             )}
         </div>

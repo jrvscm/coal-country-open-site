@@ -143,7 +143,7 @@ export default function Hero() {
                 <Link className="m-0 text-lg md:text-xl font-text" href="/registration/player">Register</Link>
               </Button>
               <Button asChild variant="default" className="p-0 md:p-6 bg-transparent w-full text-customYellow hover:bg-customYellow/60 hover:text-white border border-customYellow uppercase">
-                <Link className="m-0 text-lg md:text-xl font-text" href="/registration/sponsors">Sponsors</Link>
+                <Link className="m-0 text-lg md:text-xl font-text" href="/registration/sponsor">Sponsors</Link>
               </Button>
             </div>
 
@@ -167,13 +167,10 @@ export default function Hero() {
 
         {/* Sidebar Share Buttons */}
         <div className="absolute right-4 bottom-[80px] flex flex-col space-y-4 z-20">
-          <Link href="https://twitter.com" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-200 hover border border-customBackground hover:border-customYellow">
+          <Link href="https://www.facebook.com/p/Coal-Country-Open-100057272935201/" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-200 hover border border-customBackground hover:border-customYellow">
             <FaFacebookF className="h-6 w-6 text-customYellow" />
           </Link>
-          <Link href="https://instagram.com" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-200 border border-customBackground hover:border-customYellow">
-            <FaInstagram className="h-6 w-6 text-customYellow" />
-          </Link>
-          <Link href="https://linkedin.com" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-200 border border-customBackground hover:border-customYellow">
+          <Link href="https://www.tiktok.com/@coal.country.open" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-200 border border-customBackground hover:border-customYellow">
             <FaTiktok className="h-6 w-6 text-customYellow" />
           </Link>
         </div>
