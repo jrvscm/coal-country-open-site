@@ -40,6 +40,15 @@ export const fetchSchedule = async () => {
   
     return sponsors;
   };
+
+  export async function getTournamentPricingConfig() {
+    const entries = await client.getEntries({
+      content_type: 'registrationPagePricingAndContent',
+      limit: 1,
+    });
+
+    return entries.items[0].fields.registrationContent;
+  }
   
 
 export default client;

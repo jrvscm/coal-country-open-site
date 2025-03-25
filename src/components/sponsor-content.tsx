@@ -31,7 +31,7 @@ export default function SponsorContent() {
       isMounted = false;
     };
   }, []);
-  console.log(sponsors)
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">
 

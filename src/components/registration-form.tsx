@@ -12,6 +12,7 @@ import { useSearchParams, usePathname } from 'next/navigation';
 import { useTournamentDate } from '@/context/TournamentDateContext';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import GolfersFormFields from '@/components/golfers-form-fields';
+import { getTournamentPricingConfig } from '@/lib/contentful';
 
 export type Golfer = {
   name: string;
@@ -50,11 +51,32 @@ export default function RegistrationForm() {
   );
 }
 
+type PricingOption = {
+  id: string;
+  label: string;
+  price: number;
+  details: string;
+  category: 'individual' | 'sponsor' | 'product';
+  subText?: string | null;
+  highlightText?: string | null;
+  noteHtml?: string | null;
+};
+
 function RegistrationFormContent() {
   const tournamentStartDate = useTournamentDate();
   const params = useSearchParams();
   const path = usePathname();
   const [registrationStatus, setRegistrationStatus] = useState<'idle' | 'success' | 'canceled'>('idle');
+  const [pricingData, setPricingData] = useState<PricingOption[]>([]);
+
+  useEffect(() => {
+    const fetchPricing = async () => {
+      const config = await getTournamentPricingConfig(); 
+      setPricingData(config);
+    };
+  
+    fetchPricing();
+  }, []);
 
   // Pricing for each participant type
   const basePrices = useMemo(() => ({
@@ -109,6 +131,26 @@ function RegistrationFormContent() {
   const phoneRegex = /^\d{10}$/;
   const handicapRegex = /^[+-]?\d+(\.\d{1,2})?$/;
   const flagPrizeRegex = useMemo(() => (/^\d+$/), [])
+
+  const selectedPricing = useMemo(() => {
+    return pricingData.find((item) => item.id === formData.participantType);
+  }, [pricingData, formData.participantType]);
+
+  const sponsorshipNote = useMemo(() => {
+    return pricingData.find(item => item.id === 'sponsorshipNote');
+  }, [pricingData]);
+  
+  const [showSponsorshipNote, setShowSponsorshipNote] = useState(false);
+  
+  useEffect(() => {
+    const selectedType = pricingData.find(item => item.id === formData.participantType);
+  
+    if (selectedType?.category === 'sponsor') {
+      setShowSponsorshipNote(true);
+    } else {
+      setShowSponsorshipNote(false);
+    }
+  }, [formData.participantType, pricingData]);
 
   const validateForm = () => {
     const errors: FormErrorsType = {}; 
@@ -167,13 +209,13 @@ function RegistrationFormContent() {
 
     if(!formData.banquet && !["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship"].includes(formData.participantType)) errors.banquet = "Banquet choice is required";
 
-    if(formData.participantType === 'singlePlayerSponsorEntry') {
-      if(!formData.doorPrize) errors.doorPrize = "Door prize contribution is required"
-    }
+    // if(formData.participantType === 'singlePlayerSponsorEntry') {
+    //   if(!formData.doorPrize) errors.doorPrize = "Door prize contribution is required"
+    // }
     
-    if(formData.participantType === 'singlePlayerSponsorEntry' || ["platinumSponsorship", "goldSponsorship", "silverSponsorship", "flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship"].includes(formData.participantType)) {
-      if(formData.flagPrizeContribution && !flagPrizeRegex.test(formData.flagPrizeContribution)) errors.flagPrizeContribution = "Use only whole numbers and no decimals"
-    }
+    // if(formData.participantType === 'singlePlayerSponsorEntry' || ["platinumSponsorship", "goldSponsorship", "silverSponsorship", "flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship"].includes(formData.participantType)) {
+    //   if(formData.flagPrizeContribution && !flagPrizeRegex.test(formData.flagPrizeContribution)) errors.flagPrizeContribution = "Use only whole numbers and no decimals"
+    // }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -426,8 +468,8 @@ function RegistrationFormContent() {
       <div className="col-span-full grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="relative order-1 md:order-2">
         {/* Total Section with Breakdown */}
-        <div ref={totalRef} className="flex justify-start md:justify-end items-start order-1 md:order-2">
-          <div className="flex flex-col">
+        <div ref={totalRef} className="mt-6 md:mt-0 flex justify-start md:justify-end items-start order-1 md:order-2">
+          <div className="flex flex-col border border-customInputBorder rounded-lg p-3">
             {/* Main Total Row */}
             <div className="flex flex-row justify-start md:justify-center items-center">
               <h3 className="text-white/80 text-2xl font-semibold mr-2">TOTAL:</h3>
@@ -474,12 +516,10 @@ function RegistrationFormContent() {
             <AccordionTrigger className="text-white/80 text-lg font-semibold [&>svg]:w-8 [&>svg]:h-8 [&>svg]:text-white/80">INDIVIDUAL PARTICIPANTS:</AccordionTrigger>
             <AccordionContent>
               <div className="space-y-1">
-                {[
-                  { label: `Current Miner ($${basePrices['currentMiner']})`, value: 'currentMiner', details: '54 holes of golf and cart, premium gift bag, Thursday night social and Saturday banquet at Gillette’s Cam-plex. Flag prizes are awarded for each day. A Calcutta will take place Friday evening.' },
-                  { label: `Past Board / Past Champion / Retiree ($${basePrices['pastBoardPastChampionRetiree']})`, value: 'pastBoardPastChampionRetiree', details: '54 holes of golf and cart, premium gift bag, Thursday night social and Saturday banquet at Gillette’s Cam-plex. Flag prizes are awarded for each day. A Calcutta will take place Friday evening.' },
-                  { label: `General Public ($${basePrices['generalPublic']})`, value: 'generalPublic', details: '54 holes of golf and cart, premium gift bag, Thursday night social and Saturday banquet at Gillette’s Cam-plex. Flag prizes are awarded for each day. A Calcutta will take place Friday evening.'},
-                ].map((option) => (
-                  <div className="group" key={option.value}>
+              {pricingData
+                .filter((option) => option.category === 'individual')
+                .map((option) => (
+                  <div className="group" key={option.id}>
                     <label className="flex flex-col cursor-pointer text-white/60 text-lg pb-2
                       group-has-[input:checked]:border group-has-[input:checked]:border-customInputBorder group-has-[input:checked]:rounded-lg
                       group-has-[input:checked]:bg-black/80
@@ -490,27 +530,25 @@ function RegistrationFormContent() {
                       <div className="flex items-center justify-between">
                         <span>{option.label}</span>
                         <div className="relative ml-auto">
-                          {/* Hidden Radio Input */}
                           <input
                             type="radio"
                             name="participantType"
-                            value={option.value}
-                            checked={formData.participantType === option.value}
+                            value={option.id}
+                            checked={formData.participantType === option.id}
                             onChange={handleChange}
                             className="sr-only peer"
                           />
-                          {/* Outer Circle */}
                           <div className="h-6 w-6 rounded-full border-2 border-customInputBorder"></div>
-                          {/* Inner Circle */}
                           <div className="h-4 w-4 rounded-full bg-customInputBorder absolute top-1 left-1 scale-0 peer-checked:scale-100 transition-transform"></div>
                         </div>
                       </div>
-              
-                      {/* Additional Details (Hidden by default, shows when selected) */}
-                      {formData.participantType === option.value && <div className="mt-2 text-sm text-white/60">
-                        {option.details}
-                      </div>}
-              
+
+                      {/* Description text */}
+                      {formData.participantType === option.id && (
+                        <div className="mt-2 text-sm text-white/60">
+                          {option.details}
+                        </div>
+                      )}
                     </label>
                   </div>
                 ))}
@@ -523,14 +561,10 @@ function RegistrationFormContent() {
             <AccordionTrigger className="text-white/80 text-lg font-semibold [&>svg]:w-8 [&>svg]:h-8 [&>svg]:text-white/80">SPONSORSHIP PACKAGES:</AccordionTrigger>
             <AccordionContent>
               <div className="space-y-1">
-                {[
-                  { label: `Platinum Sponsor Package ($${basePrices['platinumSponsorship']})`, value: 'platinumSponsorship', details: 'Recognition at banquet, name listed in tournament brochure, logo on flag which is yours to keep, UP TO 10 GOLFERS'},
-                  { label: `Gold Sponsor Package ($${basePrices['goldSponsorship']})`, value: 'goldSponsorship', details: 'Recognition at banquet, name listed in tournament brochure, logo on flag which is yours to keep, UP TO 5 GOLFERS' },
-                  { label: `Silver Sponsor Package ($${basePrices['silverSponsorship']})`, value: 'silverSponsorship', details: 'Recognition at banquet, name listed in tournament brochure, logo on flag which is yours to keep, UP TO 2 GOLFERS' },
-                  { label: `Single Team Sponsor Entry ($${basePrices['teamSponsorEntry']})`, value: 'teamSponsorEntry', details: '18 holes of golf per day for THREE players total. Premium gift bag, Thursday night social and Saturday banquet at Gillette’s Cam-plex. Flag prizes are awarded for each day. A Calcutta will take place Friday evening.' },                  
-                  { label: `Single Player Sponsor Entry ($${basePrices['singlePlayerSponsorEntry']})`, value: 'singlePlayerSponsorEntry', details: '18 holes of golf per day for ONE player. Premium gift bag, Thursday night social and Saturday banquet at Gillette’s Cam-plex. Flag prizes are awarded for each day. A Calcutta will take place Friday evening.' },
-                ].map((option) => (
-                  <div className="group" key={option.value}>
+              {pricingData
+                .filter((option) => option.category === 'sponsor')
+                .map((option) => (
+                  <div className="group" key={option.id}>
                     <label className="flex flex-col cursor-pointer text-white/60 text-lg pb-2
                       group-has-[input:checked]:border group-has-[input:checked]:border-customInputBorder group-has-[input:checked]:rounded-lg
                       group-has-[input:checked]:bg-black/80
@@ -541,27 +575,25 @@ function RegistrationFormContent() {
                       <div className="flex items-center justify-between">
                         <span>{option.label}</span>
                         <div className="relative ml-auto">
-                          {/* Hidden Radio Input */}
                           <input
                             type="radio"
                             name="participantType"
-                            value={option.value}
-                            checked={formData.participantType === option.value}
+                            value={option.id}
+                            checked={formData.participantType === option.id}
                             onChange={handleChange}
                             className="sr-only peer"
                           />
-                          {/* Outer Circle */}
                           <div className="h-6 w-6 rounded-full border-2 border-customInputBorder"></div>
-                          {/* Inner Circle */}
                           <div className="h-4 w-4 rounded-full bg-customInputBorder absolute top-1 left-1 scale-0 peer-checked:scale-100 transition-transform"></div>
                         </div>
                       </div>
-              
-                      {/* Additional Details (Hidden by default, shows when selected) */}
-                      {formData.participantType === option.value && <div className="mt-2 text-sm text-white/60">
-                        {option.details}
-                      </div>}
-              
+
+                      {/* Description text */}
+                      {formData.participantType === option.id && (
+                        <div className="mt-2 text-sm text-white/60">
+                          {option.details}
+                        </div>
+                      )}
                     </label>
                   </div>
                 ))}
@@ -574,13 +606,10 @@ function RegistrationFormContent() {
             <AccordionTrigger className="text-white/80 text-lg font-semibold border-white/20 [&>svg]:w-8 [&>svg]:h-8 [&>svg]:text-white/80">SPONSORSHIP PRODUCTS:</AccordionTrigger>
             <AccordionContent>
               <div className="space-y-1">
-                {[
-                  { label: `Tee Box Sponsor ($${basePrices['teeBoxSponsorship']} You own the box!)`, value: 'teeBoxSponsorship', details: 'Recognition at banquet, name listed in tournament brochure, and your logo on hole flag of the tee box which is yours to keep. $500 of this will go to the club house fees if you sponsor a tent on your tee box to offer refreshments.'},
-                  { label: `Driving Range Sponsor ($${basePrices['drivingRangeSponsorship']})`, value: 'drivingRangeSponsorship', details: 'Recognition at banquet, name listed in tournament brochure, sign placed on driving range'},
-                  { label: `Hole Flag Sponsor ($${basePrices['holeFlagSponsorship']})`, value: 'holeFlagSponsorship', details: 'Name listed in tournament brochure, flag on hole that will be yours at end of tournament'},
-                  { label: `Flag Prize Sponsor ($${basePrices['flagPrizeSponsorship']})`, value: 'flagPrizeSponsorship', details: 'Recognition at banquet, Name listed in tournament brochure'}
-                ].map((option) => (
-                  <div className="group" key={option.value}>
+              {pricingData
+                .filter((option) => option.category === 'product')
+                .map((option) => (
+                  <div className="group" key={option.id}>
                     <label className="flex flex-col cursor-pointer text-white/60 text-lg pb-2
                       group-has-[input:checked]:border group-has-[input:checked]:border-customInputBorder group-has-[input:checked]:rounded-lg
                       group-has-[input:checked]:bg-black/80
@@ -591,27 +620,25 @@ function RegistrationFormContent() {
                       <div className="flex items-center justify-between">
                         <span>{option.label}</span>
                         <div className="relative ml-auto">
-                          {/* Hidden Radio Input */}
                           <input
                             type="radio"
                             name="participantType"
-                            value={option.value}
-                            checked={formData.participantType === option.value}
+                            value={option.id}
+                            checked={formData.participantType === option.id}
                             onChange={handleChange}
                             className="sr-only peer"
                           />
-                          {/* Outer Circle */}
                           <div className="h-6 w-6 rounded-full border-2 border-customInputBorder"></div>
-                          {/* Inner Circle */}
                           <div className="h-4 w-4 rounded-full bg-customInputBorder absolute top-1 left-1 scale-0 peer-checked:scale-100 transition-transform"></div>
                         </div>
                       </div>
-              
-                      {/* Additional Details (Hidden by default, shows when selected) */}
-                      {formData.participantType === option.value && <div className="mt-2 text-sm text-white/60">
-                        {option.details}
-                      </div>}
-              
+
+                      {/* Description text */}
+                      {formData.participantType === option.id && (
+                        <div className="mt-2 text-sm text-white/60">
+                          {option.details}
+                        </div>
+                      )}
                     </label>
                   </div>
                 ))}
@@ -621,48 +648,23 @@ function RegistrationFormContent() {
         </Accordion>
       </div>
 
-      {/** About selection type text */}
-      <div className="text-customInputBorder col-span-full p-2 text-xs md:text-sm">
-        {formData.participantType === 'pastBoardPastChampionRetiree' && (
-          <p>Automatic qualifications for initial acceptance to the tournament field are either through being a past Coal Country Open Board
-          Member or a past Coal Country Open overall tournament champion, neither being currently active in the mining industry on either the
-          miner or supplier side of the business. Additional opportunities for mining industry retirees will be at the Coal Country Open Board&apos;s
-          discretion based on available slots in the field if any remain after all active suppliers and active miners have been accepted.
-          <span className="bg-customYellow text-secondary-foreground font-bold">Deadline for entries is July 1st</span>. Tournament field will open to the non-mining public after July 1. All entries must be mailed or
-          received before July 25th. Tournament Placement will be determined by mining affiliation 1st and then to the public as received. All
-          entries are reviewed and entered at the CCO Board discretion. <span className="underline font-bold">Entrants must be 21 years of age</span>.</p>
-        )}
+      {selectedPricing && (
+        <div className={`${selectedPricing?.subText ? "bg-black/50" : ""} mt-6 text-customInputBorder col-span-full p-3 text-sm md:text-lg md:text-xl md:text-sm rounded-lg`}>
+          {selectedPricing.subText && (
+            <div
+              dangerouslySetInnerHTML={{ __html: selectedPricing.subText }}
+            />
+          )}
+          {selectedPricing.highlightText && (
+            <div
+              dangerouslySetInnerHTML={{
+                __html: `<p class="p-3 mt-6 text-sm md:text-lg bg-customYellow text-secondary-foreground font-bold rounded-lg">${selectedPricing.highlightText}</p>`,
+              }}
+            />
+          )}
+        </div>
+      )}
 
-        {(formData.participantType === 'generalPublic' || formData.participantType == 'currentMiner' || formData.participantType == 'singlePlayerSponsorEntry' || formData.participantType == 'teamSponsorEntry') && (
-          <p><span className="bg-customYellow text-secondary-foreground font-bold">Deadline for entries is July 1st</span>. Tournament field will open to the non-mining public after July 1. All entries must be mailed or
-          received before July 25. Tournament Placement will be determined by mining affiliation 1st and then to the public as received. All
-          entries are reviewed and entered at the CCO Board discretion. <span className="underline font-bold">Entrants must be 21 years of age</span>.</p>
-        )}
-
-        {formData.participantType === 'singlePlayerSponsorEntry' && (
-          <p>
-            In addition to the sponsorship fee, we encourage you to make donations of cash or gifts to be
-            given as door prizes at the banquet. To better ensure we correctly recognize your company for
-            these donations, we are asking for some additional support during the planning phase of the
-            event in the following areas:<br /><br />
-
-            Early notification of what your donation will consist of. This can be done using the
-            designated section of the attached form or through email notification. For door prizes,
-            what you anticipate on the door prize being. Having this information before <span className="font-bold underline">AUGUST
-            1st, 2021</span> would be greatly appreciated.
-              <br/><br/>
-             
-            For any door prizes dropped off at various locations, attaching a business card to make
-            sure we have recognized your support correctly.
-            Thank you again for your continued support and we look forward to seeing you at this year&apos;s
-            tournament.
-          </p>
-        )}
-
-        {["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType) && (
-          <p className="p-2 mt-6 md:text-lg bg-customYellow text-secondary-foreground font-bold">IF YOU DO NOT KNOW WHO WILL PLAY ON YOUR SPONSORSHIP AT THE TIME OF SIGNUP; TYPE THE WORD <span className="underline">PLACEHOLDER</span> IN ALL PLAYER FIELDS FOR AS MANY PLAYERS AS YOU ARE EXPECTING. YOU WILL NEED TO CONTACT THE TOURNAMENT BOARD TO ADD YOUR PLAYERS BEFORE THE TOURNAMENT.</p>
-        )}
-      </div>
       {/* Divider */}
       <div className="col-span-full my-8">
         <hr className="border-t border-white/20" />
@@ -702,7 +704,13 @@ function RegistrationFormContent() {
       )}
 
       {/* Submit Button */}
-      <div className="col-span-full mt-6">
+      <div className="col-span-full">
+        {showSponsorshipNote && sponsorshipNote?.noteHtml && (
+          <div
+            className={`bg-black/50 mt-6 text-customInputBorder col-span-full p-3 text-sm md:text-lg md:text-xl md:text-sm rounded-lg mb-6`}
+            dangerouslySetInnerHTML={{ __html: sponsorshipNote.noteHtml }}
+          />
+        )}
         <Button onClick={handleCheckout} className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-full bg-customPrimary hover:bg-customPrimary/60 uppercase font-text font-5xl font-bold flex flex-row justify-center items-center">
           Continue to Secure Payment <FaLock className="h-16 w-16 font-bold" />
         </Button>

@@ -7,7 +7,14 @@ const config: Config = {
     './pages/**/*.{js,ts,jsx,tsx}',    // Legacy pages (if any)
     './components/**/*.{js,ts,jsx,tsx}', 
     './src/**/*.{js,ts,jsx,tsx}',      // If you're using a src directory
-    './node_modules/@shadcn/ui/**/*.{js,ts,jsx,tsx}' // For Shadcn components
+	'./node_modules/@shadcn/ui/**/*.{js,ts,jsx,tsx}', // For Shadcn components
+	'./public/**/*.html',
+  ],
+  safelist: [
+    'font-bold',
+    'underline',
+    'bg-customYellow',
+    'text-secondary-foreground',
   ],
   mode: 'jit', // Add this if missing
   theme: {
