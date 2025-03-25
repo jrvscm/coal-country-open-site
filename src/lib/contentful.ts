@@ -29,12 +29,13 @@ export const fetchSchedule = async () => {
 
   export const fetchSponsors = async () => {
     const res = await client.getEntries({
-      content_type: 'sponsorLogos', // Replace with your actual Content Model ID
+      content_type: 'sponsorLogos', 
     });
 
-    const sponsors = res.items?.[0]?.fields?.['sponsorLogos'].map((item) => ({
+    const sponsors = res?.includes?.Asset?.map((item) => ({
       href: item.fields.description,
-      logo: item.fields.file.url, // Adjust field name if needed
+      source: item.fields.file.url,
+      alt: `${item.fields.title} Logo`
     }));
   
     return sponsors;
