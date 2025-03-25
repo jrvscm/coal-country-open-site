@@ -2,6 +2,7 @@
 'use client'
 import { useEffect, useState } from 'react';
 import { fetchSponsors } from '@/lib/contentful';
+import Image from 'next/image';
 interface Sponsor {
   source: string,
   title: string,
@@ -55,9 +56,11 @@ export default function SponsorContent() {
       <div className="col-span-full grid grid-cols-2 md:grid-cols-4 gap-4 place-items-center">
         {sponsors.map((sponsor: Sponsor, index: number) => (
           <a href={sponsor.href} key={`sponsor-${sponsor?.title?.replace(' ', '')}-${index}`}>
-            <img
-              src={sponsor?.source}
-              alt={sponsor.title}
+            <Image
+              src={`https://${sponsor?.source}`}
+              alt={sponsor?.title}
+              width={200}
+              height={100}
               className="w-full max-h-24 object-contain transition cursor-pointer"
             />
           </a>

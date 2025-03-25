@@ -120,7 +120,7 @@ function RegistrationFormContent() {
     player1TShirtSize: '',
     player2TShirtSize: '',
     player3TShirtSize: '',
-}), []);
+}), [path]);
 
   const resetForm = useCallback(() => setFormData(defaultFormState), [defaultFormState]);
   const [formData, setFormData] = useState<FormDataType>(defaultFormState);
@@ -320,7 +320,7 @@ function RegistrationFormContent() {
                    formData.participantType === "goldSponsorship" ? 5 :
                    formData.participantType === "silverSponsorship" ? 2 : 0;
 
-    let adjustedFormData = { ...formData };
+    const adjustedFormData = { ...formData };
     if(["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship"].includes(formData.participantType)) {
       adjustedFormData.contactName = formData.player1Name;
       adjustedFormData.player1Name = "";

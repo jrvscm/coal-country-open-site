@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { FaTiktok, FaInstagram, FaFacebookF } from "react-icons/fa";
+import { FaTiktok, FaFacebookF } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
 import client from "@/lib/contentful";
