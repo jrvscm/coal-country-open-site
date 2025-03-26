@@ -655,7 +655,7 @@ function RegistrationFormContent() {
         </Accordion>
       </div>
 
-      {selectedPricing && (
+      {selectedPricing && (selectedPricing?.subText?.length || selectedPricing?.highlightText?.length) && (
         <div className={`${selectedPricing?.subText ? "bg-black/50" : ""} mt-6 text-customInputBorder col-span-full p-3 text-sm md:text-lg md:text-xl md:text-sm rounded-lg`}>
           {selectedPricing.subText && (
             <div
