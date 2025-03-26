@@ -71,8 +71,13 @@ function RegistrationFormContent() {
 
   useEffect(() => {
     const fetchPricing = async () => {
-      const config = await getTournamentPricingConfig(); 
-      setPricingData(config);
+      const config = await getTournamentPricingConfig();
+  
+      if (Array.isArray(config)) {
+        setPricingData(config as PricingOption[]);
+      } else {
+        console.error("Invalid pricing config received:", config);
+      }
     };
   
     fetchPricing();
@@ -96,7 +101,9 @@ function RegistrationFormContent() {
     flagPrizeSponsorship: 150.0
   }), []);
 
-  type FormErrorsType = Partial<Record<keyof FormDataType, string>>;
+  type FormErrorsType = {
+    [key: string]: string;
+  };
 
   const defaultFormState = useMemo<FormDataType>(() => ({
     golfers: Array(3).fill({ name: "", handicap: "", tShirtSize: "" }), 
@@ -445,7 +452,7 @@ function RegistrationFormContent() {
   }
   
   return (
-    <form className="grid grid-cols-1 md:grid-cols-2 md:gap-y-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">
+    <form className="grid grid-cols-1 md:grid-cols-2 gap-y-4 md:gap-y-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">
 
       {/* Registration Includes Section */}
       <div className="col-span-full">
@@ -469,7 +476,7 @@ function RegistrationFormContent() {
         <div className="relative order-1 md:order-2">
         {/* Total Section with Breakdown */}
         <div ref={totalRef} className="mt-6 md:mt-0 flex justify-start md:justify-end items-start order-1 md:order-2">
-          <div className="flex flex-col border border-customInputBorder rounded-lg p-3">
+          <div className="w-full md:w-auto flex flex-col border border-customInputBorder rounded-lg p-3">
             {/* Main Total Row */}
             <div className="flex flex-row justify-start md:justify-center items-center">
               <h3 className="text-white/80 text-2xl font-semibold mr-2">TOTAL:</h3>
@@ -717,7 +724,7 @@ function RegistrationFormContent() {
       </div>
 
       {/* Divider */}
-      <div className="col-span-full my-8">
+      <div className="col-span-full mt-8">
         <hr className="border-t border-white/20" />
       </div>
     </form>

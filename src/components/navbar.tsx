@@ -9,7 +9,8 @@ import {
 } from '@/components/ui/navigation-menu';
 import { Menu, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
+// import Link from 'next/link';
+import SmartLink from '@/components/smart-link';
 import Image from 'next/image'
 
 export const Navbar = () => {
@@ -73,7 +74,7 @@ export const Navbar = () => {
       <div className="container relative mx-auto flex items-center justify-start gap-4">
         {/* Logo Section */}
         <div className="flex hidden items-center justify-center lg:block">
-          <Link href="/">
+          <SmartLink href="/">
             <Image
               src="https://images.ctfassets.net/j2939n6mdbyq/3nVn09ySuMJdpRghyyVqeA/8a0f6cafff701f13c11bcdcb0201f950/modified_logo.png"
               alt="Coal Country Open Logo"
@@ -83,7 +84,7 @@ export const Navbar = () => {
                 isScrolled ? 'lg:h-12' : 'lg:h-24'
               } w-auto object-contain cursor-pointer`}
             />
-          </Link>
+          </SmartLink>
         </div>
         {/* Navigation Menu */}
         <div className="hidden gap-4 lg:flex">
@@ -91,7 +92,7 @@ export const Navbar = () => {
             <NavigationMenuList className="flex gap-4">
               {navigationItems.map((item) => (
                 <NavigationMenuItem key={item.title}>
-                  <Link href={item.href} passHref legacyBehavior>
+                  <SmartLink href={item.href}>
                     <NavigationMenuLink asChild>
                       <Button
                         variant="ghostMuted"
@@ -100,7 +101,7 @@ export const Navbar = () => {
                         {item.title}
                       </Button>
                     </NavigationMenuLink>
-                  </Link>
+                  </SmartLink>
                 </NavigationMenuItem>
               ))}
             </NavigationMenuList>
@@ -112,9 +113,9 @@ export const Navbar = () => {
           <Button variant="ghostMuted" className="hidden lg:inline hover:text-customYellow" asChild>
             <a href="tel:+13078889999">(307) 888-9999</a>
           </Button>
-          <Link href={'/registration/player'}>
+          <SmartLink href={'/registration/player'}>
             <Button className="uppercase font-text border border-customPrimary bg-customPrimary hover:bg-customPrimary/60">register</Button>
-          </Link>
+          </SmartLink>
         </div>
 
         {/* Mobile Menu */}
@@ -122,7 +123,7 @@ export const Navbar = () => {
           {/* Top Bar with Logo and Hamburger Menu */}
           <div className="flex items-center justify-between border-b border-customYellow px-4 py-4">
             {/* Logo on the left */}
-            <Link href="/" className="flex items-center">
+            <SmartLink href="/" className="flex items-center">
               <Image
                 width={200}  
                 height={100} 
@@ -130,7 +131,7 @@ export const Navbar = () => {
                 alt="Coal Country Open Logo"
                 className="h-12 w-auto object-contain"
               />
-            </Link>
+            </SmartLink>
 
             {/* Hamburger Menu on the right */}
             <Button
@@ -156,7 +157,7 @@ export const Navbar = () => {
             {/* Navigation Links */}
             <nav className="flex flex-col gap-6">
               {navigationItems.map((item) => (
-                <Link
+                <SmartLink
                   key={item.title}
                   href={item.href}
                   className="text-lg font-medium text-white transition-colors hover:text-primary"
@@ -165,18 +166,18 @@ export const Navbar = () => {
                   }}
                 >
                   {item.title}
-                </Link>
+                </SmartLink>
               ))}
             </nav>
 
             {/* Buttons at the bottom */}
             <div className="flex flex-col gap-4">
               {
-                <Link href="/registration/player">
+                <SmartLink href="/registration/player">
                   <Button className="w-full bg-customPrimary" onClick={() => setOpen(false)}>
                     Register
                   </Button>
-                </Link>
+                </SmartLink>
               }
             </div>
           </div>

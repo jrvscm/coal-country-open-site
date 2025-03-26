@@ -1,54 +1,61 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import FormDataType from '@/components/registration-form';
+import type { FormDataType } from '@/components/registration-form';
 import SingleEntryFields from '@/components/single-entry-fields';
 import { MdClose } from "react-icons/md";
 import { TiUserAddOutline } from "react-icons/ti";
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+type FormErrorsType = Record<string, string>;
+
 interface GolfersFormProps {
-  golfers: { name: string, handicap: string, tShirtSize: string }[];
-  setFormData: (data: any) => void;
+  golfers: { name: string; handicap: string; tShirtSize: string }[];
+  setFormData: React.Dispatch<React.SetStateAction<FormDataType>>;
   formData: FormDataType;
   maxGolfers: number;
   formErrors: Partial<FormDataType>;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: (name: string, value: string) => void;
-  setFormErrors: (data: Partial<FormDataType> | ((prev: Partial<FormDataType>) => Partial<FormDataType>)) => void;
+  setFormErrors: React.Dispatch<React.SetStateAction<FormErrorsType>>
 }
 
 const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, maxGolfers, formErrors, formData, handleChange, handleSelectChange, setFormErrors }) => {
+  const getError = (field: string): string | undefined => {
+    return (formErrors as Record<string, string | undefined>)[field];
+  };
   
-  // Add Golfer
   const addGolfer = () => {
     if (golfers.length < maxGolfers) {
-      setFormData((prev: any) => ({
+      setFormData((prev) => ({
         ...prev,
-        golfers: [...prev.golfers, { name: "" }],
+        golfers: [...prev.golfers, { name: "", handicap: "", tShirtSize: "" }],
       }));
     }
   };
-
-  // Remove Golfer
+  
   const removeGolfer = (index: number) => {
-    setFormData((prev: any) => ({
+    setFormData((prev) => ({
       ...prev,
       golfers: prev.golfers.filter((_, i) => i !== index),
     }));
   };
 
-  const handleGolferChange = (index: number, field: keyof GolfersFormProps["golfers"][0], value: string) => {
-    const fieldKey = `golfers.${index}.${field}`;
+  const handleGolferChange = (
+    index: number,
+    field: keyof (typeof golfers)[number],
+    value: string
+  ) => {
+    const fieldKey = `golfers.${index}.${field}` as keyof FormDataType;
   
-    setFormData((prev: any) => ({
+    setFormData((prev) => ({
       ...prev,
-      golfers: prev.golfers.map((golfer: any, i: number) =>
+      golfers: prev.golfers.map((golfer, i) =>
         i === index ? { ...golfer, [field]: value } : golfer
       ),
     }));
   
-    setFormErrors((prevErrors: any) => {
+    setFormErrors((prevErrors) => {
       const newErrors = { ...prevErrors };
       delete newErrors[fieldKey];
       return newErrors;
@@ -175,10 +182,12 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
                         value={golfers[index].name || ""}
                         onChange={(e) => handleGolferChange(index, 'name', e.target.value)}
                         className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                            ${formErrors[`golfers.${index}.name`] ? 'border-red-500' : 'border-customInputBorder'}
+                          ${getError(`golfers.${index}.name`) ? 'border-red-500' : 'border-customInputBorder'}
                         `}
                     />
-                    {formErrors[`golfers.${index}.name`] && <p className="text-red-500 text-sm mt-1">{formErrors[`golfers.${index}.name`]}</p>}
+                    {getError(`golfers.${index}.name`) && (
+                      <p className="text-red-500 text-sm mt-1">{getError(`golfers.${index}.name`)}</p>
+                    )}
                 </div>
                 <div className="mt-3">
                     <label htmlFor={`player${index + 1}Handicap`} className="sr-only block text-sm text-white/60 mb-1">Player {index + 1} Handicap</label>
@@ -188,11 +197,12 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
                         value={golfers[index].handicap || ""}
                         onChange={(e) => handleGolferChange(index, 'handicap', e.target.value)}
                         className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                            ${formErrors[`golfers.${index}.handicap`] ? 'border-red-500' : 'border-customInputBorder'}
+                          ${getError(`golfers.${index}.handicap`) ? 'border-red-500' : 'border-customInputBorder'}
                         `}
                     />
-                    {formErrors[`golfers.${index}.handicap`] && <p className="text-red-500 text-sm mt-1">{formErrors[`golfers.${index}.handicap`]}</p>}
-                </div>
+                    {getError(`golfers.${index}.handicap`) && (
+                      <p className="text-red-500 text-sm mt-1">{getError(`golfers.${index}.handicap`)}</p>
+                    )}                </div>
                 <div className="mt-3">
                     <label htmlFor={`player${index + 1}TShirtSize`} className="sr-only block text-sm text-white/60 mb-1">Player {index + 1} T-Shirt Size</label>
                     <Input
@@ -201,10 +211,12 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
                         value={golfers[index].tShirtSize || ""}
                         onChange={(e) => handleGolferChange(index, 'tShirtSize', e.target.value)}
                         className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
-                            ${formErrors[`golfers.${index}.tShirtSize`] ? 'border-red-500' : 'border-customInputBorder'}
+                          ${getError(`golfers.${index}.tShirtSize`) ? 'border-red-500' : 'border-customInputBorder'}
                         `}
                     />
-                    {formErrors[`golfers.${index}.tShirtSize`] && <p className="text-red-500 text-sm mt-1">{formErrors[`golfers.${index}.tShirtSize`]}</p>}
+                    {getError(`golfers.${index}.tShirtSize`) && (
+                      <p className="text-red-500 text-sm mt-1">{getError(`golfers.${index}.tShirtSize`)}</p>
+                    )}               
                 </div>
                 {index > 0 && (
                     <Button

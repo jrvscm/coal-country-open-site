@@ -4,14 +4,10 @@ import { Input } from '@/components/ui/input';
 import { FormDataType } from '@/components/registration-form';
 
 interface SponsorProductProps {
-  formData: {
-    company: string;
-    contactEmail: string;
-    contactPhone: string;
-    player1Name: string;
-  };
+  formData: FormDataType;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  formErrors: Partial<FormDataType>;
+  handleSelectChange: (name: string, value: string) => void;
+  formErrors: Record<string, string>;
 }
 
 export default function SponsorProductFields({

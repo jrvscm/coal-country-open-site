@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FaTiktok, FaFacebookF } from "react-icons/fa";
 import Image from "next/image";
-import Link from "next/link";
+// import Link from "next/link";
+import SmartLink from '@/components/smart-link';
 import client from "@/lib/contentful";
 import Schedule from '@/components/schedule';
 import CountdownSection from '@/components/countdown-section';
@@ -19,6 +20,12 @@ export default function Hero() {
     url?: string;
     name?: string;
   };
+
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   const [sponsor, setSponsor] = useState<SponsorData | null>(null);
 
@@ -110,12 +117,12 @@ export default function Hero() {
 
     return () => clearInterval(interval);
   }, [images]);
-
+  if (!hasMounted) return null;
   return (
     <>
       <div className="relative w-full h-screen overflow-hidden">
         {/* Background Images with Fade Transition */}
-        {images.map((img, index) => (
+        {hasMounted && images.map((img, index) => (
           <Image
             key={index}
             src={`https:${img}`} 
@@ -140,26 +147,26 @@ export default function Hero() {
             </div>
             <div className="flex mt-2 flex-row items-center justify-center">
               <Button asChild variant="default" className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-full bg-customPrimary hover:bg-customPrimary/60 uppercase">
-                <Link className="m-0 text-lg md:text-xl font-text" href="/registration/player">Register</Link>
+                <SmartLink className="m-0 text-lg md:text-xl font-text" href="/registration/player">Register</SmartLink>
               </Button>
               <Button asChild variant="default" className="p-0 md:p-6 bg-transparent w-full text-customYellow hover:bg-customYellow/60 hover:text-white border border-customYellow uppercase">
-                <Link className="m-0 text-lg md:text-xl font-text" href="/registration/sponsor">Sponsors</Link>
+                <SmartLink className="m-0 text-lg md:text-xl font-text" href="/registration/sponsor">Sponsors</SmartLink>
               </Button>
             </div>
 
             {/* Website Sponsor Section */}
-            {sponsor?.url && sponsor.logo && sponsor.name ? (
+            {sponsor?.url && sponsor?.logo && sponsor?.name ? (
               <div className="mt-8 text-center">
                 <p className="text-sm text-gray-300">Brought To You By</p>
-                <Link href={sponsor.url} target="_blank" rel="noopener noreferrer">
+                <SmartLink href={sponsor.url} target="_blank" rel="noopener noreferrer">
                   <Image
                     src={sponsor.logo}
                     alt={sponsor.name}
                     width={200}
                     height={100}
-                    className="mx-auto object-contain"
+                    className="mx-auto h-auto object-contain"
                   />
-                </Link>
+                </SmartLink>
               </div>
             ) : <></>}
           </div>
@@ -167,12 +174,12 @@ export default function Hero() {
 
         {/* Sidebar Share Buttons */}
         <div className="absolute right-4 bottom-[80px] flex flex-col space-y-4 z-20">
-          <Link href="https://www.facebook.com/p/Coal-Country-Open-100057272935201/" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-200 hover border border-customBackground hover:border-customYellow">
+          <SmartLink href="https://www.facebook.com/p/Coal-Country-Open-100057272935201/" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-200 hover border border-customBackground hover:border-customYellow">
             <FaFacebookF className="h-6 w-6 text-customYellow" />
-          </Link>
-          <Link href="https://www.tiktok.com/@coal.country.open" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-200 border border-customBackground hover:border-customYellow">
+          </SmartLink>
+          <SmartLink href="https://www.tiktok.com/@coal.country.open" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-200 border border-customBackground hover:border-customYellow">
             <FaTiktok className="h-6 w-6 text-customYellow" />
-          </Link>
+          </SmartLink>
         </div>
       </div>
       <Schedule />

@@ -7,11 +7,11 @@ import { FormDataType } from '@/components/registration-form';
 interface DefaultFormFieldsProps {
   formData: {
     company: string;
-    contactEmail: string;
-    contactPhone: string;
-    player1Name: string;
-    player1Handicap: string;
-    player1TShirtSize: string;
+    contactEmail?: string;
+    contactPhone?: string;
+    player1Name?: string;
+    player1Handicap?: string;
+    player1TShirtSize?: string;
     banquet: string;
     dinnerTickets: string;
   };

@@ -3,13 +3,15 @@
 import { useEffect, useState } from 'react';
 import { fetchSponsors } from '@/lib/contentful';
 import Image from 'next/image';
-interface Sponsor {
-  source: string,
-  title: string,
-  href: string
-}
+type Sponsor = {
+  href?: string;
+  source: string;
+  alt: string;
+  title: string;
+};
+
 export default function SponsorContent() {
-  const [sponsors, setSponsors] = useState([])
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   useEffect(() => {
     let isMounted = true;
 
@@ -17,7 +19,7 @@ export default function SponsorContent() {
       try {
         const data = await fetchSponsors();
         
-        if (isMounted) {
+        if (isMounted && Array.isArray(data)) {
           setSponsors(data);
         }
       } catch (err) {

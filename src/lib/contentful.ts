@@ -33,9 +33,10 @@ export const fetchSchedule = async () => {
     });
 
     const sponsors = res?.includes?.Asset?.map((item) => ({
-      href: item.fields.description,
-      source: item.fields.file.url,
-      alt: `${item.fields.title} Logo`
+      href: item?.fields?.description ?? '',
+      source: item?.fields?.file?.url ?? '',
+      alt: `${item?.fields?.title ?? 'Sponsor'} Logo`,
+      title: item?.fields?.title ?? 'Sponsor',
     }));
   
     return sponsors;
