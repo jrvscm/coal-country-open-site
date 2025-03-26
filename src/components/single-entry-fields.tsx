@@ -3,17 +3,18 @@
 
 import { Input } from '@/components/ui/input';
 import { FormDataType } from '@/components/registration-form';
+
 interface SingleEntryFieldsProps {
     formData: FormDataType;
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    handleSelectChange: (name: string, value: string) => void; // Add this line
+    handleSelectChange: (name: string, value: string) => void; 
     formErrors: Partial<FormDataType>;
 }
 
 const SingleEntryFields: React.FC<SingleEntryFieldsProps> = ({ formData, handleChange, formErrors }) => {
   return (
     <>
-        <div className="col-span-1">
+        <div className="col-span-2">
             <h3 className="text-white/80 text-lg font-semibold mb-2">CONTRIBUTION INFO</h3>
             <div className="mt-3">
                 <label htmlFor="doorPrize" className="sr-only block text-sm text-white/60 mb-1">Door Prize Contribution</label>

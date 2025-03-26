@@ -27,4 +27,29 @@ export const fetchSchedule = async () => {
       : String(entry?.fields?.startDate || 'Unknown Date');
   }  
 
+  export const fetchSponsors = async () => {
+    const res = await client.getEntries({
+      content_type: 'sponsorLogos', 
+    });
+
+    const sponsors = res?.includes?.Asset?.map((item) => ({
+      href: item?.fields?.description ?? '',
+      source: item?.fields?.file?.url ?? '',
+      alt: `${item?.fields?.title ?? 'Sponsor'} Logo`,
+      title: item?.fields?.title ?? 'Sponsor',
+    }));
+  
+    return sponsors;
+  };
+
+  export async function getTournamentPricingConfig() {
+    const entries = await client.getEntries({
+      content_type: 'registrationPagePricingAndContent',
+      limit: 1,
+    });
+
+    return entries.items[0].fields.registrationContent;
+  }
+  
+
 export default client;

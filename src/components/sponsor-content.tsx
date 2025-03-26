@@ -1,5 +1,40 @@
 
+'use client'
+import { useEffect, useState } from 'react';
+import { fetchSponsors } from '@/lib/contentful';
+import Image from 'next/image';
+type Sponsor = {
+  href?: string;
+  source: string;
+  alt: string;
+  title: string;
+};
+
 export default function SponsorContent() {
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadSponsors = async () => {
+      try {
+        const data = await fetchSponsors();
+        
+        if (isMounted && Array.isArray(data)) {
+          setSponsors(data);
+        }
+      } catch (err) {
+        console.error('Failed to load sponsors:', err);
+      } finally {
+      }
+    };
+
+    loadSponsors();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">
 
@@ -20,7 +55,19 @@ export default function SponsorContent() {
         <hr className="border-t border-white/20" />
       </div>
 
-      {/** SPONSORS GO HERE DYNAMIC CTFUL THAT SHIT */}
+      <div className="col-span-full grid grid-cols-2 md:grid-cols-4 gap-4 place-items-center">
+        {sponsors.map((sponsor: Sponsor, index: number) => (
+          <a href={sponsor.href} key={`sponsor-${sponsor?.title?.replace(' ', '')}-${index}`}>
+            <Image
+              src={`https://${sponsor?.source}`}
+              alt={sponsor?.title}
+              width={200}
+              height={100}
+              className="w-full max-h-24 object-contain transition cursor-pointer"
+            />
+          </a>
+        ))}
+      </div>
 
       {/* Divider */}
       <div className="col-span-full my-8">

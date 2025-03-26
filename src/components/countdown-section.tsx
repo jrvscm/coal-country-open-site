@@ -4,7 +4,8 @@ import { IoIosArrowRoundForward } from "react-icons/io";
 import Image from "next/image";
 import { useTournamentDate } from '@/context/TournamentDateContext';
 import { formatTournamentDate } from '@/lib/utils';
-import Link from 'next/link';
+// import Link from 'next/link';
+import SmartLink from '@/components/smart-link';
 
 type TimeLeft = {
   days: number;
@@ -88,11 +89,11 @@ const CountdownTimer = ({ eventDate }: { eventDate: string }) => {
 
           {/* Event Date */}
           <p className="font-heading text-3xl md:text-5xl font-bold mt-16 mb-6 md:mb-0 drop-shadow-2xl">{tournamentDate} {new Date(Date.now()).getFullYear()}</p>
-          <Link href={'/registration/player'}>
+          <SmartLink href={'/registration/player'}>
             <Button variant="outline" className="p-0 md:p-6 font-text mt-6 bg-transparent border transition-all border-customYellow hover:bg-customYellow/60 text-customYellow hover:text-white uppercase md:w-[250px] w-full text-lg md:text-xl font-text">
               Register <IoIosArrowRoundForward size={'16px'} />
             </Button>
-          </Link>
+          </SmartLink>
         </div>
       </div>
     </section>

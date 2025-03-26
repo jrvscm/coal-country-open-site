@@ -1,10 +1,22 @@
-import Link from 'next/link';
+"use client"
+// import Link from 'next/link';
+import SmartLink from '@/components/smart-link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
 
 export default function Footer() {
+  const [email, setEmail] = useState<string>('')
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value)
+  }
+  
+  const handleEmail = () => {
+    setEmail('')
+  }
   return (
-    <footer className="bg-customBackground text-white py-10">
+    <footer className="bg-customBackground text-white pb-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           {/* Newsletter */}
@@ -16,8 +28,10 @@ export default function Footer() {
                 type="email"
                 placeholder="example@example.com"
                 className="bg-white text-black focus:outline-none"
+                value={email}
+                onChange={handleChange}
               />
-              <Button variant="default" className="px-2 border border-customPrimary bg-customPrimary hover:bg-customPrimary/60 uppercase">
+              <Button onClick={handleEmail} variant="default" className="px-2 border border-customPrimary bg-customPrimary hover:bg-customPrimary/60 uppercase">
                 Submit
               </Button>
             </div>
@@ -27,9 +41,9 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-bold mb-2">About</h3>
             <ul className="space-y-2">
-              <li><Link href="/register" className="hover:text-gray-400">Register</Link></li>
-              <li><Link href="/sponsors" className="hover:text-gray-400">Sponsors</Link></li>
-              <li><Link href="/rules" className="hover:text-gray-400">Rules</Link></li>
+              <li><SmartLink href="/registration/player" className="hover:text-gray-400">Register</SmartLink></li>
+              <li><SmartLink href="/registration/sponsor" className="hover:text-gray-400">Sponsors</SmartLink></li>
+              <li><SmartLink href="/rules" className="hover:text-gray-400">Rules</SmartLink></li>
             </ul>
           </div>
 
@@ -37,9 +51,8 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-bold mb-2">Follow Us</h3>
             <ul className="space-y-2">
-              <li><a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">Instagram</a></li>
-              <li><a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">TikTok</a></li>
-              <li><a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">Facebook</a></li>
+              <li><a href="https://www.tiktok.com/@coal.country.open" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">TikTok</a></li>
+              <li><a href="https://www.facebook.com/p/Coal-Country-Open-100057272935201/" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">Facebook</a></li>
             </ul>
           </div>
 

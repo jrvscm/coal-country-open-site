@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID!;
-const SHEET_RANGE = 'Registrations!A:AF'; // Ensure this matches your sheet's structure
+const SHEET_RANGE = 'Registrations!A:AQ'; // Ensure this matches your sheet's structure
 
 export async function POST(req: Request) {
   try {
@@ -22,34 +22,45 @@ export async function POST(req: Request) {
       uid, // Unique ID (used later for Stripe webhook lookup)
       new Date().toISOString(), // Timestamp
       formData.participantType || '',
-      formData.name || '',
-      formData.email || '',
-      formData.phone || '',
       formData.company || '',
-      formData.handicap || '',
-      formData.address || '',
-      formData.city || '',
-      formData.state || '',
-      formData.zip || '',
-      formData.shirtSize || '',
       formData.banquet || '',
       formData.dinnerTickets || '',
-      formData.derby || '',
       formData.doorPrize || '',
       formData.flagPrizeContribution || '',
       formData.teamName || '',
-      formData.teamContactName || '',
-      formData.teamContactPhone || '',
-      formData.teamContactEmail || '',
-      formData.playerOneName || '',
-      formData.playerOneHandicap || '',
-      formData.playerOneTShirtSize || '',
-      formData.playerTwoName || '',
-      formData.playerTwoHandicap || '',
-      formData.playerTwoTShirtSize || '',
-      formData.playerThreeName || '',
-      formData.playerThreeHandicap || '',
-      formData.playerThreeTShirtSize || '',
+      formData.contactName || formData.player1Name ||  '',
+      formData.contactPhone || '',
+      formData.contactEmail || '',
+      formData.player1Name || '',
+      formData.player1Handicap || '',
+      formData.player1TShirtSize || '',
+      formData.player2Name || '',
+      formData.player2Handicap || '',
+      formData.player2TShirtSize || '',
+      formData.player3Name || '',
+      formData.player3Handicap || '',
+      formData.player3TShirtSize || '',
+      formData.player4Name || '',
+      formData.player4Handicap || '',
+      formData.player4TShirtSize || '',
+      formData.player5Name || '',
+      formData.player5Handicap || '',
+      formData.player5TShirtSize || '',
+      formData.player6Name || '',
+      formData.player6Handicap || '',
+      formData.player6TShirtSize || '',
+      formData.player7Name || '',
+      formData.player7Handicap || '',
+      formData.player7TShirtSize || '',
+      formData.player8Name || '',
+      formData.player8Handicap || '',
+      formData.player8TShirtSize || '',
+      formData.player9Name || '',
+      formData.player9Handicap || '',
+      formData.player9TShirtSize || '',
+      formData.player10Name || '',
+      formData.player10Handicap || '',
+      formData.player10TShirtSize || '',      
       'Pending' // Payment Status (will be updated via Stripe webhook)
     ];
 
