@@ -55,7 +55,7 @@ export default function DefaultFormFields({
               value={formData.player1Name}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
-                ${formErrors.contactName ? 'border-red-500' : 'border-customInputBorder'}
+                ${formErrors.player1Name ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
             {formErrors.player1Name && <p className="text-red-500 text-sm mt-1">{formErrors.player1Name}</p>}

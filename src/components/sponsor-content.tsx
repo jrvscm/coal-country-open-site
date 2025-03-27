@@ -36,7 +36,7 @@ export default function SponsorContent() {
   }, []);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-customBackground rounded-lg max-w-[1200px] m-auto pt-6">
 
       {/* Registration Includes Section */}
       <div className="col-span-full">
@@ -57,15 +57,17 @@ export default function SponsorContent() {
 
       <div className="col-span-full grid grid-cols-2 md:grid-cols-4 gap-4 place-items-center">
         {sponsors.map((sponsor: Sponsor, index: number) => (
-          <a href={sponsor.href} key={`sponsor-${sponsor?.title?.replace(' ', '')}-${index}`}>
-            <Image
-              src={`https://${sponsor?.source}`}
-              alt={sponsor?.title}
-              width={200}
-              height={100}
-              className="w-full max-h-24 object-contain transition cursor-pointer"
-            />
-          </a>
+          <div className="bg-white/10 p-4 flex items-center justify-center h-[120px] w-full rounded-lg border border-white/10">
+            <a href={sponsor.href} key={`sponsor-${sponsor?.title?.replace(' ', '')}-${index}`}>
+              <Image
+                src={`https://${sponsor?.source}`}
+                alt={sponsor?.title}
+                width={200}
+                height={100}
+                className="max-h-[100px] max-w-[170px] object-contain transition cursor-pointer"
+              />
+            </a>
+          </div>
         ))}
       </div>
 
