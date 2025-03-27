@@ -141,15 +141,19 @@ export default function Hero() {
         {/* Hero Content */}
         <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white z-20 p-4 md:p-0">
           <div className="bg-customBackground/95 rounded-lg px-6 py-10 md:px-16 md:py-16 w-full md:w-auto relative shadow-2xl box-border">
-            <div className="relative">
-              <h2 className="absolute -rotate-[25deg] left-[0rem] md:left-[-1rem] top-[-1rem] text-lg italic text-customYellow">The</h2>
-              <h1 className="text-5xl md:text-7xl font-heading drop-shadow-custom-600 tracking-tight text-white">Coal Country Open</h1>
-            </div>
+          <div className="relative inline-block text-center">
+            <h2 className="absolute -rotate-[25deg] left-[-1rem] top-[-1rem] text-lg italic text-customYellow">
+              The
+            </h2>
+            <h1 className="text-5xl md:text-7xl font-heading drop-shadow-custom-600 tracking-tight text-white">
+              Coal Country Open
+            </h1>
+          </div>
             <div className="flex mt-2 flex-row items-center justify-center">
-              <Button asChild variant="default" className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-full bg-customPrimary hover:bg-customPrimary/60 uppercase">
+              <Button asChild variant="default" className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-[132px] md:w-full bg-customPrimary hover:bg-customPrimary/60 uppercase">
                 <SmartLink className="m-0 text-lg md:text-xl font-text" href="/registration/player">Register</SmartLink>
               </Button>
-              <Button asChild variant="default" className="p-0 md:p-6 bg-transparent w-full text-customYellow hover:bg-customYellow/60 hover:text-white border border-customYellow uppercase">
+              <Button asChild variant="default" className="p-0 md:p-6 bg-transparent w-[132px] md:w-full text-customYellow hover:bg-customYellow/60 hover:text-white border border-customYellow uppercase">
                 <SmartLink className="m-0 text-lg md:text-xl font-text" href="/registration/sponsor">Sponsors</SmartLink>
               </Button>
             </div>
