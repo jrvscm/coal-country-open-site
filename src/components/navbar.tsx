@@ -140,9 +140,9 @@ export const Navbar = () => {
               aria-label={isOpen ? 'Close menu' : 'Open menu'}
             >
               {isOpen ? (
-                <X className="h-6 w-6" />
+                <X style={{height: '24px', width: '24px'}} />
               ) : (
-                <Menu className="h-6 w-6" />
+                <Menu style={{height: '24px', width: '24px'}} />
               )}
             </Button>
           </div>
