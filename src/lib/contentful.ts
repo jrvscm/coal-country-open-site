@@ -31,16 +31,22 @@ export const fetchSchedule = async () => {
     const res = await client.getEntries({
       content_type: 'sponsorLogos', 
     });
-
-    const sponsors = res?.includes?.Asset?.map((item) => ({
-      href: item?.fields?.description ?? '',
-      source: item?.fields?.file?.url ?? '',
-      alt: `${item?.fields?.title ?? 'Sponsor'} Logo`,
-      title: item?.fields?.title ?? 'Sponsor',
-    }));
+  
+    const sponsors = res?.includes?.Asset?.map((item) => {
+      const rawUrl = item?.fields?.file?.url ?? '';
+      const source = rawUrl.startsWith('//') ? `https:${rawUrl}` : rawUrl;
+  
+      return {
+        href: item?.fields?.description ?? '',
+        source,
+        alt: `${item?.fields?.title ?? 'Sponsor'} Logo`,
+        title: item?.fields?.title ?? 'Sponsor',
+      };
+    });
   
     return sponsors;
   };
+  
 
   export async function getTournamentPricingConfig() {
     const entries = await client.getEntries({

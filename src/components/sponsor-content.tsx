@@ -60,8 +60,8 @@ export default function SponsorContent() {
           <div key={`sponsor-${index}`} className="bg-white/10 p-4 flex items-center justify-center h-[120px] w-full rounded-lg border border-white/10">
             <a href={sponsor.href} key={`sponsor-${sponsor?.title?.replace(' ', '')}-${index}`}>
               <Image
-                src={`https://${sponsor?.source}`}
-                alt={sponsor?.title}
+                src={sponsor.source}
+                alt={sponsor.title}
                 width={200}
                 height={100}
                 className="max-h-[100px] max-w-[170px] object-contain transition cursor-pointer"
