@@ -16,6 +16,8 @@ const nextConfig: NextConfig = {
   },
 
   images: {
+    domains: ['images.ctfassets.net'],
+    minimumCacheTTL: 60 * 60 * 24 * 14,
     remotePatterns: [
       {
         protocol: 'https',
