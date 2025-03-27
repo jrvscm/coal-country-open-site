@@ -28,8 +28,10 @@ export default function SplashScreen({ isInitialLoad = false }: { isInitialLoad?
       <div
         className={`relative text-center transition-opacity duration-1000 ease-in-out`}
       >
-        <h2 className="absolute -rotate-[25deg] left-0 top-[-1rem] text-lg italic text-customYellow">The</h2>
-        <h1 className="ml-[1rem] md:ml-0 text-5xl md:text-7xl font-heading drop-shadow-custom-600 tracking-tight text-white">
+        <h2 className="absolute -rotate-[25deg] left-[-1rem] top-[-1rem] text-lg italic text-customYellow">
+          The
+        </h2>
+        <h1 className="text-5xl md:text-7xl font-heading drop-shadow-custom-600 tracking-tight text-white">
           Coal Country Open
         </h1>
         {/* <div className="mt-4">

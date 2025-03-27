@@ -57,7 +57,7 @@ export default function SponsorContent() {
 
       <div className="col-span-full grid grid-cols-2 md:grid-cols-4 gap-4 place-items-center">
         {sponsors.map((sponsor: Sponsor, index: number) => (
-          <div className="bg-white/10 p-4 flex items-center justify-center h-[120px] w-full rounded-lg border border-white/10">
+          <div key={`sponsor-${index}`} className="bg-white/10 p-4 flex items-center justify-center h-[120px] w-full rounded-lg border border-white/10">
             <a href={sponsor.href} key={`sponsor-${sponsor?.title?.replace(' ', '')}-${index}`}>
               <Image
                 src={`https://${sponsor?.source}`}

@@ -43,11 +43,11 @@ export default function Hero() {
       <div id="sponsors-section" className="w-full h-full bg-customBackground relative pt-32 pb-8 pr-[1rem] pl-[1rem] md:pr-0 md:pl-0">
         <div className="relative max-w-[1200px] m-auto">
           {/* Stopping Point Reference for Timer */}
-          <div id="registration-heading" className="relative">
-            <h2 className="absolute -rotate-[25deg] left-[0rem] top-[-1rem] md:left-[-1rem] text-lg italic text-customYellow">
+          <div id="registration-heading" className="pl-[.5rem] relative">
+            <h2 className="absolute -rotate-[25deg] left-[-.5rem] top-[-1rem] text-lg italic text-customYellow">
               The
             </h2>
-            <h1 className="ml-[1rem] md:ml-[0rem] text-5xl md:text-7xl font-heading drop-shadow-custom-600 tracking-tight text-white">
+            <h1 className="text-5xl md:text-7xl font-heading drop-shadow-custom-600 tracking-tight text-white">
               Coal Country Open
             </h1>
             <h2 className=" text-lg italic text-customYellow">
