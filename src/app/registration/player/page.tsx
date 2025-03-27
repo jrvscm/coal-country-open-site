@@ -38,6 +38,8 @@ export default function Hero() {
           src={`https://images.ctfassets.net/j2939n6mdbyq/3i6cXbMjJ1sXUGoYWdcAXk/9a32c4601e5e33006be9b7c9d60a608b/CCO24-462.jpg`}
           alt={`Players on a golf green smiling`}
           fill={true}
+          priority={true}
+          quality={70}
           className="object-cover absolute"
         />
 

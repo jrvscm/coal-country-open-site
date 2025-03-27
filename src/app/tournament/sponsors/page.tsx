@@ -22,6 +22,8 @@ export default function Hero() {
           src={`https://downloads.ctfassets.net/j2939n6mdbyq/7HxRCz9nIWxUSkszQlIplN/528be1739be8f4b5c65f30102e2af61b/CCO24-071.jpg`}
           alt={`Golf carts parked at a teebox.`}
           fill={true}
+          priority={true}
+          quality={70}
           className="object-cover absolute"
         />
 

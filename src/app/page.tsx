@@ -128,6 +128,8 @@ export default function Hero() {
             src={`https:${img}`} 
             alt={`Slide ${index + 1}`}
             fill={true}
+            priority={true}
+            quality={70}
             className={`object-cover absolute transition-opacity duration-1000 ease-in-out ${
               index === currentImage ? "opacity-100" : "opacity-0"
             }`}
