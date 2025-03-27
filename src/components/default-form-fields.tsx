@@ -37,7 +37,7 @@ export default function DefaultFormFields({
             placeholder="Company Represented"
             value={formData.company}
             onChange={handleChange}
-            className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+            className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
               ${formErrors.company ? 'border-red-500' : 'border-customInputBorder'}
             `}          
           />
@@ -54,7 +54,7 @@ export default function DefaultFormFields({
               placeholder="Enter Your Name"
               value={formData.player1Name}
               onChange={handleChange}
-              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
                 ${formErrors.contactName ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
@@ -68,7 +68,7 @@ export default function DefaultFormFields({
               placeholder="Enter Your Email"
               value={formData.contactEmail}
               onChange={handleChange}
-              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
                 ${formErrors.contactEmail ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
@@ -82,7 +82,7 @@ export default function DefaultFormFields({
               placeholder="Phone Number"
               value={formData.contactPhone}
               onChange={handleChange}
-              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
                 ${formErrors.contactPhone ? 'border-red-500' : 'border-customInputBorder'}
               `}            
             />
@@ -96,7 +96,7 @@ export default function DefaultFormFields({
               placeholder="Handicap"
               value={formData.player1Handicap}
               onChange={handleChange}
-              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
                 ${formErrors.player1Handicap ? 'border-red-500' : 'border-customInputBorder'}
               `}  
             />
@@ -110,7 +110,7 @@ export default function DefaultFormFields({
         <div className="mt-3">
           <label className="sr-only block text-sm text-white/60 mb-1">Will You Attend Banquet?</label>
           <Select value={formData.banquet} onValueChange={(value) => handleSelectChange('banquet', value)}>
-          <SelectTrigger className={`relative flex justify-start align-center w-full bg-customInputFill border p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg 
+          <SelectTrigger className={`relative flex justify-start align-center w-full bg-customInputFill border p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg text-lg 
             ${formErrors.banquet ? 'border-red-500' : 'border-customInputBorder'}
           `}>
               <SelectValue placeholder="Will you attend the banquet? (1 ticket included with entry)" />
@@ -127,7 +127,7 @@ export default function DefaultFormFields({
             `Additional Dinner Tickets (+$32.00 each)`
           }</label>
           <Select value={formData.dinnerTickets} onValueChange={(value) => handleSelectChange('dinnerTickets', value)}>
-            <SelectTrigger className="relative flex justify-start align-center w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg">
+            <SelectTrigger className="relative flex justify-start align-center w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg text-lg">
               <SelectValue placeholder={`Additional Dinner Tickets (+$32.00 each)`} />
             </SelectTrigger>
             <SelectContent>
@@ -155,7 +155,7 @@ export default function DefaultFormFields({
             placeholder="Enter Your Shirt Size"
             value={formData.player1TShirtSize}
             onChange={handleChange}
-            className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+            className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
               ${formErrors.player1TShirtSize ? 'border-red-500' : 'border-customInputBorder'}
             `}  
           />

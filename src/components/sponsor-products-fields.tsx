@@ -26,7 +26,7 @@ export default function SponsorProductFields({
             placeholder="Company Represented"
             value={formData.company}
             onChange={handleChange}
-            className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+            className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
               ${formErrors.company ? 'border-red-500' : 'border-customInputBorder'}
             `}          
           />
@@ -43,7 +43,7 @@ export default function SponsorProductFields({
               placeholder="Enter Your Name"
               value={formData.player1Name}
               onChange={handleChange}
-              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
                 ${formErrors.player1Name ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
@@ -57,7 +57,7 @@ export default function SponsorProductFields({
               placeholder="Enter Your Email"
               value={formData.contactEmail}
               onChange={handleChange}
-              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
                 ${formErrors.contactEmail ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
@@ -71,7 +71,7 @@ export default function SponsorProductFields({
               placeholder="Phone Number"
               value={formData.contactPhone}
               onChange={handleChange}
-              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
                 ${formErrors.contactPhone ? 'border-red-500' : 'border-customInputBorder'}
               `}            
             />

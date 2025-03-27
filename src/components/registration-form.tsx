@@ -459,7 +459,7 @@ function RegistrationFormContent() {
         <h3 className="text-white/80 text-lg font-semibold mt-4">REGISTRATION INCLUDES:</h3>
         <ul className="text-white/60 list-disc pl-5 mt-2 space-y-1 text-lg">
           <li>54 holes of golf on two courses (cart included)</li>
-          <li><span className="font-bold">Premium</span> gift bag</li>
+          <li>Premium gift bag</li>
           <li>Thursday night social and Saturday banquet at Gillette&apos;s Camplex</li>
           <li>Flag prizes are awarded for each day</li>
           <li>A Calcutta will take place Friday evening</li>
@@ -484,7 +484,7 @@ function RegistrationFormContent() {
             </div>
 
             {/* Pricing Breakdown */}
-            <div className="flex flex-col text-sm text-white/60 mt-2 space-y-1">
+            <div className="flex flex-col text-white/60 mt-2 space-y-1">
               <p>Base Registration: ${basePrice.toFixed(2)}</p>
               {dinnerTicketCost > 0 && <p>Dinner Tickets: ${dinnerTicketCost.toFixed(2)}</p>}
               {flagPrizeCost > 0 && <p>Flag Prize Contribution: ${flagPrizeCost.toFixed(2)}</p>}
@@ -505,7 +505,7 @@ function RegistrationFormContent() {
                   </div>
 
                   {/* Pricing Breakdown */}
-                  <div className="flex flex-col text-sm text-white/60 mt-2 space-y-1">
+                  <div className="flex flex-col text-white/60 mt-2 space-y-1">
                     <p>Base Registration: ${basePrice.toFixed(2)}</p>
                     {dinnerTicketCost > 0 && <p>Dinner Tickets: ${dinnerTicketCost.toFixed(2)}</p>}
                     {flagPrizeCost > 0 && <p>Flag Prize Contribution: ${flagPrizeCost.toFixed(2)}</p>}
@@ -718,7 +718,7 @@ function RegistrationFormContent() {
             dangerouslySetInnerHTML={{ __html: sponsorshipNote.noteHtml }}
           />
         )}
-        <Button onClick={handleCheckout} className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-full bg-customPrimary hover:bg-customPrimary/60 uppercase font-text font-5xl font-bold flex flex-row justify-center items-center">
+        <Button onClick={handleCheckout} className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-full bg-customPrimary hover:bg-customPrimary/60 uppercase font-text font-bold flex flex-row justify-center items-center">
           Continue to Secure Payment <FaLock className="h-16 w-16 font-bold" />
         </Button>
       </div>
