@@ -40,6 +40,9 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
+      <head> 
+        <link rel="preconnect" href="https://images.ctfassets.net" crossOrigin="anonymous" />
+      </head>
       <body
         className={`${bebasNeue.variable} ${barlow.variable} ${permanentMarker.variable} antialiased `}
       >
