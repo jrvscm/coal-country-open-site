@@ -125,7 +125,7 @@ export default function Hero() {
         {hasMounted && images.map((img, index) => (
           <Image
             key={index}
-            src={`https:${img}`} 
+            src={`https:${img}?w=1600&fm=webp&q=70`} 
             alt={`Slide ${index + 1}`}
             fill={true}
             priority={true}
