@@ -9,8 +9,8 @@ export default function SplashScreen({ isInitialLoad = false }: { isInitialLoad?
   useEffect(() => {
     //initial load times out on first load because we don't slide in
     // the second value is when the splash will leave
-    const slideTimeout = setTimeout(() => setSlideOut(true), isInitialLoad ? 600 : 700);//1200
-    const hideTimeout = setTimeout(() => setHide(true), 1200);
+    const slideTimeout = setTimeout(() => setSlideOut(true), isInitialLoad ? 1000 : 1000); // delay start of slide out
+    const hideTimeout = setTimeout(() => setHide(true), 1800);
 
     return () => {
       clearTimeout(slideTimeout);
@@ -32,7 +32,7 @@ export default function SplashScreen({ isInitialLoad = false }: { isInitialLoad?
         <h2 className="absolute -rotate-[25deg] left-[-1rem] top-[-1rem] text-lg italic text-customYellow">
           The
         </h2>
-        <h1 className="text-5xl md:text-7xl font-heading drop-shadow-custom-600 tracking-tight text-white">
+        <h1 className="text-5xl md:text-7xl font-heading tracking-tight text-white animate-glow relative z-10">
           Coal Country Open
         </h1>
         {/* <div className="mt-4">

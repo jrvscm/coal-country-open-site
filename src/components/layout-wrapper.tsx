@@ -9,7 +9,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const pathname = usePathname();
 
   const [showSplash, setShowSplash] = useState(true);
-  const [isBlurred, setIsBlurred] = useState(true);
+  // const [isBlurred, setIsBlurred] = useState(true);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   useEffect(() => {
@@ -67,7 +67,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     const hideSplash = setTimeout(() => {
       setShowSplash(false);
       setPendingPath(null);
-    }, 1300);
+    }, 1800);
   
     return () => {
       // clearTimeout(unblur);
@@ -79,11 +79,11 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     <>
       {showSplash && <SplashScreen isInitialLoad={isInitialLoad} />}
 
-      <div
+      {/* <div
         className={`pointer-events-none fixed inset-0 z-[9998] transition-all duration-100 ease-in-out ${
           isBlurred ? 'backdrop-blur-md' : 'backdrop-blur-0'
         }`}
-      />
+      /> */}
 
       <div data-transition-triggerer>{children}</div>
     </>
