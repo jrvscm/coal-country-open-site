@@ -20,7 +20,7 @@ const SmartLink = React.forwardRef<HTMLAnchorElement, SmartLinkProps>(
 
       setTimeout(() => {
         router.push(href);
-      }, 800);
+      }, 900);
     };
 
     return (
