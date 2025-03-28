@@ -48,26 +48,31 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     if (pendingPath && pendingPath !== pathname) {
-      setIsBlurred(true);
+      // setIsBlurred(true);
       setShowSplash(true);
 
       const delay = setTimeout(() => {
         router.push(pendingPath); 
-      }, 400);
+      }, 800);
 
       return () => clearTimeout(delay);
     }
   }, [pendingPath, pathname, router]);
 
-
   useEffect(() => {
+    // const unblur = setTimeout(() => {
+    //   // setIsBlurred(false); // <-- blur goes away sooner
+    // }, 800); // match SmartLink delay or slightly before
+  
     const hideSplash = setTimeout(() => {
       setShowSplash(false);
-      setIsBlurred(false);
       setPendingPath(null);
-    }, 1300); 
-
-    return () => clearTimeout(hideSplash);
+    }, 1300);
+  
+    return () => {
+      // clearTimeout(unblur);
+      clearTimeout(hideSplash);
+    };
   }, [pathname]);
 
   return (
@@ -75,7 +80,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       {showSplash && <SplashScreen isInitialLoad={isInitialLoad} />}
 
       <div
-        className={`pointer-events-none fixed inset-0 z-[9998] transition-all duration-200 ease-in-out ${
+        className={`pointer-events-none fixed inset-0 z-[9998] transition-all duration-100 ease-in-out ${
           isBlurred ? 'backdrop-blur-md' : 'backdrop-blur-0'
         }`}
       />
