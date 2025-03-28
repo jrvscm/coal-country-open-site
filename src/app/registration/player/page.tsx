@@ -35,7 +35,7 @@ export default function Hero() {
       {/* Hero Section */}
       <div className="relative w-full h-screen overflow-hidden">
         <Image
-          src={`https://images.ctfassets.net/j2939n6mdbyq/3i6cXbMjJ1sXUGoYWdcAXk/9a32c4601e5e33006be9b7c9d60a608b/CCO24-462.jpg?w=1600&fm=webp&q=70`}
+          src={`https://images.ctfassets.net/j2939n6mdbyq/3i6cXbMjJ1sXUGoYWdcAXk/ce6f3abe8f58abf7677ee60e3dfc81d7/CCO24-462__1___1_.jpg?w=1600&fm=webp&q=70`}
           alt={`Players on a golf green smiling`}
           fill={true}
           priority={true}

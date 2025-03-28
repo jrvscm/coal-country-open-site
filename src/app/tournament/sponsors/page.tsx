@@ -19,7 +19,7 @@ export default function Hero() {
       {/* Hero Section */}
       <div className="relative w-full h-screen overflow-hidden">
         <Image
-          src={`https://downloads.ctfassets.net/j2939n6mdbyq/7HxRCz9nIWxUSkszQlIplN/528be1739be8f4b5c65f30102e2af61b/CCO24-071.jpg?w=1600&fm=webp&q=70`}
+          src={`https://images.ctfassets.net/j2939n6mdbyq/1ufdIvoLVzqe1PlBWbYSfM/df15a3c83bd0109afa82e239d28dee0b/CCO24-071__1___1_.jpg?w=1600&fm=webp&q=70`}
           alt={`Golf carts parked at a teebox.`}
           fill={true}
           priority={true}
