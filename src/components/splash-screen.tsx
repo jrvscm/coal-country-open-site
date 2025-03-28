@@ -7,11 +7,8 @@ export default function SplashScreen({ isInitialLoad = false }: { isInitialLoad?
   const [hide, setHide] = useState(false);
 
   useEffect(() => {
-    //initial load times out on first load because we don't slide in
-    // the second value is when the splash will leave
-    const slideTimeout = setTimeout(() => setSlideOut(true), isInitialLoad ? 1000 : 1000); // delay start of slide out
-    const hideTimeout = setTimeout(() => setHide(true), 1500);
-
+    const slideTimeout = setTimeout(() => setSlideOut(true), isInitialLoad ? 800 : 500);
+    const hideTimeout = setTimeout(() => setHide(true), 1400);
     return () => {
       clearTimeout(slideTimeout);
       clearTimeout(hideTimeout);

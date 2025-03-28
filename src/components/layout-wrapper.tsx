@@ -9,82 +9,66 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const pathname = usePathname();
 
   const [showSplash, setShowSplash] = useState(true);
-  // const [isBlurred, setIsBlurred] = useState(true);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       window.history.scrollRestoration = 'manual';
       window.scrollTo(0, 0);
     }
   }, []);
+
+  // Initial splash screen
   useEffect(() => {
     if (isInitialLoad) {
-      setShowSplash(true);
       const timer = setTimeout(() => {
         setShowSplash(false);
-        setIsInitialLoad(false); // now we’re on normal routing
+        setIsInitialLoad(false);
       }, 1800);
       return () => clearTimeout(timer);
     }
   }, [isInitialLoad]);
-  
 
-    // Listen for custom transition events from SmartLink
-    useEffect(() => {
-        const handler = (e: Event) => {
-        const customEvent = e as CustomEvent<{ href: string }>;
-        if (customEvent?.detail?.href) {
-            setPendingPath(customEvent.detail.href);
-        }
+  // Listen for SmartLink transitions
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const customEvent = e as CustomEvent<{ href: string }>;
+      if (customEvent?.detail?.href && customEvent.detail.href !== pathname) {
+        setPendingPath(customEvent.detail.href);
+        setShowSplash(true); // start splash
+      }
     };
 
     document.addEventListener('start-transition', handler);
-    return () => {
-      document.removeEventListener('start-transition', handler);
-    };
-  }, []);
+    return () => document.removeEventListener('start-transition', handler);
+  }, [pathname]);
 
-
+  // After splash fully displays, perform the route change
   useEffect(() => {
     if (pendingPath && pendingPath !== pathname) {
-      // setIsBlurred(true);
-      setShowSplash(true);
-
       const delay = setTimeout(() => {
-        router.push(pendingPath); 
-      }, 800);
+        router.push(pendingPath);
+      }, 700); // adjust based on slide-in duration
 
       return () => clearTimeout(delay);
     }
   }, [pendingPath, pathname, router]);
 
+  // After routing completes, hide splash
   useEffect(() => {
-    // const unblur = setTimeout(() => {
-    //   // setIsBlurred(false); // <-- blur goes away sooner
-    // }, 800); // match SmartLink delay or slightly before
-  
-    const hideSplash = setTimeout(() => {
-      setShowSplash(false);
-      setPendingPath(null);
-    }, 1500);
-  
-    return () => {
-      // clearTimeout(unblur);
-      clearTimeout(hideSplash);
-    };
-  }, [pathname]);
+    if (!isInitialLoad) {
+      const hide = setTimeout(() => {
+        setShowSplash(false);
+        setPendingPath(null);
+      }, 1400); // match splash out duration
+      return () => clearTimeout(hide);
+    }
+  }, [pathname, isInitialLoad]);
 
   return (
     <>
       {showSplash && <SplashScreen isInitialLoad={isInitialLoad} />}
-
-      {/* <div
-        className={`pointer-events-none fixed inset-0 z-[9998] transition-all duration-100 ease-in-out ${
-          isBlurred ? 'backdrop-blur-md' : 'backdrop-blur-0'
-        }`}
-      /> */}
-
       <div data-transition-triggerer>{children}</div>
     </>
   );
