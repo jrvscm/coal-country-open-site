@@ -53,7 +53,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
       const delay = setTimeout(() => {
         router.push(pendingPath); 
-      }, 500);
+      }, 400);
 
       return () => clearTimeout(delay);
     }

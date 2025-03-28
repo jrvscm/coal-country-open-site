@@ -458,10 +458,13 @@ function RegistrationFormContent() {
       <div className="col-span-full">
         <h3 className="text-white/80 text-lg font-semibold mt-4">REGISTRATION INCLUDES:</h3>
         <ul className="text-white/60 list-disc pl-5 mt-2 space-y-1 text-lg">
-          <li>54 holes of golf on two courses (cart included)</li>
-          <li>Premium gift bag</li>
-          <li>Thursday night social and Saturday banquet at Gillette&apos;s Camplex</li>
-          <li>Flag prizes are awarded for each day</li>
+          <li>54 holes of golf on two courses</li>
+          <li>Carts for the tournament</li>
+          <li>Premium tournament gift bag</li>
+          <li>On course refreshments</li>
+          <li>Daily flag prizes</li>
+          <li>Thursday night social</li>
+          <li>Saturday banquet at Gillette College Tech Center</li>
           <li>A Calcutta will take place Friday evening</li>
         </ul>
       </div>
@@ -656,7 +659,7 @@ function RegistrationFormContent() {
       </div>
 
       {selectedPricing && (selectedPricing?.subText?.length || selectedPricing?.highlightText?.length) && (
-        <div className={`${selectedPricing?.subText ? "bg-black/50" : ""} mt-6 text-customInputBorder col-span-full p-3 text-sm md:text-lg md:text-xl md:text-sm rounded-lg`}>
+        <div className={`${selectedPricing?.subText ? "bg-black/50" : ""} mt-6 text-customInputBorder col-span-full p-3 text-sm md:text-lg rounded-lg`}>
           {selectedPricing.subText && (
             <div
               dangerouslySetInnerHTML={{ __html: selectedPricing.subText }}
@@ -714,7 +717,7 @@ function RegistrationFormContent() {
       <div className="col-span-full">
         {showSponsorshipNote && sponsorshipNote?.noteHtml && (
           <div
-            className={`bg-black/50 mt-6 text-customInputBorder col-span-full p-3 text-sm md:text-lg md:text-xl md:text-sm rounded-lg mb-6`}
+            className={`bg-black/50 mt-6 text-customInputBorder col-span-full p-3 text-sm md:text-lg rounded-lg mb-6`}
             dangerouslySetInnerHTML={{ __html: sponsorshipNote.noteHtml }}
           />
         )}
