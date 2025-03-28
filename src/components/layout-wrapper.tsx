@@ -67,7 +67,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     const hideSplash = setTimeout(() => {
       setShowSplash(false);
       setPendingPath(null);
-    }, 1800);
+    }, 1500);
   
     return () => {
       // clearTimeout(unblur);
