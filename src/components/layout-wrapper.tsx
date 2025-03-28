@@ -42,7 +42,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       }, 700);
       return () => clearTimeout(routeTimer);
     }
-  }, [pendingPath, pathname]);
+  }, [pendingPath, pathname, router]);
 
   // After route change, hide splash
   useEffect(() => {
@@ -53,7 +53,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       }, 1600);
       return () => clearTimeout(hideTimer);
     }
-  }, [pathname]);
+  }, [pathname, isInitialLoad]);
 
   return (
     <>
