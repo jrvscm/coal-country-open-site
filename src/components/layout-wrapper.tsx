@@ -65,7 +65,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       setShowSplash(false);
       setIsBlurred(false);
       setPendingPath(null);
-    }, 1300); // match splash screen duration
+    }, 1300); 
 
     return () => clearTimeout(hideSplash);
   }, [pathname]);
