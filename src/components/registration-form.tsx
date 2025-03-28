@@ -458,14 +458,14 @@ function RegistrationFormContent() {
       <div className="col-span-full">
         <h3 className="text-white/80 text-lg font-semibold mt-4">REGISTRATION INCLUDES:</h3>
         <ul className="text-white/60 list-disc pl-5 mt-2 space-y-1 text-lg">
-          <li>54 holes of golf on two courses</li>
-          <li>Carts for the tournament</li>
-          <li>Premium tournament gift bag</li>
-          <li>On course refreshments</li>
-          <li>Daily flag prizes</li>
-          <li>Thursday night social</li>
-          <li>Saturday banquet at Gillette College Tech Center</li>
-          <li>A Calcutta will take place Friday evening</li>
+          <li>54 HOLES OF GOLF ON TWO COURSES</li>
+          <li>CARTS FOR THE TOURNAMENT</li>
+          <li>PREMIUM TOURNAMENT GIFT BAG</li>
+          <li>ON COURSE REFRESHMENTS</li>
+          <li>DAILY FLAG PRIZES</li>
+          <li>THURSDAY NIGHT SOCIAL</li>
+          <li>SATURDAY BANQUET AT GILLETTE COLLEGE TECH CENTER</li>
+          <li>A CALCUTTA WILL TAKE PLACE FRIDAY EVENING</li>
         </ul>
       </div>
 

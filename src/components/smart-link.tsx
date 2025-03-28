@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 
 type SmartLinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
   href: string;
@@ -9,15 +10,26 @@ type SmartLinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
 
 const SmartLink = React.forwardRef<HTMLAnchorElement, SmartLinkProps>(
   ({ href, children, onClick, ...rest }, ref) => {
+    const router = useRouter();
+
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
       if (onClick) onClick(e);
       e.preventDefault();
 
       document.dispatchEvent(new CustomEvent('start-transition', { detail: { href } }));
+
+      setTimeout(() => {
+        router.push(href);
+      }, 900);
     };
 
     return (
-      <a href={href} onClick={handleClick} ref={ref} {...rest}>
+      <a
+        href={href}
+        onClick={handleClick}
+        {...rest}
+        ref={ref}
+      >
         {children}
       </a>
     );

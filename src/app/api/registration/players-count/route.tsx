@@ -3,7 +3,7 @@ import { google } from 'googleapis';
 
 // Read environment variables
 const SHEET_ID = process.env.GOOGLE_SHEET_ID!;
-const SHEET_RANGE = 'Players!A:A'; // Adjust based on where UID is stored
+const SHEET_RANGE = 'Paid Players!A:A'; // Adjust based on where UID is stored
 
 export async function GET() {
   try {

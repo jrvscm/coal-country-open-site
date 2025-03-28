@@ -12,59 +12,48 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+  // Initial page load
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.history.scrollRestoration = 'manual';
-      window.scrollTo(0, 0);
-    }
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+      setIsInitialLoad(false);
+    }, 2000);
+    return () => clearTimeout(timer);
   }, []);
 
-  // Initial splash screen
-  useEffect(() => {
-    if (isInitialLoad) {
-      const timer = setTimeout(() => {
-        setShowSplash(false);
-        setIsInitialLoad(false);
-      }, 1800);
-      return () => clearTimeout(timer);
-    }
-  }, [isInitialLoad]);
-
-  // Listen for SmartLink transitions
+  // SmartLink trigger
   useEffect(() => {
     const handler = (e: Event) => {
       const customEvent = e as CustomEvent<{ href: string }>;
-      if (customEvent?.detail?.href && customEvent.detail.href !== pathname) {
+      if (customEvent?.detail?.href) {
         setPendingPath(customEvent.detail.href);
-        setShowSplash(true); // start splash
+        setShowSplash(true); // Cover screen immediately
       }
     };
-
     document.addEventListener('start-transition', handler);
     return () => document.removeEventListener('start-transition', handler);
-  }, [pathname]);
+  }, []);
 
-  // After splash fully displays, perform the route change
+  // Route push while splash is active
   useEffect(() => {
     if (pendingPath && pendingPath !== pathname) {
-      const delay = setTimeout(() => {
-        router.push(pendingPath);
-      }, 700); // adjust based on slide-in duration
-
-      return () => clearTimeout(delay);
+      const routeTimer = setTimeout(() => {
+        router.push(pendingPath!);
+      }, 700);
+      return () => clearTimeout(routeTimer);
     }
-  }, [pendingPath, pathname, router]);
+  }, [pendingPath, pathname]);
 
-  // After routing completes, hide splash
+  // After route change, hide splash
   useEffect(() => {
     if (!isInitialLoad) {
-      const hide = setTimeout(() => {
+      const hideTimer = setTimeout(() => {
         setShowSplash(false);
         setPendingPath(null);
-      }, 1400); // match splash out duration
-      return () => clearTimeout(hide);
+      }, 1600);
+      return () => clearTimeout(hideTimer);
     }
-  }, [pathname, isInitialLoad]);
+  }, [pathname]);
 
   return (
     <>

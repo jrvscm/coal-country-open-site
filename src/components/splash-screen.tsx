@@ -7,40 +7,34 @@ export default function SplashScreen({ isInitialLoad = false }: { isInitialLoad?
   const [hide, setHide] = useState(false);
 
   useEffect(() => {
-    const slideTimeout = setTimeout(() => setSlideOut(true), isInitialLoad ? 800 : 500);
-    const hideTimeout = setTimeout(() => setHide(true), 1400);
-    return () => {
-      clearTimeout(slideTimeout);
-      clearTimeout(hideTimeout);
-    };
-  }, [isInitialLoad]);
+    const slideOutTimer = setTimeout(() => {
+      setSlideOut(true); // slide out AFTER route change
+    }, 1200); // give 500ms buffer after route push
 
-  if (hide) return null; 
+    const hideTimer = setTimeout(() => {
+      setHide(true);
+    }, 1600);
+
+    return () => {
+      clearTimeout(slideOutTimer);
+      clearTimeout(hideTimer);
+    };
+  }, []);
+
+  if (hide) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] bg-black flex items-center justify-center transition-transform overflow-hidden 
-      ${slideOut ? 'splash-slide-out' : ''}
-      ${!isInitialLoad && !slideOut ? 'splash-slide-in' : ''}`}
+      className={`fixed inset-0 z-[9999] bg-black flex items-center justify-center transition-transform duration-500 overflow-hidden
+        ${slideOut ? 'splash-slide-out' : 'splash-slide-in'}`}
     >
-      <div
-        className={`relative text-center transition-opacity duration-1000 ease-in-out`}
-      >
+      <div className="relative text-center transition-opacity duration-1000 ease-in-out">
         <h2 className="absolute -rotate-[25deg] left-[-1rem] top-[-1rem] text-lg italic text-customYellow">
           The
         </h2>
-        <h1 className="text-5xl md:text-7xl font-heading tracking-tight text-white animate-glow relative z-10">
+        <h1 className="text-5xl md:text-7xl font-heading drop-shadow-custom-600 tracking-tight text-white animate-glow">
           Coal Country Open
         </h1>
-        {/* <div className="mt-4">
-          <Image
-            src="https://images.ctfassets.net/j2939n6mdbyq/3nVn09ySuMJdpRghyyVqeA/8a0f6cafff701f13c11bcdcb0201f950/modified_logo.png"
-            alt="Coal Country Open Logo"
-            width={200}
-            height={100}
-            className="mx-auto h-auto w-auto object-contain"
-          />
-        </div> */}
       </div>
     </div>
   );

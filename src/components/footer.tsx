@@ -23,17 +23,28 @@ export default function Footer() {
           <div className="order-last col-span-full xl:order-none xl:col-span-2">
             <h3 className="text-lg font-bold mb-2">Stay Updated</h3>
             <p className="text-sm mb-4">Sign up for our newsletter<br />to stay up to date.</p>
-            <div className="flex flex-col md:flex-row gap-2 md:max-w-[300px]">
-              <Input
-                type="email"
-                placeholder="example@example.com"
-                className="bg-white text-black focus:outline-none"
-                value={email}
-                onChange={handleChange}
-              />
-              <Button onClick={handleEmail} variant="default" className="px-2 border border-customPrimary bg-customPrimary hover:bg-customPrimary/60 uppercase">
-                Submit
-              </Button>
+            <div className="w-full max-w-sm">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleEmail();
+                }}
+                className="flex overflow-hidden rounded-md border border-customYellow focus-within:ring-2 focus-within:ring-customPrimary"
+              >
+                <Input
+                  type="email"
+                  placeholder="you@example.com"
+                  className="flex-1 rounded-none border-none bg-white px-4 py-2 text-black placeholder-gray-500 focus:outline-none"
+                  value={email}
+                  onChange={handleChange}
+                />
+                <Button
+                  type="submit"
+                  className="border border-customPrimary rounded-none bg-customPrimary px-4 text-white hover:bg-customPrimary/70 uppercase tracking-wide"
+                >
+                  Submit
+                </Button>
+              </form>
             </div>
           </div>
 
@@ -65,6 +76,9 @@ export default function Footer() {
             </ul>
           </div>
         </div>
+      </div>
+      <div className="mt-10 border-t border-customInputFill pt-4 text-center text-sm text-muted-foreground">
+        © {new Date().getFullYear()} Coal Country Open. All rights reserved.
       </div>
     </footer>
   );
