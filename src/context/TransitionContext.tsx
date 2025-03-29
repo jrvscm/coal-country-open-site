@@ -1,27 +1,30 @@
+// src/contexts/TransitionContext.tsx
 'use client';
-import { createContext, useState, useContext } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 type TransitionContextType = {
-  showSplash: boolean;
-  setShowSplash: (val: boolean) => void;
+  isTransitioning: boolean;
+  startTransition: (href: string) => void;
+  endTransition: () => void;
 };
 
-const TransitionContext = createContext<TransitionContextType | undefined>(undefined);
+const TransitionContext = createContext<TransitionContextType | null>(null);
 
-export function TransitionProvider({ children }: { children: React.ReactNode }) {
-  const [showSplash, setShowSplash] = useState(false);
+export const TransitionProvider = ({ children }: { children: React.ReactNode }) => {
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const startTransition = () => setIsTransitioning(true);
+  const endTransition = () => setIsTransitioning(false);
 
   return (
-    <TransitionContext.Provider value={{ showSplash, setShowSplash }}>
+    <TransitionContext.Provider value={{ isTransitioning, startTransition, endTransition }}>
       {children}
     </TransitionContext.Provider>
   );
-}
+};
 
-export function useTransition(): TransitionContextType {
+export const useTransitionContext = () => {
   const context = useContext(TransitionContext);
-  if (!context) {
-    throw new Error('useTransition must be used within a TransitionProvider');
-  }
+  if (!context) throw new Error('useTransitionContext must be used inside TransitionProvider');
   return context;
-}
+};

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useTransitionContext } from '@/context/TransitionContext';
 import SplashScreen from '@/components/splash-screen';
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
@@ -11,6 +12,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const [showSplash, setShowSplash] = useState(true);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const { endTransition } = useTransitionContext();
 
   // Initial page load
   useEffect(() => {
@@ -25,14 +27,28 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   useEffect(() => {
     const handler = (e: Event) => {
       const customEvent = e as CustomEvent<{ href: string }>;
-      if (customEvent?.detail?.href) {
-        setPendingPath(customEvent.detail.href);
-        setShowSplash(true); // Cover screen immediately
+      const href = customEvent?.detail?.href;
+
+      if (!href) return;
+
+      setShowSplash(true);
+
+      if (href === pathname) {
+        // Same page – manually end transition after splash
+        setTimeout(() => {
+          setShowSplash(false);
+          setPendingPath(null);
+          endTransition();
+        }, 1600);
+      } else {
+        // New route – handled by route push + pathname effect
+        setPendingPath(href);
       }
     };
+
     document.addEventListener('start-transition', handler);
     return () => document.removeEventListener('start-transition', handler);
-  }, []);
+  }, [pathname, endTransition]);
 
   // Route push while splash is active
   useEffect(() => {
@@ -44,16 +60,17 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     }
   }, [pendingPath, pathname, router]);
 
-  // After route change, hide splash
+  // End transition after route actually changes
   useEffect(() => {
-    if (!isInitialLoad) {
+    if (!isInitialLoad && pendingPath) {
       const hideTimer = setTimeout(() => {
         setShowSplash(false);
         setPendingPath(null);
+        endTransition();
       }, 1600);
       return () => clearTimeout(hideTimer);
     }
-  }, [pathname, isInitialLoad]);
+  }, [pathname, isInitialLoad, pendingPath, endTransition]);
 
   return (
     <>
