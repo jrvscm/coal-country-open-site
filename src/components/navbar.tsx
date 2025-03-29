@@ -110,9 +110,6 @@ export const Navbar = () => {
 
         {/* Right Buttons */}
         <div className="ml-auto flex hidden gap-4 lg:block">
-          <Button variant="ghostMuted" className="hidden lg:inline hover:text-customYellow" asChild>
-            <a href="tel:+13078889999">(307) 888-9999</a>
-          </Button>
           <SmartLink href={'/registration/player'}>
             <Button className="uppercase font-text border border-customPrimary bg-customPrimary hover:bg-customPrimary/60">register</Button>
           </SmartLink>
