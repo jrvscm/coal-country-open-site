@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
+import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import { FaLock, FaRegCheckCircle } from "react-icons/fa";
 import { Button } from '@/components/ui/button';
 import TeamFormFields from '@/components/team-form-fields';
