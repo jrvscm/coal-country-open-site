@@ -32,7 +32,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     }, 6000);
   
     return () => clearTimeout(safety);
-  }, []);
+  }, [endTransition]);
 
   // SmartLink trigger
   useEffect(() => {

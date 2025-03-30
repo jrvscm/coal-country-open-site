@@ -131,7 +131,7 @@ function RegistrationFormContent() {
     player3TShirtSize: '',
 }), [path]);
 
-  const resetForm = useCallback(() => setFormData(defaultFormState), [defaultFormState]);
+  // const resetForm = useCallback(() => setFormData(defaultFormState), [defaultFormState]);
   const [formData, setFormData] = useState<FormDataType>(defaultFormState);
   const [formErrors, setFormErrors] = useState<FormErrorsType>({} as FormErrorsType);
   const [totalPrice, setTotalPrice] = useState(basePrices[formData.participantType as keyof typeof basePrices]);
@@ -717,7 +717,7 @@ function RegistrationFormContent() {
       <div className="fixed inset-0 bg-black/80 backdrop-blur z-50 flex items-center justify-center">
         <div className="bg-white text-black rounded-xl shadow-lg p-8 max-w-md text-center">
           <FaRegCheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">You're all set!</h2>
+          <h2 className="text-2xl font-bold mb-2">You&apos;re all set!</h2>
           <p className="mb-2">See you at the tournament on {tournamentStartDate} {new Date().getFullYear()}.</p>
           <p className="text-sm text-gray-600">Check your email for payment receipt and details.</p>
           <button

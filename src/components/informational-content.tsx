@@ -3,12 +3,7 @@
 import { useEffect, useState } from 'react';
 import client from "@/lib/contentful";
 import Image from 'next/image';
-type Sponsor = {
-  href?: string;
-  source: string;
-  alt: string;
-  title: string;
-};
+
 
 export default function InformationalContent() {
     const [images, setImages] = useState<string[]>([]);
@@ -51,7 +46,7 @@ export default function InformationalContent() {
       <div className="col-span-1">
         <h3 className="text-white/80 text-lg font-semibold mt-4">TOURNAMENT INFORMATION:</h3>
         <ul className="text-white/60 list-disc mt-2 space-y-1 text-lg">
-          Below you'll find important tournament information, including event details, schedules, and other helpful materials. 
+          Below you&apos;ll find important tournament information, including event details, schedules, and other helpful materials. 
           If you have any questions, feel free to reach out to the tournament board any time.
         </ul>
       </div>
