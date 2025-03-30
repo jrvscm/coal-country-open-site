@@ -29,8 +29,7 @@ export default function Footer() {
                   e.preventDefault();
                   handleEmail();
                 }}
-                className="flex overflow-hidden rounded-md border border-customYellow focus-within:ring-2 focus-within:ring-customPrimary"
-              >
+                className="flex overflow-hidden rounded-md"              >
                 <Input
                   type="email"
                   placeholder="you@example.com"

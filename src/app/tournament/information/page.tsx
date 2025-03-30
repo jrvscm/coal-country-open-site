@@ -2,25 +2,28 @@
 
 import Image from "next/image";
 import CountdownTimer from '@/components/countdown-timer';
-import SponsorContent from '@/components/sponsor-content';
+import InformationalContent from '@/components/informational-content';
 import { ArrowDown } from 'lucide-react';
 import { useTournamentDate } from '@/context/TournamentDateContext';
 import { formatTournamentDate } from '@/lib/utils';
+import { usePageReady } from '@/hooks/usePageReady';
 
 export default function Hero() {
   const tournamentDate = useTournamentDate();
 
   const handleScrollDown = () => {
-    document.getElementById('sponsors-section')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('information-section')?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  usePageReady();
 
   return (
     <>
       {/* Hero Section */}
       <div className="relative w-full h-screen overflow-hidden">
         <Image
-          src={`https://images.ctfassets.net/j2939n6mdbyq/1ufdIvoLVzqe1PlBWbYSfM/df15a3c83bd0109afa82e239d28dee0b/CCO24-071__1___1_.jpg?w=1600&fm=webp&q=70`}
-          alt={`Golf carts parked at a teebox.`}
+          src={`https://images.ctfassets.net/j2939n6mdbyq/hWFzkurr7ydRoNyRLqRRZ/3c58fde05a3bfde5c5e9e1e9887bda75/CCO24-399__1_.jpg?w=1600&fm=webp&q=70`}
+          alt={`Golf carts parked at a clubhouse`}
           fill={true}
           priority={true}
           quality={70}
@@ -32,20 +35,15 @@ export default function Hero() {
 
         {/* Hero Content */}
         <div className="relative inset-0 flex flex-col justify-center items-center text-center text-white z-20 p-4 md:p-0">
-          <h2 className="
-              absolute 
-              left-1/2 -translate-x-1/2 
-              top-[25vh]
-              w-full max-w-[320px] 
-              md:left-[12vw] md:translate-x-0 md:max-w-none md:w-auto
-              font-marker drop-shadow-custom-600 
-              text-3xl md:text-6xl 
-              font-bold italic 
-              transform -rotate-6 
-              z-30
-            ">
-            A Huge Thank You<br/>
-            To Our Sponsors!!
+          <h2 className="absolute 
+                        left-1/2 -translate-x-1/2 
+                        top-[25vh] md:left-[12vw] md:translate-x-0
+                        font-marker drop-shadow-custom-600 
+                        text-3xl md:text-6xl 
+                        font-bold italic 
+                        transform -rotate-6 
+                        z-30">
+            Tournament Information
           </h2>
         </div>
       </div>
@@ -53,7 +51,7 @@ export default function Hero() {
       {tournamentDate && <CountdownTimer eventDate={formatTournamentDate(tournamentDate)} />}
 
       {/* Registration Section */}
-      <div id="sponsors-section" className="w-full h-full bg-customBackground relative pt-32 pb-8 pr-[1rem] pl-[1rem] md:pr-0 md:pl-0">
+      <div id="information-section" className="w-full h-full bg-customBackground relative pt-32 pb-8 pr-[1rem] pl-[1rem] md:pr-0 md:pl-0">
         <div className="relative max-w-[1200px] m-auto">
           {/* Stopping Point Reference for Timer */}
           <div id="registration-heading" className="pl-[.5rem] relative">
@@ -63,12 +61,9 @@ export default function Hero() {
             <h1 className="text-5xl md:text-7xl font-heading drop-shadow-custom-600 tracking-tight text-white">
               Coal Country Open
             </h1>
-            <h2 className=" text-lg italic text-customYellow">
-              Our sponsors that make it all possible!
-            </h2>
           </div>
         </div>
-        <SponsorContent />
+        <InformationalContent />
       </div>
 
       {/* Scroll Indicator - Only visible on desktop */}

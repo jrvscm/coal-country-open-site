@@ -23,6 +23,17 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    const safety = setTimeout(() => {
+      // in case something breaks, force hide splash 
+      setShowSplash(false);
+      setPendingPath(null);
+      endTransition();
+    }, 6000);
+  
+    return () => clearTimeout(safety);
+  }, []);
+
   // SmartLink trigger
   useEffect(() => {
     const handler = (e: Event) => {

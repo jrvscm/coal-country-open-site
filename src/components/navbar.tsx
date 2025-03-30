@@ -31,8 +31,8 @@ export const Navbar = () => {
       description: ''
     },
     {
-      title: 'RULES',
-      href: '/tournament/rules',
+      title: 'INFORMATION',
+      href: '/tournament/information',
       description: ''
     }
   ];

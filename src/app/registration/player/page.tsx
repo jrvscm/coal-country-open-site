@@ -48,8 +48,19 @@ export default function Hero() {
 
         {/* Hero Content */}
         <div className="relative inset-0 flex flex-col justify-center items-center text-center text-white z-20 p-4 md:p-0">
-          <h2 className="absolute top-[15vh] left-6 md:top-[20vh] md:left-[12vw] font-marker drop-shadow-custom-600 text-3xl md:text-6xl font-bold italic transform -rotate-6 z-30">
-            Register Today!<br/>
+          <h2 className="
+            absolute 
+            left-1/2 -translate-x-1/2 
+            top-[15vh] md:top-[20vh]
+            w-full max-w-[320px] 
+            md:left-[12vw] md:translate-x-0 md:max-w-none md:w-auto
+            font-marker drop-shadow-custom-600 
+            text-3xl md:text-6xl 
+            font-bold italic 
+            transform -rotate-6 
+            z-30
+          ">
+            Register Today!<br />
             {/* Dynamic Registration Count */}
             {registrationCount !== null && registrationCount !== 0 && (
               <span className="text-xl md:text-4xl"><span className="font-heading">{registrationCount}</span> already registered!</span>
