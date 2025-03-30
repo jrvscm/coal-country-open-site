@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import client from "@/lib/contentful";
 import Image from 'next/image';
-
+import { Asset } from 'contentful';
 
 export default function InformationalContent() {
     const [images, setImages] = useState<string[]>([]);
@@ -13,18 +13,21 @@ export default function InformationalContent() {
             const res = await client.getEntry('2wH3ArzSvKEIArgjrqd8zR');
             if (res?.fields?.tournamentInformationalFlyers && Array.isArray(res?.fields?.tournamentInformationalFlyers)) {
               const flyerAssets = res?.fields?.tournamentInformationalFlyers
-                .map((item) => {
-                  if (
-                    item &&
-                    typeof item === "object" &&
-                    "fields" in item &&
-                    item.fields?.file?.url
-                  ) {
-                    return item.fields.file.url;
-                  }
-                  return null;
-                })
-                .filter((url): url is string => Boolean(url));
+              .map((item) => {
+                const asset = item as Asset;
+            
+                if (
+                  asset &&
+                  asset.fields &&
+                  asset.fields.file &&
+                  typeof asset.fields.file.url === 'string'
+                ) {
+                  return asset.fields.file.url;
+                }
+            
+                return null;
+              })
+              .filter((url): url is string => Boolean(url));
            
               setImages(flyerAssets);
             } else {

@@ -45,6 +45,11 @@ export type FormDataType = {
   player3TShirtSize?: string;
 };
 
+type RegistrationStoreData = {
+  uid: string;
+  formData: FormDataType;
+};
+
 export default function RegistrationForm() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -352,7 +357,7 @@ function RegistrationFormContent() {
       };
 
       const uid = uuidv4();
-      store.set('registrationData', { uid, formData: formattedFormData });
+      store.set<RegistrationStoreData>('registrationData', { uid, formData: formattedFormData });
   
       // Proceed to checkout
       const stripe = await stripePromise;
@@ -399,7 +404,7 @@ function RegistrationFormContent() {
     if (confirmed) {
       setRegistrationStatus('success');
       handleScrollDown();
-      const savedData = store.get('registrationData');
+      const savedData = store.get<RegistrationStoreData>('registrationData');
       if (!savedData?.uid || !savedData?.formData) {
         alert(`Something went wrong. We couldn't retrieve your submission data. Please contact the tournament board.`)
         return;
