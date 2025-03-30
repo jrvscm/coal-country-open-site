@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 import { useTransitionContext } from '@/context/TransitionContext';
 
 type SmartLinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {

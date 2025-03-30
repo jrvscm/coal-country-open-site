@@ -4,7 +4,7 @@ import { createContext, useContext, useState } from 'react';
 
 type TransitionContextType = {
   isTransitioning: boolean;
-  startTransition: (href: string) => void;
+  startTransition: () => void;
   endTransition: () => void;
 };
 
