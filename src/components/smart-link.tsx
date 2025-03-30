@@ -3,7 +3,6 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useTransitionContext } from '@/context/TransitionContext';
-import { start } from 'repl';
 
 type SmartLinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
   href: string;
@@ -12,7 +11,7 @@ type SmartLinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
 
 const SmartLink = React.forwardRef<HTMLAnchorElement, SmartLinkProps>(
   ({ href, children, onClick, ...rest }, ref) => {
-    const router = useRouter();
+
     const { isTransitioning, startTransition } = useTransitionContext();
     // console.count()
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
