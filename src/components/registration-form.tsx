@@ -430,45 +430,9 @@ function RegistrationFormContent() {
     }
   }, [params]);
   
-
-  if (registrationStatus === 'success') {
-    return (
-      <>
-      {/* Registration Includes Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 md:gap-y-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">
-        <div className="col-span-full">
-          <h3 className="text-white/80 text-lg font-semibold mt-4">REGISTRATION INCLUDES:</h3>
-          <ul className="text-white/60 list-disc pl-5 mt-2 space-y-1 text-lg">
-            <li>54 HOLES OF GOLF ON TWO COURSES</li>
-            <li>CARTS FOR THE TOURNAMENT</li>
-            <li>PREMIUM TOURNAMENT GIFT BAG</li>
-            <li>ON COURSE REFRESHMENTS</li>
-            <li>DAILY FLAG PRIZES</li>
-            <li>THURSDAY NIGHT SOCIAL</li>
-            <li>SATURDAY BANQUET AT GILLETTE COLLEGE TECH CENTER</li>
-            <li>A CALCUTTA WILL TAKE PLACE FRIDAY EVENING</li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="col-span-full my-8">
-        <hr className="border-t border-white/20" />
-      </div>
-      <div className="flex flex-col items-center justify-center min-h-[50vh]">
-        <div className="text-center text-white">
-          <h2 className="text-3xl font-bold mb-3"><FaRegCheckCircle className="h-16 w-16 font-bold text-customPrimary ml-auto mr-auto mb-3"/>You&apos;re all set!</h2>
-          <p className="mb-3 text-lg">See you at the tournament on {tournamentStartDate} {new Date(Date.now()).getFullYear()}.</p>
-          <p className="text-lg mt-2">Check your email for payment receipt and details.</p>
-        </div>
-      </div>
-      <div className="col-span-full my-8">
-        <hr className="border-t border-white/20" />
-      </div>
-      </>
-    );
-  }
   
   return (
+   <>
     <form className="grid grid-cols-1 md:grid-cols-2 gap-y-4 md:gap-y-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">
 
       {/* Registration Includes Section */}
@@ -748,5 +712,28 @@ function RegistrationFormContent() {
         <hr className="border-t border-white/20" />
       </div>
     </form>
+
+    {registrationStatus === 'success' && (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur z-50 flex items-center justify-center">
+        <div className="bg-white text-black rounded-xl shadow-lg p-8 max-w-md text-center">
+          <FaRegCheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">You're all set!</h2>
+          <p className="mb-2">See you at the tournament on {tournamentStartDate} {new Date().getFullYear()}.</p>
+          <p className="text-sm text-gray-600">Check your email for payment receipt and details.</p>
+          <button
+            className="mt-6 bg-customPrimary text-white px-4 py-2 rounded hover:bg-customPrimary/80"
+            onClick={() => {
+              setRegistrationStatus('idle');
+              const url = new URL(window.location.href);
+              url.searchParams.delete('confirmed');
+              window.history.replaceState({}, document.title, url.toString());
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
