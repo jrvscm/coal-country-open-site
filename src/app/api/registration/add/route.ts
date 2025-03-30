@@ -61,7 +61,7 @@ export async function POST(req: Request) {
       formData.player10Name || '',
       formData.player10Handicap || '',
       formData.player10TShirtSize || '',      
-      'Pending' // Payment Status (will be updated via Stripe webhook)
+      'Paid'
     ];
 
     // Append the row to the Google Sheet

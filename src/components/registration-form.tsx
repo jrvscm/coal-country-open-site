@@ -13,6 +13,8 @@ import { useTournamentDate } from '@/context/TournamentDateContext';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import GolfersFormFields from '@/components/golfers-form-fields';
 import { getTournamentPricingConfig } from '@/lib/contentful';
+import store from 'store';
+import { v4 as uuidv4 } from 'uuid';
 
 export type Golfer = {
   name: string;
@@ -134,6 +136,7 @@ function RegistrationFormContent() {
   const [formErrors, setFormErrors] = useState<FormErrorsType>({} as FormErrorsType);
   const [totalPrice, setTotalPrice] = useState(basePrices[formData.participantType as keyof typeof basePrices]);
   const [stripeFee, setStripeFee] = useState(0);
+  const [loading, setLoading] = useState(false);
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const phoneRegex = /^\d{10}$/;
   const handicapRegex = /^[+-]?\d+(\.\d{1,2})?$/;
@@ -348,21 +351,8 @@ function RegistrationFormContent() {
         )
       };
 
-      const registrationResponse = await fetch('/api/registration/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formData: formattedFormData }),
-      });
-  
-      const registrationResult = await registrationResponse.json();
-  
-      if (!registrationResponse.ok || !registrationResult.uid) {
-        console.error('Failed to add registration:', registrationResult.error);
-        alert('Failed to save your registration. Please try again.');
-        return;
-      }
-  
-      console.log('✅ Registration saved successfully with UID:', registrationResult.uid);
+      const uid = uuidv4();
+      store.set('registrationData', { uid, formData: formattedFormData });
   
       // Proceed to checkout
       const stripe = await stripePromise;
@@ -370,12 +360,13 @@ function RegistrationFormContent() {
         console.error("Stripe failed to load.");
         return;
       }
-  
+      
+      setLoading(true);
       const checkoutResponse = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          uid: registrationResult.uid,
+          uid: uid,
           totalPrice: (totalPrice + stripeFee).toFixed(2),
           breakdown: {
             basePrice: basePrice.toFixed(2),
@@ -394,6 +385,8 @@ function RegistrationFormContent() {
       }
     } catch (error) {
       console.error('Checkout Error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -403,37 +396,61 @@ function RegistrationFormContent() {
 
   useEffect(() => {
     const confirmed = params.get('confirmed');
-    const canceledUid = params.get('canceled');
-  
     if (confirmed) {
       setRegistrationStatus('success');
       handleScrollDown();
-    } else if (canceledUid) {
-      fetch('/api/registration/remove', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid: canceledUid }),
-      })
-      .then(async (res) => {
-        const result = await res.json();
-        if (res.ok) {
-          setRegistrationStatus('canceled');
-          resetForm();
-        } else {
-          console.error('Removal failed:', result.error);
-          alert('Error removing your registration. Please contact support.');
+      const savedData = store.get('registrationData');
+      if (!savedData?.uid || !savedData?.formData) {
+        alert(`Something went wrong. We couldn't retrieve your submission data. Please contact the tournament board.`)
+        return;
+      }
+      const submitToSheet = async () => {
+        try {
+          const res = await fetch('/api/registration/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              formData: savedData.formData,
+              uid: savedData.uid,
+            }),
+          });
+  
+          if (!res.ok) {
+            alert('Payment succeeded but we failed to finalize your registration. Please contact the tournament board.');
+          } else {
+            store.remove('registrationData');
+          }
+        } catch (err) {
+          console.error('Error submitting to sheet:', err);
+          alert('Something went wrong. Please contact the tournament board.');
         }
-      })
-      .catch((error) => {
-        console.error('Network Error:', error);
-        alert('Something went wrong, please try again.');
-      });
+      };
+  
+      submitToSheet();
     }
-  }, [resetForm, params]);
+  }, [params]);
+  
 
   if (registrationStatus === 'success') {
     return (
       <>
+      {/* Registration Includes Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 md:gap-y-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">
+        <div className="col-span-full">
+          <h3 className="text-white/80 text-lg font-semibold mt-4">REGISTRATION INCLUDES:</h3>
+          <ul className="text-white/60 list-disc pl-5 mt-2 space-y-1 text-lg">
+            <li>54 HOLES OF GOLF ON TWO COURSES</li>
+            <li>CARTS FOR THE TOURNAMENT</li>
+            <li>PREMIUM TOURNAMENT GIFT BAG</li>
+            <li>ON COURSE REFRESHMENTS</li>
+            <li>DAILY FLAG PRIZES</li>
+            <li>THURSDAY NIGHT SOCIAL</li>
+            <li>SATURDAY BANQUET AT GILLETTE COLLEGE TECH CENTER</li>
+            <li>A CALCUTTA WILL TAKE PLACE FRIDAY EVENING</li>
+          </ul>
+        </div>
+      </div>
+
       <div className="col-span-full my-8">
         <hr className="border-t border-white/20" />
       </div>
@@ -441,7 +458,7 @@ function RegistrationFormContent() {
         <div className="text-center text-white">
           <h2 className="text-3xl font-bold mb-3"><FaRegCheckCircle className="h-16 w-16 font-bold text-customPrimary ml-auto mr-auto mb-3"/>You&apos;re all set!</h2>
           <p className="mb-3 text-lg">See you at the tournament on {tournamentStartDate} {new Date(Date.now()).getFullYear()}.</p>
-          <p className="text-lg mt-2">Check your email for the receipt and details.</p>
+          <p className="text-lg mt-2">Check your email for payment receipt and details.</p>
         </div>
       </div>
       <div className="col-span-full my-8">
@@ -721,8 +738,8 @@ function RegistrationFormContent() {
             dangerouslySetInnerHTML={{ __html: sponsorshipNote.noteHtml }}
           />
         )}
-        <Button onClick={handleCheckout} className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-full bg-customPrimary hover:bg-customPrimary/60 uppercase font-text font-bold flex flex-row justify-center items-center">
-          Continue to Secure Payment <FaLock className="h-16 w-16 font-bold" />
+        <Button disabled={loading} onClick={handleCheckout} className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-full bg-customPrimary hover:bg-customPrimary/60 uppercase font-text font-bold flex flex-row justify-center items-center">
+          {loading ? 'Redirecting to Secure Payment...' : 'Continue to Secure Payment'} <FaLock className="h-16 w-16 font-bold" />
         </Button>
       </div>
 
