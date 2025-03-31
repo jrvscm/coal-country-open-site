@@ -10,6 +10,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const pathname = usePathname();
 
   const [showSplash, setShowSplash] = useState(true);
+  const [splashKey, setSplashKey] = useState(Date.now());
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const { endTransition } = useTransitionContext();
@@ -29,7 +30,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       setShowSplash(false);
       setPendingPath(null);
       endTransition();
-    }, 6000);
+    }, 3000);
   
     return () => clearTimeout(safety);
   }, [endTransition]);
@@ -42,17 +43,15 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
       if (!href) return;
 
+      setSplashKey(Date.now()); // force re-mount
       setShowSplash(true);
-
+      
       if (href === pathname) {
-        // Same page – manually end transition after splash
-        setTimeout(() => {
-          setShowSplash(false);
-          setPendingPath(null);
-          endTransition();
-        }, 1600);
+        // For same-page transitions, just trigger page-ready manually
+        requestAnimationFrame(() => {
+          document.dispatchEvent(new Event('page-ready'));
+        });
       } else {
-        // New route – handled by route push + pathname effect
         setPendingPath(href);
       }
     };
@@ -66,7 +65,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     if (pendingPath && pendingPath !== pathname) {
       const routeTimer = setTimeout(() => {
         router.push(pendingPath!);
-      }, 700);
+      }, 600);
       return () => clearTimeout(routeTimer);
     }
   }, [pendingPath, pathname, router]);
@@ -78,7 +77,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
           setShowSplash(false);
           setPendingPath(null);
           endTransition();
-        }, 800); 
+        }, 600); 
       };
   
       document.addEventListener('page-ready', handlePageReady);
@@ -88,7 +87,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   return (
     <>
-      {showSplash && <SplashScreen isInitialLoad={isInitialLoad} />}
+      {showSplash && <SplashScreen key={splashKey} isInitialLoad={isInitialLoad} />}
       <div data-transition-triggerer>{children}</div>
     </>
   );
