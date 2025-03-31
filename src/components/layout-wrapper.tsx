@@ -26,7 +26,6 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     const safety = setTimeout(() => {
-      // in case something breaks, force hide splash 
       setShowSplash(false);
       setPendingPath(null);
       endTransition();
@@ -65,7 +64,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     if (pendingPath && pendingPath !== pathname) {
       const routeTimer = setTimeout(() => {
         router.push(pendingPath!);
-      }, 600);
+      }, 700);
       return () => clearTimeout(routeTimer);
     }
   }, [pendingPath, pathname, router]);
@@ -77,7 +76,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
           setShowSplash(false);
           setPendingPath(null);
           endTransition();
-        }, 600); 
+        }, 700); 
       };
   
       document.addEventListener('page-ready', handlePageReady);
