@@ -7,27 +7,27 @@ export default function SplashScreen({ isInitialLoad = false }: { isInitialLoad?
   const [hide, setHide] = useState(false);
 
   useEffect(() => {
-    const slideOutTimer = setTimeout(() => {
-      setSlideOut(true); // slide out AFTER route change
-    }, 1200); // give 500ms buffer after route push
+    const handlePageReady = () => {
+      setSlideOut(true); 
+      setTimeout(() => {
+        setHide(true); 
+      }, 400); // Duration should match your CSS slide-out timing
+    };
 
-    const hideTimer = setTimeout(() => {
-      setHide(true);
-    }, 1600);
+    document.addEventListener('page-ready', handlePageReady);
 
     return () => {
-      clearTimeout(slideOutTimer);
-      clearTimeout(hideTimer);
+      document.removeEventListener('page-ready', handlePageReady);
     };
   }, []);
 
   if (hide) return null;
 
   return (
-<div
-  className={`fixed inset-0 z-[9999] bg-black flex items-center justify-center transition-transform duration-500 overflow-hidden
-    ${slideOut ? 'splash-slide-out' : isInitialLoad ? '' : 'splash-slide-in'}`}
->
+    <div
+      className={`fixed inset-0 z-[9999] bg-black flex items-center justify-center transition-transform duration-500 overflow-hidden
+        ${slideOut ? 'splash-slide-out' : isInitialLoad ? '' : 'splash-slide-in'}`}
+    >
       <div className="relative text-center transition-opacity duration-1000 ease-in-out">
         <h2 className="absolute -rotate-[25deg] left-[-1rem] top-[-1rem] text-lg italic text-customYellow">
           The

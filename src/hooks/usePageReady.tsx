@@ -1,10 +1,14 @@
+// usePageReady.ts
 import { useEffect } from 'react';
 
 export const usePageReady = () => {
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (document.readyState === 'complete') {
       document.dispatchEvent(new Event('page-ready'));
-    }, 10000); 
-    return () => clearTimeout(timer);
+    } else {
+      window.addEventListener('load', () => {
+        document.dispatchEvent(new Event('page-ready'));
+      }, { once: true });
+    }
   }, []);
 };

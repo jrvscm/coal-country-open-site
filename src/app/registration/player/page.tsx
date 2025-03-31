@@ -7,6 +7,7 @@ import RegistrationForm from '@/components/registration-form';
 import { ArrowDown } from 'lucide-react';
 import { formatTournamentDate } from '@/lib/utils';
 import { useTournamentDate } from '@/context/TournamentDateContext';
+import { usePageReady } from '@/hooks/usePageReady';
 
 export default function Hero() {
   const tournamentDate = useTournamentDate();
@@ -29,7 +30,7 @@ export default function Hero() {
   const handleScrollDown = () => {
     document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth' });
   };
-
+  usePageReady();
   return (
     <>
       {/* Hero Section */}
