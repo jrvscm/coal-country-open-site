@@ -71,17 +71,20 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     }
   }, [pendingPath, pathname, router]);
 
-  // End transition after route actually changes
   useEffect(() => {
     if (!isInitialLoad && pendingPath) {
-      const hideTimer = setTimeout(() => {
-        setShowSplash(false);
-        setPendingPath(null);
-        endTransition();
-      }, 1600);
-      return () => clearTimeout(hideTimer);
+      const handlePageReady = () => {
+        setTimeout(() => {
+          setShowSplash(false);
+          setPendingPath(null);
+          endTransition();
+        }, 800); 
+      };
+  
+      document.addEventListener('page-ready', handlePageReady);
+      return () => document.removeEventListener('page-ready', handlePageReady);
     }
-  }, [pathname, isInitialLoad, pendingPath, endTransition]);
+  }, [isInitialLoad, pendingPath, endTransition]);
 
   return (
     <>

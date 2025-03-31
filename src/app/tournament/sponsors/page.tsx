@@ -6,6 +6,7 @@ import SponsorContent from '@/components/sponsor-content';
 import { ArrowDown } from 'lucide-react';
 import { useTournamentDate } from '@/context/TournamentDateContext';
 import { formatTournamentDate } from '@/lib/utils';
+import { usePageReady } from '@/hooks/usePageReady';
 
 export default function Hero() {
   const tournamentDate = useTournamentDate();
@@ -13,6 +14,8 @@ export default function Hero() {
   const handleScrollDown = () => {
     document.getElementById('sponsors-section')?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  usePageReady();
 
   return (
     <>
