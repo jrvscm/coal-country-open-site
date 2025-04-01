@@ -82,6 +82,12 @@ function RegistrationFormContent() {
   
       if (Array.isArray(config)) {
         setPricingData(config as PricingOption[]);
+  
+        const newBasePrices: Record<string, number> = {};
+        config.forEach((item) => {
+          newBasePrices[item.id] = item.price;
+        });
+        setBasePrices(newBasePrices);
       } else {
         console.error("Invalid pricing config received:", config);
       }
@@ -90,24 +96,7 @@ function RegistrationFormContent() {
     fetchPricing();
   }, []);
 
-  // Pricing for each participant type
-  const basePrices = useMemo(() => ({
-    currentMiner: 250.0,
-    pastBoardPastChampionRetiree: 250.0,
-    generalPublic: 450.0,
-    //packages
-    platinumSponsorship: 5000.0,
-    goldSponsorship: 3000.0,
-    silverSponsorship: 1500,
-    singlePlayerSponsorEntry: 450.0,
-    teamSponsorEntry: 1000.0,
-    //products
-    teeBoxSponsorship: 1250.0,
-    drivingRangeSponsorship: 1200.0,
-    websiteSponsorship: 500.0,
-    holeFlagSponsorship: 250.0,
-    flagPrizeSponsorship: 150.0
-  }), []);
+  const [basePrices, setBasePrices] = useState<Record<string, number>>({});
 
   type FormErrorsType = {
     [key: string]: string;
@@ -167,6 +156,22 @@ function RegistrationFormContent() {
       setShowSponsorshipNote(false);
     }
   }, [formData.participantType, pricingData]);
+
+  const [websiteSponsorTaken, setWebsiteSponsorTaken] = useState(false);
+
+  useEffect(() => {
+    const checkSponsorStatus = async () => {
+      try {
+        const res = await fetch('/api/registration/check-website-sponsor');
+        const data = await res.json();
+        setWebsiteSponsorTaken(data.taken);
+      } catch (err) {
+        console.error('Failed to check sponsor status:', err);
+      }
+    };
+    checkSponsorStatus();
+  }, []);
+
 
   const validateForm = () => {
     const errors: FormErrorsType = {}; 
@@ -605,6 +610,7 @@ function RegistrationFormContent() {
               <div className="space-y-1">
               {pricingData
                 .filter((option) => option.category === 'product')
+                .filter((option) => !(option.id === 'websiteSponsorship' && websiteSponsorTaken))
                 .map((option) => (
                   <div className="group" key={option.id}>
                     <label className="flex flex-col cursor-pointer text-white/60 text-lg pb-2
