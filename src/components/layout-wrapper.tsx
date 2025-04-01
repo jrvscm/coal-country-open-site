@@ -64,7 +64,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     if (pendingPath && pendingPath !== pathname) {
       const routeTimer = setTimeout(() => {
         router.push(pendingPath!);
-      }, 700);
+      }, 900);
       return () => clearTimeout(routeTimer);
     }
   }, [pendingPath, pathname, router]);
@@ -76,7 +76,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
           setShowSplash(false);
           setPendingPath(null);
           endTransition();
-        }, 700); 
+        }, 900); 
       };
   
       document.addEventListener('page-ready', handlePageReady);
