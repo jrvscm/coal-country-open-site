@@ -28,6 +28,14 @@ export default function Hero() {
     setHasMounted(true);
   }, []);
 
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  useEffect(() => {
+    if (imageLoaded) {
+      document.dispatchEvent(new Event('page-ready'));
+    }
+  }, [imageLoaded]);
+
   const [sponsor, setSponsor] = useState<SponsorData | null>(null);
 
     // Fetch images from Contentful
@@ -119,7 +127,8 @@ export default function Hero() {
     return () => clearInterval(interval);
   }, [images]);
 
-  usePageReady();
+  // usePageReady();
+  
 
   if (!hasMounted) return null;
   return (
@@ -137,6 +146,7 @@ export default function Hero() {
             className={`object-cover absolute transition-opacity duration-1000 ease-in-out ${
               index === currentImage ? "opacity-100" : "opacity-0"
             }`}
+            onLoad={() => setImageLoaded(true)}
           />
         ))}
 

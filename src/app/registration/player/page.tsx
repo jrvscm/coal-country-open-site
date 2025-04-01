@@ -30,7 +30,17 @@ export default function Hero() {
   const handleScrollDown = () => {
     document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth' });
   };
-  usePageReady();
+
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  useEffect(() => {
+    if (imageLoaded) {
+      document.dispatchEvent(new Event('page-ready'));
+    }
+  }, [imageLoaded]);
+
+  
+  // usePageReady();
   return (
     <>
       {/* Hero Section */}
@@ -42,6 +52,7 @@ export default function Hero() {
           priority={true}
           quality={70}
           className="object-cover absolute"
+          onLoad={() => setImageLoaded(true)}
         />
 
         {/* Overlay */}

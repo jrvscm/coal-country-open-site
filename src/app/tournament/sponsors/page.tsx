@@ -1,5 +1,5 @@
 'use client';
-
+import { useEffect, useState } from 'react';
 import Image from "next/image";
 import CountdownTimer from '@/components/countdown-timer';
 import SponsorContent from '@/components/sponsor-content';
@@ -15,7 +15,14 @@ export default function Hero() {
     document.getElementById('sponsors-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  usePageReady();
+  // usePageReady();
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  useEffect(() => {
+    if (imageLoaded) {
+      document.dispatchEvent(new Event('page-ready'));
+    }
+  }, [imageLoaded]);
 
   return (
     <>
@@ -28,6 +35,7 @@ export default function Hero() {
           priority={true}
           quality={70}
           className="object-cover absolute"
+          onLoad={() => setImageLoaded(true)}
         />
 
         {/* Overlay */}
