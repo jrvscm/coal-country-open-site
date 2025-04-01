@@ -53,7 +53,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li><SmartLink href="/registration/player" className="hover:text-gray-400">Register</SmartLink></li>
               <li><SmartLink href="/registration/sponsor" className="hover:text-gray-400">Sponsors</SmartLink></li>
-              <li><SmartLink href="/rules" className="hover:text-gray-400">Rules</SmartLink></li>
+              <li><SmartLink href="/tournament/information" className="hover:text-gray-400">Rules</SmartLink></li>
             </ul>
           </div>
 
@@ -71,7 +71,6 @@ export default function Footer() {
             <h3 className="text-lg font-bold mb-2">Contact</h3>
             <ul className="space-y-2">
               <li><a href="mailto:coalcountryopen@gmail.com" className="hover:text-gray-400">coalcountryopen@gmail.com</a></li>
-              <li><a href="tel:+13078889999" className="hover:text-gray-400">+1 307-888-9999</a></li>
             </ul>
           </div>
         </div>
