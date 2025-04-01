@@ -53,7 +53,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li><SmartLink href="/registration/player" className="hover:text-gray-400">Register</SmartLink></li>
               <li><SmartLink href="/registration/sponsor" className="hover:text-gray-400">Sponsors</SmartLink></li>
-              <li><SmartLink href="/tournament/information" className="hover:text-gray-400">Rules</SmartLink></li>
+              <li><SmartLink href="/tournament/information" className="hover:text-gray-400">Information</SmartLink></li>
             </ul>
           </div>
 
