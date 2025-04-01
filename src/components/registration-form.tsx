@@ -85,7 +85,9 @@ function RegistrationFormContent() {
   
         const newBasePrices: Record<string, number> = {};
         config.forEach((item) => {
-          newBasePrices[item.id] = item.price;
+          if (item && typeof item === 'object' && 'id' in item && 'price' in item) {
+            newBasePrices[item.id as string] = item.price as number;
+          }
         });
         setBasePrices(newBasePrices);
       } else {
