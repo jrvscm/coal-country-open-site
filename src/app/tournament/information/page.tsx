@@ -7,7 +7,7 @@ import InformationalContent from '@/components/informational-content';
 import { ArrowDown } from 'lucide-react';
 import { useTournamentDate } from '@/context/TournamentDateContext';
 import { formatTournamentDate } from '@/lib/utils';
-import { usePageReady } from '@/hooks/usePageReady';
+// import { usePageReady } from '@/hooks/usePageReady';
 
 export default function Hero() {
   const tournamentDate = useTournamentDate();

@@ -10,7 +10,7 @@ import client from "@/lib/contentful";
 import Schedule from '@/components/schedule';
 import CountdownSection from '@/components/countdown-section';
 import { Asset } from 'contentful';
-import { usePageReady } from '@/hooks/usePageReady';
+// import { usePageReady } from '@/hooks/usePageReady';
 
 export default function Hero() {
   const [images, setImages] = useState<string[]>([]);

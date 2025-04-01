@@ -7,7 +7,7 @@ import RegistrationForm from '@/components/registration-form';
 import { ArrowDown } from 'lucide-react';
 import { formatTournamentDate } from '@/lib/utils';
 import { useTournamentDate } from '@/context/TournamentDateContext';
-import { usePageReady } from '@/hooks/usePageReady';
+// import { usePageReady } from '@/hooks/usePageReady';
 
 export default function Hero() {
   const tournamentDate = useTournamentDate();
