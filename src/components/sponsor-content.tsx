@@ -40,7 +40,7 @@ export default function SponsorContent() {
 
       {/* Registration Includes Section */}
       <div className="col-span-1">
-        <h3 className="text-white/80 text-lg font-semibold mt-4">REGISTRATION INCLUDES:</h3>
+        <h3 className="text-white/80 text-lg font-semibold mt-4">TO OUR SPONSORS:</h3>
         <ul className="text-white/60 list-disc mt-2 space-y-1 text-lg">
           We would like to extend our heartfelt thanks to all of our incredible 
           sponsors and suppliers for their generous support of the Coal Country Open. 
