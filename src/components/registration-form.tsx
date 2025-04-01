@@ -104,6 +104,7 @@ function RegistrationFormContent() {
     //products
     teeBoxSponsorship: 1250.0,
     drivingRangeSponsorship: 1200.0,
+    websiteSponsorship: 500.0,
     holeFlagSponsorship: 250.0,
     flagPrizeSponsorship: 150.0
   }), []);
@@ -170,14 +171,14 @@ function RegistrationFormContent() {
   const validateForm = () => {
     const errors: FormErrorsType = {}; 
 
-    if(["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship"].includes(formData.participantType)) {
+    if(["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"].includes(formData.participantType)) {
       if(!formData.company) errors.company = "Company is required";
       if (!formData.player1Name) errors.player1Name = "Name is required";
       if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) errors.contactEmail = "Invalid email";
       if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) errors.contactPhone = "Invalid phone number";
     }
 
-    if(formData.participantType !== 'teamSponsorEntry' && !["platinumSponsorship", "goldSponsorship", "silverSponsorship", "flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship"].includes(formData.participantType)) {
+    if(formData.participantType !== 'teamSponsorEntry' && !["platinumSponsorship", "goldSponsorship", "silverSponsorship", "flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"].includes(formData.participantType)) {
       if (!formData.player1Name) errors.player1Name = "Name is required";
       if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) errors.contactEmail = "Invalid email";
       if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) errors.contactPhone = "Invalid phone number";
@@ -186,7 +187,7 @@ function RegistrationFormContent() {
       if(!formData.player1TShirtSize) errors.player1TShirtSize = "Shirt size is required";
     }
 
-    if (formData.participantType === "teamSponsorEntry" && !["platinumSponsorship", "goldSponsorship", "silverSponsorship", "flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship"].includes(formData.participantType)) {
+    if (formData.participantType === "teamSponsorEntry" && !["platinumSponsorship", "goldSponsorship", "silverSponsorship", "flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"].includes(formData.participantType)) {
       if (!formData.teamName) errors.teamName = "Team Name is required";
       //player names
       if (!formData.player1Name) errors.player1Name = "Player One Name is required";
@@ -222,7 +223,7 @@ function RegistrationFormContent() {
       });
     }
 
-    if(!formData.banquet && !["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship"].includes(formData.participantType)) errors.banquet = "Banquet choice is required";
+    if(!formData.banquet && !["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"].includes(formData.participantType)) errors.banquet = "Banquet choice is required";
 
     // if(formData.participantType === 'singlePlayerSponsorEntry') {
     //   if(!formData.doorPrize) errors.doorPrize = "Door prize contribution is required"
@@ -336,7 +337,7 @@ function RegistrationFormContent() {
                    formData.participantType === "silverSponsorship" ? 2 : 0;
 
     const adjustedFormData = { ...formData };
-    if(["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship"].includes(formData.participantType)) {
+    if(["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"].includes(formData.participantType)) {
       adjustedFormData.contactName = formData.player1Name;
       adjustedFormData.player1Name = "";
     }
@@ -670,7 +671,7 @@ function RegistrationFormContent() {
         <TeamFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
       )}
 
-      {formData.participantType !== 'teamSponsorEntry' && !["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship"].includes(formData.participantType) && !["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType) && (
+      {formData.participantType !== 'teamSponsorEntry' && !["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"].includes(formData.participantType) && !["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType) && (
         <DefaultFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
       )}
 
@@ -695,7 +696,7 @@ function RegistrationFormContent() {
         <SingleEntryFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
       )}
 
-      {["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship"].includes(formData.participantType) && (
+      {["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"].includes(formData.participantType) && (
         <SponsorProductsFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
       )}
 
