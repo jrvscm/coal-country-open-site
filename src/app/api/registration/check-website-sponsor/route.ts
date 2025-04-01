@@ -1,5 +1,5 @@
-import { NextResponse } from '@/app/api/registration/check-website-sponsor/next/server';
-import { google } from '@/app/api/registration/check-website-sponsor/googleapis';
+import { NextResponse } from 'next/server';
+import { google } from 'googleapis';
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID!;
 const SHEET_RANGE = 'Registrations!C2:C'; // Column C = participantType, skip header
