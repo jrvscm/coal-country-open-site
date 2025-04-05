@@ -110,7 +110,7 @@ function RegistrationFormContent() {
     handicap: '',
     banquet: '',
     dinnerTickets: '',
-    participantType: path.includes('sponsor') ? 'platinumSponsorship' : 'currentMiner',
+    participantType: path.includes('sponsor') ? 'teamSponsorEntry' : 'currentMiner',
     doorPrize: '',
     flagPrizeContribution: '',
     teamName: '',
@@ -237,8 +237,9 @@ function RegistrationFormContent() {
     // }
     
     // if(formData.participantType === 'singlePlayerSponsorEntry' || ["platinumSponsorship", "goldSponsorship", "silverSponsorship", "flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship"].includes(formData.participantType)) {
-    //   if(formData.flagPrizeContribution && !flagPrizeRegex.test(formData.flagPrizeContribution)) errors.flagPrizeContribution = "Use only whole numbers and no decimals"
     // }
+
+    if(formData.flagPrizeContribution && !flagPrizeRegex.test(formData.flagPrizeContribution)) errors.flagPrizeContribution = "Use only whole numbers and no decimals"
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;

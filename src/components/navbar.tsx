@@ -34,6 +34,11 @@ export const Navbar = () => {
       title: 'INFORMATION',
       href: '/tournament/information',
       description: ''
+    },
+    {
+      title: 'CHARITY',
+      href: "tournament/charity",
+      description: ''
     }
   ];
 
