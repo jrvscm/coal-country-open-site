@@ -42,17 +42,20 @@ export async function POST(req: NextRequest) {
         if (rowIndex > 0) {
           await sheets.spreadsheets.values.update({
             spreadsheetId: SHEET_ID,
-            range: `Registrations!AQ${rowIndex}`, // Column AF is where the status is updated
+            range: `Registrations!AQ${rowIndex}`, 
             valueInputOption: 'USER_ENTERED',
             requestBody: { values: [['Paid']] },
           });
-
+  
           console.log(`✅ Updated payment status for UID: ${uid}`);
+          return NextResponse.json({ status: 'success' }, { status: 200 });
         } else {
           console.error(`❌ UID not found in Google Sheets: ${uid}`);
+          return NextResponse.json({ error: 'UID not found' }, { status: 500 });
         }
       } catch (sheetError) {
         console.error(`❌ Error updating payment status for UID ${uid}:`, (sheetError as Error).message);
+        return NextResponse.json({ error: 'Sheets update failed' }, { status: 500 }); 
       }
     }
   }
