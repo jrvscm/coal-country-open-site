@@ -6,8 +6,7 @@ const SHEET_RANGE = 'Registrations!A:AQ'; // Ensure this matches your sheet's st
 
 export async function POST(req: Request) {
   try {
-    const { formData } = await req.json();
-    const uid = crypto.randomUUID(); // Generate a unique identifier
+    const { formData, uid } = await req.json();
 
     // Authenticate with Google Sheets API using Service Account
     const auth = new google.auth.GoogleAuth({
