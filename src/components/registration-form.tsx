@@ -364,18 +364,31 @@ function RegistrationFormContent() {
           }).flat()
         )
       };
-
+      setLoading(true)
       const uid = uuidv4();
       store.set<RegistrationStoreData>('registrationData', { uid, formData: formattedFormData });
-  
+      
+      //submit to sheets
+      const res = await fetch('/api/registration/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          formData: formattedFormData,
+          uid: uid,
+        }),
+      });
+      
+      if(!res.ok) {
+        return alert('Something went wrong. Please refresh the page and try again.')
+      }
       // Proceed to checkout
       const stripe = await stripePromise;
       if (!stripe) {
+        alert('Something went wrong. Please refresh the page and try again.')
         console.error("Stripe failed to load.");
         return;
       }
       
-      setLoading(true);
       const checkoutResponse = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -389,16 +402,22 @@ function RegistrationFormContent() {
           },
         }),
       });
+
+      if (!checkoutResponse.ok) {
+        alert(`Error creating checkout session, please refresh the page and try again`);
+        return;
+      }
   
       const session = await checkoutResponse.json();
   
       if (session.url) {
         window.location.href = session.url;
       } else {
-        alert('Error creating Stripe session');
+        alert('Error creating Stripe session, please refresh the page and try again');
       }
     } catch (error) {
       console.error('Checkout Error:', error);
+      alert('An unexpected error occurred. Please refresh and try again.');
     } finally {
       setLoading(false);
     }
@@ -413,34 +432,6 @@ function RegistrationFormContent() {
     if (confirmed) {
       setRegistrationStatus('success');
       handleScrollDown();
-      const savedData = store.get<RegistrationStoreData>('registrationData');
-      if (!savedData?.uid || !savedData?.formData) {
-        alert(`Something went wrong. We couldn't retrieve your submission data. Please contact the tournament board.`)
-        return;
-      }
-      const submitToSheet = async () => {
-        try {
-          const res = await fetch('/api/registration/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              formData: savedData.formData,
-              uid: savedData.uid,
-            }),
-          });
-  
-          if (!res.ok) {
-            alert('Payment succeeded but we failed to finalize your registration. Please contact the tournament board.');
-          } else {
-            store.remove('registrationData');
-          }
-        } catch (err) {
-          console.error('Error submitting to sheet:', err);
-          alert('Something went wrong. Please contact the tournament board.');
-        }
-      };
-  
-      submitToSheet();
     }
   }, [params]);
   

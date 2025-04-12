@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
         const sheets = google.sheets({ version: 'v4', auth });
         const rows = await sheets.spreadsheets.values.get({
           spreadsheetId: SHEET_ID,
-          range: 'Registrations!A:AF',
+          range: 'Registrations!A:AQ',
         });
 
         const data = rows.data.values || [];
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         if (rowIndex > 0) {
           await sheets.spreadsheets.values.update({
             spreadsheetId: SHEET_ID,
-            range: `Registrations!AF${rowIndex}`, // Column AF is where the status is updated
+            range: `Registrations!AQ${rowIndex}`, // Column AF is where the status is updated
             valueInputOption: 'USER_ENTERED',
             requestBody: { values: [['Paid']] },
           });

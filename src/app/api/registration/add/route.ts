@@ -61,7 +61,7 @@ export async function POST(req: Request) {
       formData.player10Name || '',
       formData.player10Handicap || '',
       formData.player10TShirtSize || '',      
-      'Paid'
+      'Pending'
     ];
 
     // Append the row to the Google Sheet
