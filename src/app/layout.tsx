@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
 import { Bebas_Neue, Barlow, Permanent_Marker } from "next/font/google";
 import "./globals.css";
 import Navbar from '@/components/navbar';
@@ -27,8 +27,8 @@ const bebasNeue = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  title: "Coal Country Open",
-  description: "Annual Golf Tournament in Gillette, WY",
+  title: 'Coal Country Open',
+  description: 'Annual golf tournament in Gillette, Wyoming.',
 };
 
 export default async function RootLayout({

@@ -76,7 +76,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="mt-10 border-t border-customInputFill pt-4 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} Coal Country Open. All rights reserved.
+        © {new Date().getFullYear()} Powered by <a className="text-blue-600 underline hover:opacity-80" href="https://www.highplainsmedia.com" target="_blank">High Plains Media</a>. All rights reserved.
       </div>
     </footer>
   );

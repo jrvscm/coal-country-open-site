@@ -48,6 +48,22 @@ export const fetchSchedule = async () => {
   };
   
 
+  export const fetchTournamentCharity = async () => {
+    const entries = await client.getEntries({
+      content_type: 'tournamentCharity',
+      limit: 1,
+    });
+
+    return entries.items[0].fields.charityInformationObject;
+  }
+
+  export const fetchCharityImages = async () => {
+    const entries = await client.getEntries({
+      content_type: 'charityImages',
+    })
+    return entries.items[0].fields.charityImages;
+  }
+
   export async function getTournamentPricingConfig() {
     const entries = await client.getEntries({
       content_type: 'registrationPagePricingAndContent',
@@ -57,5 +73,4 @@ export const fetchSchedule = async () => {
     return entries.items[0].fields.registrationContent;
   }
   
-
 export default client;
