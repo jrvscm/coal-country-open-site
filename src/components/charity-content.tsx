@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { fetchTournamentCharity, fetchCharityImages } from '@/lib/contentful';
 import Image from 'next/image';
+import type { Asset } from 'contentful';
 
 type Charity = {
     url: string;
@@ -10,19 +11,11 @@ type Charity = {
     description: string;
 }
 
-type ImageType = {
-    fields: {
-        file: {
-            url: string
-        }
-    },
-    metadata: object,
-    sys: object
-}
+type ImageType = Asset;
 
 export default function CharityContent() {
     const [charity, setCharity] = useState<Charity>({url: '', name: '', description: ''})
-  const [images, setImages] = useState<ImageType[]>([]);
+    const [images, setImages] = useState<ImageType[]>([]);
   useEffect(() => {
     let isMounted = true;
 
@@ -31,7 +24,7 @@ export default function CharityContent() {
         const data = await fetchTournamentCharity();
    
         if (isMounted && data) {
-          setCharity(data);
+            setCharity(data as Charity);
         }
       } catch (err) {
         console.error('Failed to load sponsors:', err);
@@ -52,9 +45,9 @@ export default function CharityContent() {
     const loadCharityImages = async () => {
       try {
         const data = await fetchCharityImages();
-     
+
         if (isMounted && Array.isArray(data)) {
-          setImages(data);
+            setImages(data as ImageType[]);
         }
       } catch (err) {
         console.error('Failed to load sponsors:', err);
@@ -91,7 +84,7 @@ export default function CharityContent() {
       {images.map((img: ImageType, index) => (
         <div key={index} className="col-span-full max-w-[800px] ml-auto mr-auto mb-8 relative w-full">
             <Image
-            src={`https:${img.fields.file.url}?w=1200&fm=webp&q=70`}
+            src={`https:${img.fields?.file?.url ?? ''}?w=1200&fm=webp&q=70`}
             alt={`Flyer Image ${index + 1}`}
             width={600}
             height={1584}
