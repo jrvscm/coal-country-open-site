@@ -67,7 +67,7 @@ export default function SponsorContent() {
                 alt={sponsor.title}
                 width={200}
                 height={100}
-                className="max-h-[100px] max-w-[170px] object-contain transition cursor-pointer"
+                className="max-h-[100px] max-w-[155px] md:max-w-[170px] object-contain transition cursor-pointer"
               />
             </a>
           </div>
