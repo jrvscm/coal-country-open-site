@@ -191,7 +191,7 @@ export default function ClientPage() {
         </div>
 
         {/* Sidebar Share Buttons */}
-        <div className="absolute right-4 bottom-[80px] flex flex-col space-y-4 z-20">
+        <div className="absolute right-4 bottom-[1rem] flex flex-col space-y-4 z-20">
           <SmartLink href="https://www.facebook.com/p/Coal-Country-Open-100057272935201/" target="_blank" className="bg-customBackground p-2 rounded-full hover:shadow-2xl hover:opacity-90 transition-all duration-200 hover border border-customBackground hover:border-customYellow">
             <FaFacebookF className="h-6 w-6 text-customYellow" />
           </SmartLink>
