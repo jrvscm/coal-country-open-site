@@ -7,7 +7,7 @@ import { fetchTournamentStartDate } from '@/lib/contentful';
 import { TournamentDateProvider } from '@/context/TournamentDateContext';
 import LayoutWrapper from '@/components/layout-wrapper'; 
 import { TransitionProvider } from '@/context/TransitionContext';
-
+import FaviconSwitcher from '@/components/favicon-switcher';
 const permanentMarker = Permanent_Marker({
   subsets: ['latin'],
   weight: '400',
@@ -41,11 +41,13 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head> 
+        <link rel="icon" href="/images/favicon.png" />
         <link rel="preconnect" href="https://images.ctfassets.net" crossOrigin="anonymous" />
       </head>
       <body
         className={`${bebasNeue.variable} ${barlow.variable} ${permanentMarker.variable} antialiased `}
       >
+        <FaviconSwitcher />
         <TransitionProvider>
           <TournamentDateProvider date={tournamentDate}>
             <LayoutWrapper>
