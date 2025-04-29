@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
+import { redis } from '@/lib/upstash';
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID!;
 const SHEET_RANGE = 'Registrations!A:AQ';
@@ -16,6 +17,9 @@ export async function POST(req: Request) {
       console.error('❌ Missing formData or uid');
       return NextResponse.json({ error: 'Missing formData or uid' }, { status: 400 });
     }
+
+    await redis.set(uid, JSON.stringify(formData));
+    console.log(`✅ Backup saved to Upstash (UID: ${uid})`);
 
     const auth = new google.auth.GoogleAuth({
       credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY!),
