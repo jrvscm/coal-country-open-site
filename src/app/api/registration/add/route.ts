@@ -2,13 +2,17 @@ import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID!;
-const SHEET_RANGE = 'Registrations!A:AQ'; // Ensure this matches your sheet's structure
+const SHEET_RANGE = 'Registrations!A:AQ';
 
 export async function POST(req: Request) {
   try {
     const { formData, uid } = await req.json();
 
-    // Authenticate with Google Sheets API using Service Account
+    if (!formData || !uid) {
+      console.error('❌ Missing formData or uid');
+      return NextResponse.json({ error: 'Missing formData or uid' }, { status: 400 });
+    }
+
     const auth = new google.auth.GoogleAuth({
       credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY!),
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
@@ -16,10 +20,9 @@ export async function POST(req: Request) {
 
     const sheets = google.sheets({ version: 'v4', auth });
 
-    // Prepare row data (empty values for missing fields)
     const rowData = [
-      uid, // Unique ID (used later for Stripe webhook lookup)
-      new Date().toISOString(), // Timestamp
+      uid,
+      new Date().toISOString(),
       formData.participantType || '',
       formData.company || '',
       formData.banquet || '',
@@ -27,7 +30,7 @@ export async function POST(req: Request) {
       formData.doorPrize || '',
       formData.flagPrizeContribution || '',
       formData.teamName || '',
-      formData.contactName || formData.player1Name ||  '',
+      formData.contactName || formData.player1Name || '',
       formData.contactPhone || '',
       formData.contactEmail || '',
       formData.player1Name || '',
@@ -59,21 +62,51 @@ export async function POST(req: Request) {
       formData.player9TShirtSize || '',
       formData.player10Name || '',
       formData.player10Handicap || '',
-      formData.player10TShirtSize || '',      
-      'Pending'
+      formData.player10TShirtSize || '',
+      'Pending',
     ];
 
-    // Append the row to the Google Sheet
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: SHEET_ID,
-      range: SHEET_RANGE,
-      valueInputOption: 'USER_ENTERED',
-      requestBody: { values: [rowData] },
-    });
+    const appendRow = async () => {
+      return sheets.spreadsheets.values.append({
+        spreadsheetId: SHEET_ID,
+        range: SHEET_RANGE,
+        valueInputOption: 'USER_ENTERED',
+        requestBody: { values: [rowData] },
+      });
+    };
+
+    // Retry Logic with Exponential Backoff
+    const maxRetries = 5;
+    let attempt = 0;
+    let success = false;
+    let lastError = null;
+
+    while (attempt < maxRetries && !success) {
+      try {
+        await appendRow();
+        success = true;
+        console.log(`✅ Registration written to Google Sheets (UID: ${uid})`);
+      } catch (error) {
+        lastError = error;
+        attempt++;
+        console.warn(`⚠️ Sheets insert failed (attempt ${attempt}) for UID: ${uid}`, error);
+
+        if (attempt < maxRetries) {
+          const delayMs = Math.pow(3, attempt) * 100; // 100ms, 200ms, 400ms
+          console.log(`⏳ Retrying after ${delayMs}ms...`);
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
+      }
+    }
+
+    if (!success) {
+      console.error('❌ Failed to insert registration after retries:', lastError);
+      return NextResponse.json({ error: 'Google Sheets write failed after retries' }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true, uid });
   } catch (error) {
-    console.error('Error adding registration:', error);
-    return NextResponse.json({ error: 'Failed to add registration' }, { status: 500 });
+    console.error('❌ Unexpected server error in /registration/add:', error);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
