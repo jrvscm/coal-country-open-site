@@ -3,6 +3,10 @@ import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
+export async function GET() {
+  return NextResponse.json({ success: true });
+}
+
 export async function POST(req: Request) {
   try {
     const { totalPrice, uid, breakdown } = await req.json(); // Receive UID from the frontend

@@ -4,6 +4,10 @@ import { google } from 'googleapis';
 const SHEET_ID = process.env.GOOGLE_SHEET_ID!;
 const SHEET_RANGE = 'Registrations!A:AQ';
 
+export async function GET() {
+  return NextResponse.json({ success: true });
+}
+
 export async function POST(req: Request) {
   try {
     const { formData, uid } = await req.json();
