@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { FaLock, FaRegCheckCircle } from "react-icons/fa";
 import { Button } from '@/components/ui/button';
 import TeamFormFields from '@/components/team-form-fields';
 import DefaultFormFields from '@/components/default-form-fields';
 import SingleEntryFields from '@/components/single-entry-fields';
 import SponsorProductsFields from '@/components/sponsor-products-fields';
-import { loadStripe } from '@stripe/stripe-js';
+import { stripePromise } from '@/lib/stripe';
 import { useSearchParams, usePathname } from 'next/navigation';
 import { useTournamentDate } from '@/context/TournamentDateContext';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
@@ -51,11 +51,7 @@ type RegistrationStoreData = {
 };
 
 export default function RegistrationForm() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <RegistrationFormContent />
-    </Suspense>
-  );
+  return <RegistrationFormContent />
 }
 
 type PricingOption = {
@@ -331,9 +327,6 @@ function RegistrationFormContent() {
       if (currentRef) observer.unobserve(currentRef);
     };
   }, [totalRef]); 
-  
-  //stripe 
-  const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
   
   const handleCheckout = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
