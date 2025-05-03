@@ -18,6 +18,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing formData or uid' }, { status: 400 });
     }
 
+    console.log(`📥 [POST /registration/add] Received submission UID: ${uid} at ${new Date().toISOString()}`);
+
     await redis.set(uid, JSON.stringify(formData));
     console.log(`✅ Backup saved to Upstash (UID: ${uid})`);
 
