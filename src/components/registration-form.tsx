@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, Suspense} from 'react';
 import { FaLock, FaRegCheckCircle } from "react-icons/fa";
 import { Button } from '@/components/ui/button';
 import TeamFormFields from '@/components/team-form-fields';
@@ -51,7 +51,11 @@ type RegistrationStoreData = {
 };
 
 export default function RegistrationForm() {
-  return <RegistrationFormContent />
+  return (
+  <Suspense fallback={<div>Loading...</div>}>
+    <RegistrationFormContent />
+  </Suspense>
+  )
 }
 
 type PricingOption = {
