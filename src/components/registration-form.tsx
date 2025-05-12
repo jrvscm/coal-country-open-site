@@ -447,7 +447,7 @@ function RegistrationFormContent() {
           <li>ON COURSE REFRESHMENTS</li>
           <li>DAILY FLAG PRIZES</li>
           <li>THURSDAY NIGHT SOCIAL</li>
-          <li>SATURDAY BANQUET AT GILLETTE COLLEGE TECH CENTER</li>
+          <li>SATURDAY BANQUET AT CAM-PLEX</li>
           <li>A CALCUTTA WILL TAKE PLACE FRIDAY EVENING</li>
         </ul>
       </div>
