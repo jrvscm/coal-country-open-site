@@ -26,9 +26,27 @@ export async function GET() {
     const rows = response.data.values?.filter(row => row[0]) || [];
     const totalRegistrations = rows.length > 1 ? rows.length - 1 : 0; // Exclude header row
 
-    return NextResponse.json({ count: totalRegistrations });
+    return new NextResponse(
+      JSON.stringify({ count: totalRegistrations }),
+      {
+        status: 200,
+        headers: {
+          'Cache-Control': 'no-store, max-age=0',
+          'Content-Type': 'application/json',
+        },
+      }
+    );
   } catch (error) {
     console.error('Error fetching player count:', error);
-    return NextResponse.json({ error: 'Failed to fetch player count' }, { status: 500 });
+    return new NextResponse(
+      JSON.stringify({ error: 'Failed to fetch player count' }),
+      {
+        status: 500,
+        headers: {
+          'Cache-Control': 'no-store, max-age=0',
+          'Content-Type': 'application/json',
+        },
+      }
+    );
   }
 }

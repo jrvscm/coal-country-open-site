@@ -20,7 +20,7 @@ export default function ClientPage() {
   useEffect(() => {
     const fetchRegistrations = async () => {
       try {
-        const response = await fetch('/api/registration/players-count');
+        const response = await fetch(`/api/registration/players-count?cb=${Date.now()}`);
         const data = await response.json();
         setRegistrationCount(data.count ?? null); // Ensure 0 updates UI
       } catch (error) {
