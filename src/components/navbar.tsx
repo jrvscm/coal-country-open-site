@@ -148,7 +148,7 @@ export const Navbar = () => {
             </Button>
           </div>
 
-          {/* Mobile Menu Content */}
+          {/* Mobile Menu Conten */}
           <div
             className={`
               absolute left-0 top-[81px] flex h-[calc(100vh-81px)] w-full flex-col justify-between bg-secondary-foreground px-4 py-6 transition-transform duration-300
