@@ -10,6 +10,12 @@ import { useTournamentDate } from '@/context/TournamentDateContext';
 export default function ClientPage() {
   const tournamentDate = useTournamentDate();
   const [registrationCount, setRegistrationCount] = useState<number | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+
 
   useEffect(() => {
     const fetchRegistrations = async () => {
@@ -71,14 +77,14 @@ export default function ClientPage() {
           ">
             Register Today!<br />
             {/* Dynamic Registration Count */}
-            {registrationCount !== null && registrationCount !== 0 && (
+            {isHydrated && registrationCount !== null && registrationCount !== 0 && (
               <span className="text-xl md:text-4xl"><span className="font-heading">{registrationCount}</span> already registered!</span>
             )}
           </h2>
         </div>
       </div>
 
-      <CountdownTimer eventDate={formatTournamentDate(tournamentDate)}/>
+      {isHydrated && <CountdownTimer eventDate={formatTournamentDate(tournamentDate)}/>}
 
       {/* Registration Section */}
       <div id="registration-section" className="w-full h-full bg-customBackground relative pt-32 pb-8 pr-[1rem] pl-[1rem] md:pr-0 md:pl-0">

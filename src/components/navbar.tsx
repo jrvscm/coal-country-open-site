@@ -42,37 +42,37 @@ export const Navbar = () => {
   ];
 
   const [isOpen, setOpen] = useState(false);
-  const [isScrolled, setScrolled] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const navRef = useRef<HTMLDivElement | null>(null);
-
+  const [isHydrated, setIsHydrated] = useState(false);
+  
   useEffect(() => {
-    const checkPosition = () => {
-      if (!navRef.current) return;
-      const rect = navRef.current.getBoundingClientRect(); 
-      setScrolled(window.scrollY > 50 || rect.top < 0);
-    };
-
-    checkPosition(); 
-
-    window.addEventListener("scroll", checkPosition);
-    return () => window.removeEventListener("scroll", checkPosition);
+    setIsHydrated(true);
   }, []);
-
+  
   useEffect(() => {
+    if (!isHydrated) return;
+  
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      if (!navRef.current) return;
+      const rect = navRef.current.getBoundingClientRect();
+      setIsScrolled(window.scrollY > 50 || rect.top < 0);
     };
+  
+    handleScroll(); // Run once on mount
+  
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [isHydrated]);
+  
 
   return (
     <header
       ref={navRef}
       className={`fixed left-0 right-0 top-0 z-40 w-full border-b border-customYellow transition-all duration-300 ${
-        isScrolled ? 'lg:bg-black/60 lg:py-2 lg:backdrop-blur-2xl' : 'lg:py-4'
+        isHydrated && isScrolled ? 'lg:bg-black/60 lg:py-2 lg:backdrop-blur-2xl' : 'lg:py-4'
       }`}
     >
       <div className="container relative mx-auto flex items-center justify-start gap-4">
@@ -85,7 +85,7 @@ export const Navbar = () => {
               width={200}  
               height={100} 
               className={`transition-all duration-300 ${
-                isScrolled ? 'lg:h-12' : 'lg:h-24'
+                isHydrated && isScrolled ? 'lg:h-12' : 'lg:h-24'
               } w-auto object-contain cursor-pointer`}
             />
           </SmartLink>
