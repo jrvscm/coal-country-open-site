@@ -59,7 +59,7 @@ export default function RegistrationForm() {
         <div className="text-center">
           <div className="text-white/80 text-4xl font-bold mb-8">Registration Closed</div>
           <div className="text-white/60 text-lg max-w-2xl mx-auto leading-relaxed">
-            Registration for this year's tournament has ended. Please check back next year for registration details.
+            Registration for this year&apos;s tournament has ended. Please check back next year for registration details.
           </div>
         </div>
       </div>
