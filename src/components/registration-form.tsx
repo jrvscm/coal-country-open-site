@@ -17,34 +17,34 @@ import { Suspense } from 'react';
 // import store from 'store';
 // import { v4 as uuidv4 } from 'uuid';
 
-// export type Golfer = {
-//   name: string;
-//   handicap: string;
-//   tShirtSize: string;
-// };
+export type Golfer = {
+  name: string;
+  handicap: string;
+  tShirtSize: string;
+};
 
-// export type FormDataType = {
-//   golfers: Array<Golfer>;
-//   company: string;
-//   banquet: string;
-//   dinnerTickets: string;
-//   participantType: string;
-//   doorPrize?: string;
-//   flagPrizeContribution?: string;
-//   teamName?: string;
-//   contactName?: string;
-//   contactPhone?: string;
-//   contactEmail?: string;
-//   player1Name?: string;
-//   player2Name?: string;
-//   player3Name?: string;
-//   player1Handicap?: string;
-//   player2Handicap?: string;
-//   player3Handicap?: string;
-//   player1TShirtSize?: string;
-//   player2TShirtSize?: string;
-//   player3TShirtSize?: string;
-// };
+export type FormDataType = {
+  golfers: Array<Golfer>;
+  company: string;
+  banquet: string;
+  dinnerTickets: string;
+  participantType: string;
+  doorPrize?: string;
+  flagPrizeContribution?: string;
+  teamName?: string;
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  player1Name?: string;
+  player2Name?: string;
+  player3Name?: string;
+  player1Handicap?: string;
+  player2Handicap?: string;
+  player3Handicap?: string;
+  player1TShirtSize?: string;
+  player2TShirtSize?: string;
+  player3TShirtSize?: string;
+};
 
 // type RegistrationStoreData = {
 //   uid: string;
