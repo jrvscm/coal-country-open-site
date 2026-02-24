@@ -19,10 +19,17 @@ export function formatTournamentDate(dateRange: string): string {
     if (!month || !day) throw new Error('Invalid date format');
 
     // Convert month to numeric format
-    const monthIndex = new Date(`${month} 1, 2025`).getMonth(); // Get month index (0-based)
+    const monthIndex = new Date(`${month} 1, 2000`).getMonth(); // Get month index (0-based)
+    const dayOfMonth = parseInt(day, 10);
 
-    // Construct the date assuming the year 2025 and time 8:00 AM
-    const eventDate = new Date(2025, monthIndex, parseInt(day), 8, 0, 0); 
+    // Build an event date for the current year first, then roll to next year if already passed.
+    const now = new Date();
+    let eventYear = now.getFullYear();
+    let eventDate = new Date(eventYear, monthIndex, dayOfMonth, 8, 0, 0);
+    if (eventDate.getTime() <= now.getTime()) {
+      eventYear += 1;
+      eventDate = new Date(eventYear, monthIndex, dayOfMonth, 8, 0, 0);
+    }
 
     if (isNaN(eventDate.getTime())) throw new Error('Invalid date constructed');
 
