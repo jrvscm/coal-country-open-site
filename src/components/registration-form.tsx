@@ -1,21 +1,21 @@
 'use client';
 
 import { Suspense } from 'react';
-// import { useState, useEffect, useRef, useMemo } from 'react';
-// import { FaLock, FaRegCheckCircle } from "react-icons/fa";
-// import { Button } from '@/components/ui/button';
-// import TeamFormFields from '@/components/team-form-fields';
-// import DefaultFormFields from '@/components/default-form-fields';
-// import SingleEntryFields from '@/components/single-entry-fields';
-// import SponsorProductsFields from '@/components/sponsor-products-fields';
-// import { stripePromise } from '@/lib/stripe';
-// import { useSearchParams, usePathname } from 'next/navigation';
-// import { useTournamentDate } from '@/context/TournamentDateContext';
-// import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
-// import GolfersFormFields from '@/components/golfers-form-fields';
-// import { getTournamentPricingConfig } from '@/lib/contentful';
-// import store from 'store';
-// import { v4 as uuidv4 } from 'uuid';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { FaLock, FaRegCheckCircle } from "react-icons/fa";
+import { Button } from '@/components/ui/button';
+import TeamFormFields from '@/components/team-form-fields';
+import DefaultFormFields from '@/components/default-form-fields';
+import SingleEntryFields from '@/components/single-entry-fields';
+import SponsorProductsFields from '@/components/sponsor-products-fields';
+import { stripePromise } from '@/lib/stripe';
+import { useSearchParams, usePathname } from 'next/navigation';
+import { useTournamentDate } from '@/context/TournamentDateContext';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import GolfersFormFields from '@/components/golfers-form-fields';
+import { getTournamentPricingConfig } from '@/lib/contentful';
+import store from 'store';
+import { v4 as uuidv4 } from 'uuid';
 
 export type Golfer = {
   name: string;
@@ -46,15 +46,16 @@ export type FormDataType = {
   player3TShirtSize?: string;
 };
 
-// type RegistrationStoreData = {
-//   uid: string;
-//   formData: FormDataType;
-// };
+type RegistrationStoreData = {
+  uid: string;
+  formData: FormDataType;
+};
 
 export default function RegistrationForm() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      {/* HARDCODED: Registration is currently closed */}
+      {/*
+      HARDCODED: Registration is currently closed
       <div className="bg-customBackground rounded-lg max-w-[1200px] m-auto py-24 px-8 mt-32">
         <div className="text-center">
           <div className="text-white/80 text-4xl font-bold mb-8">Registration Closed</div>
@@ -63,15 +64,14 @@ export default function RegistrationForm() {
           </div>
         </div>
       </div>
-
-      {/* COMMENTED OUT: Original registration form - uncomment next year */}
-      {/*
-      <RegistrationFormContent />
       */}
 
-      {/* COMMENTED OUT: Original form code - uncomment next year */}
-      {/*
-      function RegistrationFormContent() {
+      <RegistrationFormContent />
+    </Suspense>
+  );
+}
+
+function RegistrationFormContent() {
         const tournamentStartDate = useTournamentDate();
         const params = useSearchParams();
         const path = usePathname();
@@ -697,22 +697,15 @@ export default function RegistrationForm() {
             )}
           </>
         );
-      }
-      */}
-
-      {/* COMMENTED OUT: Type definitions - uncomment next year */}
-      {/*
-      type PricingOption = {
-        id: string;
-        label: string;
-        price: number;
-        details: string;
-        category: 'individual' | 'sponsor' | 'product';
-        subText?: string | null;
-        highlightText?: string | null;
-        noteHtml?: string | null;
-      };
-      */}
-    </Suspense>
-  );
 }
+
+type PricingOption = {
+  id: string;
+  label: string;
+  price: number;
+  details: string;
+  category: 'individual' | 'sponsor' | 'product';
+  subText?: string | null;
+  highlightText?: string | null;
+  noteHtml?: string | null;
+};
