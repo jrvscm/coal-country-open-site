@@ -51,6 +51,19 @@ type RegistrationStoreData = {
   formData: FormDataType;
 };
 
+type CheckoutItemCategory = 'individual' | 'sponsor' | 'product' | 'addon';
+
+type CheckoutItem = {
+  id: string;
+  name: string;
+  amount: number;
+  quantity: number;
+  category: CheckoutItemCategory;
+};
+
+const sponsorPackageIds = ["platinumSponsorship", "goldSponsorship", "silverSponsorship"];
+const sponsorProductIds = ["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"];
+
 export default function RegistrationForm() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -77,6 +90,8 @@ function RegistrationFormContent() {
         const path = usePathname();
         const [registrationStatus, setRegistrationStatus] = useState<'idle' | 'success' | 'canceled'>('idle');
         const [pricingData, setPricingData] = useState<PricingOption[]>([]);
+        const [primarySelection, setPrimarySelection] = useState('');
+        const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
         useEffect(() => {
           const fetchPricing = async () => {
@@ -112,7 +127,7 @@ function RegistrationFormContent() {
           handicap: '',
           banquet: '',
           dinnerTickets: '',
-          participantType: path.includes('sponsor') ? 'teamSponsorEntry' : 'currentMiner',
+          participantType: '',
           doorPrize: '',
           flagPrizeContribution: '',
           teamName: '',
@@ -132,7 +147,7 @@ function RegistrationFormContent() {
 
         const [formData, setFormData] = useState<FormDataType>(defaultFormState);
         const [formErrors, setFormErrors] = useState<FormErrorsType>({} as FormErrorsType);
-        const [totalPrice, setTotalPrice] = useState(basePrices[formData.participantType as keyof typeof basePrices]);
+        const [totalPrice, setTotalPrice] = useState(0);
         const [stripeFee, setStripeFee] = useState(0);
         const [loading, setLoading] = useState(false);
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -141,8 +156,18 @@ function RegistrationFormContent() {
         const flagPrizeRegex = useMemo(() => (/^\d+$/), [])
 
         const selectedPricing = useMemo(() => {
-          return pricingData.find((item) => item.id === formData.participantType);
-        }, [pricingData, formData.participantType]);
+          if (primarySelection) {
+            return pricingData.find((item) => item.id === primarySelection);
+          }
+
+          return pricingData.find((item) => item.id === selectedProducts[0]);
+        }, [pricingData, primarySelection, selectedProducts]);
+
+        const selectedProductOptions = useMemo(() => {
+          return pricingData.filter((item) => selectedProducts.includes(item.id));
+        }, [pricingData, selectedProducts]);
+
+        const effectiveParticipantType = primarySelection || selectedProducts[0] || '';
 
         const sponsorshipNote = useMemo(() => {
           return pricingData.find(item => item.id === 'sponsorshipNote');
@@ -151,14 +176,14 @@ function RegistrationFormContent() {
         const [showSponsorshipNote, setShowSponsorshipNote] = useState(false);
 
         useEffect(() => {
-          const selectedType = pricingData.find(item => item.id === formData.participantType);
+          const selectedType = pricingData.find(item => item.id === primarySelection);
 
           if (selectedType?.category === 'sponsor') {
             setShowSponsorshipNote(true);
           } else {
             setShowSponsorshipNote(false);
           }
-        }, [formData.participantType, pricingData]);
+        }, [primarySelection, pricingData]);
 
         const [websiteSponsorTaken, setWebsiteSponsorTaken] = useState(false);
 
@@ -177,15 +202,22 @@ function RegistrationFormContent() {
 
         const validateForm = () => {
           const errors: FormErrorsType = {};
+          const hasPrimarySelection = Boolean(primarySelection);
+          const hasProductSelection = selectedProducts.length > 0;
+          const selectionForValidation = hasPrimarySelection ? primarySelection : selectedProducts[0];
 
-          if (["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"].includes(formData.participantType)) {
+          if (!hasPrimarySelection && !hasProductSelection) {
+            errors.participantType = "Please select at least one registration option";
+          }
+
+          if (selectionForValidation && sponsorProductIds.includes(selectionForValidation)) {
             if (!formData.company) errors.company = "Company is required";
             if (!formData.player1Name) errors.player1Name = "Name is required";
             if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) errors.contactEmail = "Invalid email";
             if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) errors.contactPhone = "Invalid phone number";
           }
 
-          if (formData.participantType !== 'teamSponsorEntry' && !["platinumSponsorship", "goldSponsorship", "silverSponsorship", "flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"].includes(formData.participantType)) {
+          if (selectionForValidation && selectionForValidation !== 'teamSponsorEntry' && !sponsorPackageIds.includes(selectionForValidation) && !sponsorProductIds.includes(selectionForValidation)) {
             if (!formData.player1Name) errors.player1Name = "Name is required";
             if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) errors.contactEmail = "Invalid email";
             if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) errors.contactPhone = "Invalid phone number";
@@ -194,7 +226,7 @@ function RegistrationFormContent() {
             if (!formData.player1TShirtSize) errors.player1TShirtSize = "Shirt size is required";
           }
 
-          if (formData.participantType === "teamSponsorEntry" && !["platinumSponsorship", "goldSponsorship", "silverSponsorship", "flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"].includes(formData.participantType)) {
+          if (selectionForValidation === "teamSponsorEntry" && !sponsorPackageIds.includes(selectionForValidation) && !sponsorProductIds.includes(selectionForValidation)) {
             if (!formData.teamName) errors.teamName = "Team Name is required";
             if (!formData.player1Name) errors.player1Name = "Player One Name is required";
             if (!formData.player2Name) errors.player2Name = "Player Two Name is required";
@@ -210,7 +242,7 @@ function RegistrationFormContent() {
             if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) errors.contactEmail = "Contact email is invalid";
           }
 
-          if (["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType)) {
+          if (selectionForValidation && sponsorPackageIds.includes(selectionForValidation)) {
             if (!formData.company) errors.company = "Company is required";
             if (!formData.contactName) errors.contactName = "Team contact name is required";
             if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) errors.contactPhone = "Team contact phone is invalid";
@@ -224,7 +256,7 @@ function RegistrationFormContent() {
             });
           }
 
-          if (!formData.banquet && !["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"].includes(formData.participantType)) errors.banquet = "Banquet choice is required";
+          if (selectionForValidation && !formData.banquet && !sponsorProductIds.includes(selectionForValidation)) errors.banquet = "Banquet choice is required";
 
           if (formData.flagPrizeContribution && !flagPrizeRegex.test(formData.flagPrizeContribution)) errors.flagPrizeContribution = "Use only whole numbers and no decimals"
 
@@ -236,6 +268,7 @@ function RegistrationFormContent() {
           const { name, value } = e.target;
 
           if (name === 'participantType') {
+            setPrimarySelection(value);
             setFormData({
               ...defaultFormState,
               participantType: value,
@@ -253,6 +286,19 @@ function RegistrationFormContent() {
           }
         };
 
+        const handleProductToggle = (productId: string) => {
+          setSelectedProducts((prev) => (
+            prev.includes(productId)
+              ? prev.filter((id) => id !== productId)
+              : [...prev, productId]
+          ));
+
+          setFormErrors((prevErrors) => ({
+            ...prevErrors,
+            participantType: "",
+          }));
+        };
+
         const handleSelectChange = (name: keyof FormDataType | string, value: string) => {
           setFormData((prev) => ({ ...prev, [name]: value }));
 
@@ -267,7 +313,11 @@ function RegistrationFormContent() {
         const [flagPrizeCost, setFlagPrizeCost] = useState(0);
 
         useEffect(() => {
-          const newBasePrice = basePrices[formData.participantType as keyof typeof basePrices] || 0;
+          const primaryPrice = primarySelection ? (basePrices[primarySelection as keyof typeof basePrices] || 0) : 0;
+          const productsPrice = selectedProducts.reduce((sum, productId) => {
+            return sum + (basePrices[productId as keyof typeof basePrices] || 0);
+          }, 0);
+          const newBasePrice = primaryPrice + productsPrice;
           let newDinnerTicketCost = 0;
           let newFlagPrizeCost = 0;
 
@@ -287,7 +337,7 @@ function RegistrationFormContent() {
           setFlagPrizeCost(newFlagPrizeCost);
           setTotalPrice(newTotal);
           setStripeFee(newStripeFee);
-        }, [basePrices, flagPrizeRegex, formData.participantType, formData.dinnerTickets, formData.flagPrizeContribution]);
+        }, [basePrices, flagPrizeRegex, primarySelection, selectedProducts, formData.dinnerTickets, formData.flagPrizeContribution]);
 
         const totalRef = useRef<HTMLDivElement | null>(null);
         const [isSticky, setIsSticky] = useState(false);
@@ -319,12 +369,14 @@ function RegistrationFormContent() {
 
           if (!validateForm()) return;
 
-          const maxGolfers = formData.participantType === "platinumSponsorship" ? 10 :
-            formData.participantType === "goldSponsorship" ? 5 :
-              formData.participantType === "silverSponsorship" ? 2 : 0;
+          const participantTypeForSubmission = primarySelection || selectedProducts[0] || '';
+
+          const maxGolfers = participantTypeForSubmission === "platinumSponsorship" ? 10 :
+            participantTypeForSubmission === "goldSponsorship" ? 5 :
+              participantTypeForSubmission === "silverSponsorship" ? 2 : 0;
 
           const adjustedFormData = { ...formData };
-          if (["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"].includes(formData.participantType)) {
+          if (sponsorProductIds.includes(participantTypeForSubmission)) {
             adjustedFormData.contactName = formData.player1Name;
             adjustedFormData.player1Name = "";
           }
@@ -332,6 +384,7 @@ function RegistrationFormContent() {
           try {
             const formattedFormData = {
               ...adjustedFormData,
+              participantType: participantTypeForSubmission,
               ...Object.fromEntries(
                 Array.from({ length: maxGolfers }, (_, i) => {
                   const golfer = formData.golfers[i] || { name: "", handicap: "", tShirtSize: "" };
@@ -373,10 +426,41 @@ function RegistrationFormContent() {
               body: JSON.stringify({
                 uid: uid,
                 totalPrice: (totalPrice + stripeFee).toFixed(2),
+                items: [
+                  ...(primarySelection ? [{
+                    id: primarySelection,
+                    name: pricingData.find((option) => option.id === primarySelection)?.label || primarySelection,
+                    amount: basePrices[primarySelection as keyof typeof basePrices] || 0,
+                    quantity: 1,
+                    category: pricingData.find((option) => option.id === primarySelection)?.category || 'individual',
+                  }] : []),
+                  ...selectedProductOptions.map((option): CheckoutItem => ({
+                    id: option.id,
+                    name: option.label,
+                    amount: option.price,
+                    quantity: 1,
+                    category: 'product',
+                  })),
+                  ...(dinnerTicketCost > 0 ? [{
+                    id: 'dinnerTickets',
+                    name: `Dinner Tickets (${formData.dinnerTickets})`,
+                    amount: dinnerTicketCost,
+                    quantity: 1,
+                    category: 'addon',
+                  }] : []),
+                  ...(flagPrizeCost > 0 ? [{
+                    id: 'flagPrizeContribution',
+                    name: 'Flag Prize Contribution',
+                    amount: flagPrizeCost,
+                    quantity: 1,
+                    category: 'addon',
+                  }] : []),
+                ] as CheckoutItem[],
                 breakdown: {
                   basePrice: basePrice.toFixed(2),
                   dinnerTickets: dinnerTicketCost.toFixed(2),
                   flagPrize: flagPrizeCost.toFixed(2),
+                  selectedProducts,
                 },
               }),
             });
@@ -444,7 +528,7 @@ function RegistrationFormContent() {
                       </div>
 
                       <div className="flex flex-col text-white/60 mt-2 space-y-1">
-                        <p>Base Registration: ${basePrice.toFixed(2)}</p>
+                        <p>Selected Items: ${basePrice.toFixed(2)}</p>
                         {dinnerTicketCost > 0 && <p>Dinner Tickets: ${dinnerTicketCost.toFixed(2)}</p>}
                         {flagPrizeCost > 0 && <p>Flag Prize Contribution: ${flagPrizeCost.toFixed(2)}</p>}
                         <p className="mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
@@ -462,7 +546,7 @@ function RegistrationFormContent() {
                           </div>
 
                           <div className="flex flex-col text-white/60 mt-2 space-y-1">
-                            <p>Base Registration: ${basePrice.toFixed(2)}</p>
+                            <p>Selected Items: ${basePrice.toFixed(2)}</p>
                             {dinnerTicketCost > 0 && <p>Dinner Tickets: ${dinnerTicketCost.toFixed(2)}</p>}
                             {flagPrizeCost > 0 && <p>Flag Prize Contribution: ${flagPrizeCost.toFixed(2)}</p>}
                             <p className="mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
@@ -495,7 +579,7 @@ function RegistrationFormContent() {
                                       type="radio"
                                       name="participantType"
                                       value={option.id}
-                                      checked={formData.participantType === option.id}
+                                      checked={primarySelection === option.id}
                                       onChange={handleChange}
                                       className="sr-only peer"
                                     />
@@ -504,7 +588,7 @@ function RegistrationFormContent() {
                                   </div>
                                 </div>
 
-                                {formData.participantType === option.id && (
+                                {primarySelection === option.id && (
                                   <div className="mt-2 text-sm text-white/60">
                                     {option.details}
                                   </div>
@@ -537,7 +621,7 @@ function RegistrationFormContent() {
                                       type="radio"
                                       name="participantType"
                                       value={option.id}
-                                      checked={formData.participantType === option.id}
+                                      checked={primarySelection === option.id}
                                       onChange={handleChange}
                                       className="sr-only peer"
                                     />
@@ -546,7 +630,7 @@ function RegistrationFormContent() {
                                   </div>
                                 </div>
 
-                                {formData.participantType === option.id && (
+                                {primarySelection === option.id && (
                                   <div className="mt-2 text-sm text-white/60">
                                     {option.details}
                                   </div>
@@ -577,19 +661,19 @@ function RegistrationFormContent() {
                                   <span>{option.label}</span>
                                   <div className="relative ml-auto">
                                     <input
-                                      type="radio"
-                                      name="participantType"
+                                      type="checkbox"
+                                      name={`product-${option.id}`}
                                       value={option.id}
-                                      checked={formData.participantType === option.id}
-                                      onChange={handleChange}
+                                      checked={selectedProducts.includes(option.id)}
+                                      onChange={() => handleProductToggle(option.id)}
                                       className="sr-only peer"
                                     />
-                                    <div className="h-6 w-6 rounded-full border-2 border-customInputBorder"></div>
-                                    <div className="h-4 w-4 rounded-full bg-customInputBorder absolute top-1 left-1 scale-0 peer-checked:scale-100 transition-transform"></div>
+                                    <div className="h-6 w-6 rounded border-2 border-customInputBorder"></div>
+                                    <div className="h-4 w-4 rounded-sm bg-customInputBorder absolute top-1 left-1 scale-0 peer-checked:scale-100 transition-transform"></div>
                                   </div>
                                 </div>
 
-                                {formData.participantType === option.id && (
+                                {selectedProducts.includes(option.id) && (
                                   <div className="mt-2 text-sm text-white/60">
                                     {option.details}
                                   </div>
@@ -601,6 +685,18 @@ function RegistrationFormContent() {
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
+                {primarySelection && (
+                  <button
+                    type="button"
+                    onClick={() => setPrimarySelection('')}
+                    className="mt-3 text-sm text-customInputBorder hover:text-white transition-colors"
+                  >
+                    Clear entry/package selection
+                  </button>
+                )}
+                {formErrors.participantType && (
+                  <p className="text-red-500 text-sm mt-2">{formErrors.participantType}</p>
+                )}
               </div>
 
               {selectedPricing && (selectedPricing?.subText?.length || selectedPricing?.highlightText?.length) && (
@@ -624,15 +720,15 @@ function RegistrationFormContent() {
                 <hr className="border-t border-white/20" />
               </div>
 
-              {formData.participantType === 'teamSponsorEntry' && !["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType) && (
+              {effectiveParticipantType === 'teamSponsorEntry' && !sponsorPackageIds.includes(effectiveParticipantType) && (
                 <TeamFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
               )}
 
-              {formData.participantType !== 'teamSponsorEntry' && !["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"].includes(formData.participantType) && !["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType) && (
+              {Boolean(effectiveParticipantType) && effectiveParticipantType !== 'teamSponsorEntry' && !sponsorProductIds.includes(effectiveParticipantType) && !sponsorPackageIds.includes(effectiveParticipantType) && (
                 <DefaultFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
               )}
 
-              {["platinumSponsorship", "goldSponsorship", "silverSponsorship"].includes(formData.participantType) && (
+              {sponsorPackageIds.includes(effectiveParticipantType) && (
                 <GolfersFormFields
                   setFormErrors={setFormErrors}
                   handleSelectChange={handleSelectChange}
@@ -642,18 +738,18 @@ function RegistrationFormContent() {
                   formErrors={formErrors}
                   formData={formData}
                   maxGolfers={
-                    formData.participantType === "platinumSponsorship" ? 10 :
-                      formData.participantType === "goldSponsorship" ? 5 :
-                        formData.participantType === "silverSponsorship" ? 2 : 0
+                    effectiveParticipantType === "platinumSponsorship" ? 10 :
+                      effectiveParticipantType === "goldSponsorship" ? 5 :
+                        effectiveParticipantType === "silverSponsorship" ? 2 : 0
                   }
                 />
               )}
 
-              {formData.participantType === 'singlePlayerSponsorEntry' && (
+              {effectiveParticipantType === 'singlePlayerSponsorEntry' && (
                 <SingleEntryFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
               )}
 
-              {["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"].includes(formData.participantType) && (
+              {!primarySelection && selectedProducts.length > 0 && (
                 <SponsorProductsFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
               )}
 
