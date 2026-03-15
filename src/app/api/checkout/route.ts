@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { getProductAvailabilitySnapshot } from '@/lib/registration-product-availability';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
-const sponsorProductCategories = new Set(['product', 'addon']);
 
 export async function GET() {
   return NextResponse.json({ success: true });
@@ -35,11 +35,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid checkout item payload' }, { status: 400 });
     }
 
-    const primaryItemCount = parsedItems.filter((item) => !sponsorProductCategories.has(item.category)).length;
-    if (primaryItemCount > 1) {
-      return NextResponse.json({ error: 'Only one entry/package item can be purchased per checkout' }, { status: 400 });
-    }
-
     const computedTotal = parsedItems.reduce((sum, item) => sum + (item.amount * item.quantity), 0);
 
     if (!Number.isFinite(computedTotal) || computedTotal <= 0) {
@@ -50,6 +45,46 @@ export async function POST(req: Request) {
     if (Number.isNaN(suppliedTotal) || Math.round(suppliedTotal * 100) !== Math.round(computedTotal * 100)) {
       return NextResponse.json({ error: 'Checkout total does not match items' }, { status: 400 });
     }
+
+    const requestedProductQuantities = parsedItems.reduce((acc, item) => {
+      if (item.category === 'product') {
+        acc[item.id] = (acc[item.id] ?? 0) + item.quantity;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    if (Object.keys(requestedProductQuantities).length > 0) {
+      const availability = await getProductAvailabilitySnapshot();
+      const soldOutProducts = Object.entries(requestedProductQuantities)
+        .filter(([productId, quantity]) => {
+          const productAvailability = availability[productId];
+          if (!productAvailability) return false;
+          return productAvailability.remaining < quantity;
+        })
+        .map(([productId]) => productId);
+
+      if (soldOutProducts.length > 0) {
+        return NextResponse.json(
+          {
+            error: 'One or more selected sponsorship products are sold out',
+            soldOutProductIds: soldOutProducts,
+          },
+          { status: 409 }
+        );
+      }
+    }
+
+    const compactBreakdown = JSON.stringify({
+      basePrice: breakdown?.basePrice,
+      dinnerTickets: breakdown?.dinnerTickets,
+      flagPrize: breakdown?.flagPrize,
+      selectedProducts: Array.isArray(breakdown?.selectedProducts) ? breakdown.selectedProducts : [],
+    });
+
+    // Stripe metadata value limit is 500 chars; keep payload safely under limit.
+    const metadataBreakdown = compactBreakdown.length <= 500
+      ? compactBreakdown
+      : JSON.stringify({ compact: true, selectedProducts: [] });
 
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
@@ -70,10 +105,7 @@ export async function POST(req: Request) {
       metadata: {
         uid, // Unique ID for matching the payment in Google Sheets
         totalPrice,
-        breakdown: JSON.stringify({
-          ...(breakdown ?? {}),
-          items: parsedItems,
-        }),
+        breakdown: metadataBreakdown,
       },
     });
 

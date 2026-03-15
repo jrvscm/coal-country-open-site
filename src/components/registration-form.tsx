@@ -44,6 +44,7 @@ export type FormDataType = {
   player1TShirtSize?: string;
   player2TShirtSize?: string;
   player3TShirtSize?: string;
+  selectedProductIds?: string[];
 };
 
 type RegistrationStoreData = {
@@ -59,6 +60,14 @@ type CheckoutItem = {
   amount: number;
   quantity: number;
   category: CheckoutItemCategory;
+};
+
+type ProductAvailability = {
+  id: string;
+  limit: number;
+  purchased: number;
+  remaining: number;
+  soldOut: boolean;
 };
 
 const sponsorPackageIds = ["platinumSponsorship", "goldSponsorship", "silverSponsorship"];
@@ -155,13 +164,19 @@ function RegistrationFormContent() {
         const handicapRegex = /^[+-]?\d+(\.\d{1,2})?$/;
         const flagPrizeRegex = useMemo(() => (/^\d+$/), [])
 
-        const selectedPricing = useMemo(() => {
-          if (primarySelection) {
-            return pricingData.find((item) => item.id === primarySelection);
-          }
+        const [productAvailability, setProductAvailability] = useState<Record<string, ProductAvailability>>({});
 
-          return pricingData.find((item) => item.id === selectedProducts[0]);
-        }, [pricingData, primarySelection, selectedProducts]);
+        const selectedOptionIds = useMemo(() => {
+          const ids = [
+            ...(primarySelection ? [primarySelection] : []),
+            ...selectedProducts,
+          ];
+          return Array.from(new Set(ids));
+        }, [primarySelection, selectedProducts]);
+
+        const selectedPricingOptions = useMemo(() => {
+          return pricingData.filter((item) => selectedOptionIds.includes(item.id));
+        }, [pricingData, selectedOptionIds]);
 
         const selectedProductOptions = useMemo(() => {
           return pricingData.filter((item) => selectedProducts.includes(item.id));
@@ -173,32 +188,24 @@ function RegistrationFormContent() {
           return pricingData.find(item => item.id === 'sponsorshipNote');
         }, [pricingData]);
 
-        const [showSponsorshipNote, setShowSponsorshipNote] = useState(false);
-
         useEffect(() => {
-          const selectedType = pricingData.find(item => item.id === primarySelection);
-
-          if (selectedType?.category === 'sponsor') {
-            setShowSponsorshipNote(true);
-          } else {
-            setShowSponsorshipNote(false);
-          }
-        }, [primarySelection, pricingData]);
-
-        const [websiteSponsorTaken, setWebsiteSponsorTaken] = useState(false);
-
-        useEffect(() => {
-          const checkSponsorStatus = async () => {
+          const fetchProductAvailability = async () => {
             try {
-              const res = await fetch('/api/registration/check-website-sponsor');
+              const res = await fetch('/api/registration/product-availability');
               const data = await res.json();
-              setWebsiteSponsorTaken(data.taken);
+              if (res.ok && data?.products) {
+                setProductAvailability(data.products as Record<string, ProductAvailability>);
+              }
             } catch (err) {
-              console.error('Failed to check sponsor status:', err);
+              console.error('Failed to check product availability:', err);
             }
           };
-          checkSponsorStatus();
+          fetchProductAvailability();
         }, []);
+
+        const showSponsorshipNote = useMemo(() => {
+          return selectedPricingOptions.some((item) => item.category === 'sponsor');
+        }, [selectedPricingOptions]);
 
         const validateForm = () => {
           const errors: FormErrorsType = {};
@@ -286,11 +293,18 @@ function RegistrationFormContent() {
           }
         };
 
+        const isProductSoldOut = (productId: string) => {
+          const availability = productAvailability[productId];
+          return Boolean(availability?.soldOut);
+        };
+
         const handleProductToggle = (productId: string) => {
           setSelectedProducts((prev) => (
             prev.includes(productId)
               ? prev.filter((id) => id !== productId)
-              : [...prev, productId]
+              : isProductSoldOut(productId)
+                ? prev
+                : [...prev, productId]
           ));
 
           setFormErrors((prevErrors) => ({
@@ -339,6 +353,81 @@ function RegistrationFormContent() {
           setStripeFee(newStripeFee);
         }, [basePrices, flagPrizeRegex, primarySelection, selectedProducts, formData.dinnerTickets, formData.flagPrizeContribution]);
 
+        const checkoutItems = useMemo<CheckoutItem[]>(() => {
+          const dinnerQuantity = Number.parseInt(formData.dinnerTickets || '0', 10);
+
+          return [
+            ...(primarySelection ? [{
+              id: primarySelection,
+              name: pricingData.find((option) => option.id === primarySelection)?.label || primarySelection,
+              amount: basePrices[primarySelection as keyof typeof basePrices] || 0,
+              quantity: 1,
+              category: pricingData.find((option) => option.id === primarySelection)?.category || 'individual',
+            }] : []),
+            ...selectedProductOptions.map((option): CheckoutItem => ({
+              id: option.id,
+              name: option.label,
+              amount: option.price,
+              quantity: 1,
+              category: 'product',
+            })),
+            ...(dinnerQuantity > 0 ? [{
+              id: 'dinnerTickets',
+              name: 'Dinner Tickets',
+              amount: 32,
+              quantity: dinnerQuantity,
+              category: 'addon',
+            }] : []),
+            ...(flagPrizeCost > 0 ? [{
+              id: 'flagPrizeContribution',
+              name: 'Flag Prize Contribution',
+              amount: flagPrizeCost,
+              quantity: 1,
+              category: 'addon',
+            }] : []),
+            ...(stripeFee > 0 ? [{
+              id: 'processingFee',
+              name: 'Processing Fee',
+              amount: Number(stripeFee.toFixed(2)),
+              quantity: 1,
+              category: 'addon',
+            }] : []),
+          ] as CheckoutItem[];
+        }, [formData.dinnerTickets, primarySelection, pricingData, basePrices, selectedProductOptions, flagPrizeCost, stripeFee]);
+
+        const checkoutSummaryItems = useMemo(() => {
+          return checkoutItems
+            .filter((item) => item.id !== 'processingFee')
+            .map((item) => ({
+            id: item.id,
+            label: item.name,
+            quantity: item.quantity,
+            total: item.amount * item.quantity,
+            }));
+        }, [checkoutItems]);
+
+        const handleRemoveCheckoutItem = (itemId: string) => {
+          if (itemId === primarySelection) {
+            setPrimarySelection('');
+            setFormData((prev) => ({ ...prev, participantType: '' }));
+            return;
+          }
+
+          if (selectedProducts.includes(itemId)) {
+            setSelectedProducts((prev) => prev.filter((id) => id !== itemId));
+            return;
+          }
+
+          if (itemId === 'dinnerTickets') {
+            setFormData((prev) => ({ ...prev, dinnerTickets: '' }));
+            return;
+          }
+
+          if (itemId === 'flagPrizeContribution') {
+            setFormData((prev) => ({ ...prev, flagPrizeContribution: '' }));
+          }
+        };
+
         const totalRef = useRef<HTMLDivElement | null>(null);
         const [isSticky, setIsSticky] = useState(false);
 
@@ -370,6 +459,7 @@ function RegistrationFormContent() {
           if (!validateForm()) return;
 
           const participantTypeForSubmission = primarySelection || selectedProducts[0] || '';
+          const participantTypeForStorage = selectedOptionIds.join('|');
 
           const maxGolfers = participantTypeForSubmission === "platinumSponsorship" ? 10 :
             participantTypeForSubmission === "goldSponsorship" ? 5 :
@@ -384,7 +474,8 @@ function RegistrationFormContent() {
           try {
             const formattedFormData = {
               ...adjustedFormData,
-              participantType: participantTypeForSubmission,
+              participantType: participantTypeForStorage || participantTypeForSubmission,
+              selectedProductIds: selectedProducts,
               ...Object.fromEntries(
                 Array.from({ length: maxGolfers }, (_, i) => {
                   const golfer = formData.golfers[i] || { name: "", handicap: "", tShirtSize: "" };
@@ -426,36 +517,7 @@ function RegistrationFormContent() {
               body: JSON.stringify({
                 uid: uid,
                 totalPrice: (totalPrice + stripeFee).toFixed(2),
-                items: [
-                  ...(primarySelection ? [{
-                    id: primarySelection,
-                    name: pricingData.find((option) => option.id === primarySelection)?.label || primarySelection,
-                    amount: basePrices[primarySelection as keyof typeof basePrices] || 0,
-                    quantity: 1,
-                    category: pricingData.find((option) => option.id === primarySelection)?.category || 'individual',
-                  }] : []),
-                  ...selectedProductOptions.map((option): CheckoutItem => ({
-                    id: option.id,
-                    name: option.label,
-                    amount: option.price,
-                    quantity: 1,
-                    category: 'product',
-                  })),
-                  ...(dinnerTicketCost > 0 ? [{
-                    id: 'dinnerTickets',
-                    name: `Dinner Tickets (${formData.dinnerTickets})`,
-                    amount: dinnerTicketCost,
-                    quantity: 1,
-                    category: 'addon',
-                  }] : []),
-                  ...(flagPrizeCost > 0 ? [{
-                    id: 'flagPrizeContribution',
-                    name: 'Flag Prize Contribution',
-                    amount: flagPrizeCost,
-                    quantity: 1,
-                    category: 'addon',
-                  }] : []),
-                ] as CheckoutItem[],
+                items: checkoutItems,
                 breakdown: {
                   basePrice: basePrice.toFixed(2),
                   dinnerTickets: dinnerTicketCost.toFixed(2),
@@ -466,7 +528,27 @@ function RegistrationFormContent() {
             });
 
             if (!checkoutResponse.ok) {
-              alert(`Error creating checkout session, please refresh the page and try again`);
+              const errorData = await checkoutResponse.json().catch(() => null) as {
+                error?: string;
+                soldOutProductIds?: string[];
+              } | null;
+
+              if (checkoutResponse.status === 409 && Array.isArray(errorData?.soldOutProductIds)) {
+                const soldOutIds = new Set(errorData.soldOutProductIds);
+                const soldOutLabels = pricingData
+                  .filter((option) => soldOutIds.has(option.id))
+                  .map((option) => option.label);
+
+                setSelectedProducts((prev) => prev.filter((id) => !soldOutIds.has(id)));
+                setFormErrors((prevErrors) => ({
+                  ...prevErrors,
+                  participantType: `Sold out: ${soldOutLabels.join(', ') || 'selected sponsorship product(s)'}`,
+                }));
+                alert(`Some sponsorship products sold out before checkout: ${soldOutLabels.join(', ') || 'please reselect options'}.`);
+                return;
+              }
+
+              alert(errorData?.error || 'Error creating checkout session, please refresh the page and try again');
               return;
             }
 
@@ -518,45 +600,65 @@ function RegistrationFormContent() {
                 <hr className="border-t border-white/20" />
               </div>
 
-              <div className="col-span-full grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="relative order-1 md:order-2">
-                  <div ref={totalRef} className="mt-6 md:mt-0 flex justify-start md:justify-end items-start order-1 md:order-2">
-                    <div className="w-full md:w-auto flex flex-col border border-customInputBorder rounded-lg p-3">
-                      <div className="flex flex-row justify-start md:justify-center items-center">
-                        <h3 className="text-white/80 text-2xl font-semibold mr-2">TOTAL:</h3>
-                        <p className="text-2xl text-white font-bold">${(totalPrice + stripeFee).toFixed(2)}</p>
-                      </div>
+              <div className="col-span-full">
+                <div ref={totalRef} className="mt-6 md:mt-0">
+                  <div className="w-full flex flex-col border border-customInputBorder rounded-lg p-3">
+                    <div className="flex flex-row justify-between items-center">
+                      <h3 className="text-white/80 text-2xl font-semibold mr-2">TOTAL:</h3>
+                      <p className="text-2xl text-white font-bold">${(totalPrice + stripeFee).toFixed(2)}</p>
+                    </div>
 
-                      <div className="flex flex-col text-white/60 mt-2 space-y-1">
-                        <p>Selected Items: ${basePrice.toFixed(2)}</p>
-                        {dinnerTicketCost > 0 && <p>Dinner Tickets: ${dinnerTicketCost.toFixed(2)}</p>}
-                        {flagPrizeCost > 0 && <p>Flag Prize Contribution: ${flagPrizeCost.toFixed(2)}</p>}
-                        <p className="mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
-                      </div>
+                    <div className="flex flex-col text-white/60 mt-2 space-y-1">
+                      {checkoutSummaryItems.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between gap-2">
+                          <p>{item.label} x {item.quantity}: ${item.total.toFixed(2)}</p>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCheckoutItem(item.id)}
+                            className="text-white/70 hover:text-white font-bold px-2"
+                            aria-label={`Remove ${item.label}`}
+                          >
+                            X
+                          </button>
+                        </div>
+                      ))}
+                      <p className="mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
                     </div>
                   </div>
+                </div>
 
-                  {isSticky && (
-                    <div className="transition-all fixed top-[81px] md:top-[65px] left-0 right-0 bg-secondary-foreground md:bg-black/60 md:backdrop-blur-2xl text-white shadow-lg z-50 p-4 transition-transform">
-                      <div className="max-w-[1200px] mx-auto flex justify-between items-center">
-                        <div className="flex flex-col">
-                          <div className="flex flex-row justify-between items-center">
-                            <h3 className="text-xl font-bold">TOTAL:</h3>
-                            <p className="text-2xl font-bold">${(totalPrice + stripeFee).toFixed(2)}</p>
-                          </div>
+                {isSticky && (
+                  <div className="transition-all fixed top-[81px] md:top-[65px] left-0 right-0 bg-secondary-foreground md:bg-black/60 md:backdrop-blur-2xl text-white shadow-lg z-50 p-4 transition-transform">
+                    <div className="max-w-[1200px] mx-auto flex justify-between items-center">
+                      <div className="flex flex-col w-full">
+                        <div className="flex flex-row justify-between items-center">
+                          <h3 className="text-xl font-bold">TOTAL:</h3>
+                          <p className="text-2xl font-bold">${(totalPrice + stripeFee).toFixed(2)}</p>
+                        </div>
 
-                          <div className="flex flex-col text-white/60 mt-2 space-y-1">
-                            <p>Selected Items: ${basePrice.toFixed(2)}</p>
-                            {dinnerTicketCost > 0 && <p>Dinner Tickets: ${dinnerTicketCost.toFixed(2)}</p>}
-                            {flagPrizeCost > 0 && <p>Flag Prize Contribution: ${flagPrizeCost.toFixed(2)}</p>}
-                            <p className="mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
-                          </div>
+                        <div className="flex flex-col text-white/60 mt-2 space-y-1">
+                          {checkoutSummaryItems.map((item) => (
+                            <div key={`sticky-${item.id}`} className="flex items-center justify-between gap-2">
+                              <p>{item.label} x {item.quantity}: ${item.total.toFixed(2)}</p>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveCheckoutItem(item.id)}
+                                className="text-white/70 hover:text-white font-bold px-2"
+                                aria-label={`Remove ${item.label}`}
+                              >
+                                X
+                              </button>
+                            </div>
+                          ))}
+                          <p className="mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+              </div>
 
+              <div className="col-span-full">
                 <Accordion type="single" collapsible defaultValue={path.includes('sponsor') ? `sponsor-packages` : `individual-participants`} className="w-full">
                   <AccordionItem value="individual-participants" className="border-t border-white/80">
                     <AccordionTrigger className="text-white/80 text-lg font-semibold [&>svg]:w-8 [&>svg]:h-8 [&>svg]:text-white/80">INDIVIDUAL PARTICIPANTS:</AccordionTrigger>
@@ -648,17 +750,20 @@ function RegistrationFormContent() {
                       <div className="space-y-1">
                         {pricingData
                           .filter((option) => option.category === 'product')
-                          .filter((option) => !(option.id === 'websiteSponsorship' && websiteSponsorTaken))
                           .map((option) => (
                             <div className="group" key={option.id}>
-                              <label className="flex flex-col cursor-pointer text-white/60 text-lg pb-2
+                              <label className={`flex flex-col cursor-pointer text-white/60 text-lg pb-2
                                   group-has-[input:checked]:border group-has-[input:checked]:border-customInputBorder group-has-[input:checked]:rounded-lg
                                   group-has-[input:checked]:bg-black/80
                                   hover:border hover:border-customInputBorder hover:bg-black/20 p-2
-                                  border border-transparent rounded-lg transition-all">
+                                  border border-transparent rounded-lg transition-all
+                                  ${isProductSoldOut(option.id) ? 'opacity-50 cursor-not-allowed hover:bg-transparent' : ''}`}>
 
                                 <div className="flex items-center justify-between">
-                                  <span>{option.label}</span>
+                                  <span>
+                                    {option.label}
+                                    {isProductSoldOut(option.id) ? ' (Sold out)' : ''}
+                                  </span>
                                   <div className="relative ml-auto">
                                     <input
                                       type="checkbox"
@@ -666,6 +771,7 @@ function RegistrationFormContent() {
                                       value={option.id}
                                       checked={selectedProducts.includes(option.id)}
                                       onChange={() => handleProductToggle(option.id)}
+                                      disabled={isProductSoldOut(option.id) && !selectedProducts.includes(option.id)}
                                       className="sr-only peer"
                                     />
                                     <div className="h-6 w-6 rounded border-2 border-customInputBorder"></div>
@@ -685,34 +791,29 @@ function RegistrationFormContent() {
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
-                {primarySelection && (
-                  <button
-                    type="button"
-                    onClick={() => setPrimarySelection('')}
-                    className="mt-3 text-sm text-customInputBorder hover:text-white transition-colors"
-                  >
-                    Clear entry/package selection
-                  </button>
-                )}
                 {formErrors.participantType && (
                   <p className="text-red-500 text-sm mt-2">{formErrors.participantType}</p>
                 )}
               </div>
 
-              {selectedPricing && (selectedPricing?.subText?.length || selectedPricing?.highlightText?.length) && (
-                <div className={`${selectedPricing?.subText ? "bg-black/50" : ""} mt-6 text-customInputBorder col-span-full p-3 text-sm md:text-lg rounded-lg`}>
-                  {selectedPricing.subText && (
-                    <div
-                      dangerouslySetInnerHTML={{ __html: selectedPricing.subText }}
-                    />
-                  )}
-                  {selectedPricing.highlightText && (
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: `<p class="p-3 mt-6 text-sm md:text-lg bg-customYellow text-secondary-foreground font-bold rounded-lg">${selectedPricing.highlightText}</p>`,
-                      }}
-                    />
-                  )}
+              {selectedPricingOptions.some((option) => option.subText?.length || option.highlightText?.length) && (
+                <div className="bg-black/50 mt-6 text-customInputBorder col-span-full p-3 text-sm md:text-lg rounded-lg space-y-4">
+                  {selectedPricingOptions.map((option) => (
+                    <div key={`selected-message-${option.id}`}>
+                      {option.subText && (
+                        <div
+                          dangerouslySetInnerHTML={{ __html: option.subText }}
+                        />
+                      )}
+                      {option.highlightText && (
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: `<p class="p-3 mt-3 text-sm md:text-lg bg-customYellow text-secondary-foreground font-bold rounded-lg">${option.highlightText}</p>`,
+                          }}
+                        />
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
 
