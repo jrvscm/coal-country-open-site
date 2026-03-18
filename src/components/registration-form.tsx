@@ -54,8 +54,6 @@ type RegistrationStoreData = {
 export default function RegistrationForm() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      {/*
-      HARDCODED: Registration is currently closed
       <div className="bg-customBackground rounded-lg max-w-[1200px] m-auto py-24 px-8 mt-32">
         <div className="text-center">
           <div className="text-white/80 text-4xl font-bold mb-8">Registration Closed</div>
@@ -64,9 +62,9 @@ export default function RegistrationForm() {
           </div>
         </div>
       </div>
-      */}
+      
 
-      <RegistrationFormContent />
+      {/* <RegistrationFormContent /> */}
     </Suspense>
   );
 }
