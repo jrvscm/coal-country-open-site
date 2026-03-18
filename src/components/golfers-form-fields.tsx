@@ -64,7 +64,7 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
 
   return (
     <>
-        <div className="col-span-2">
+        <div className="col-span-2 mb-6">
             <h3 className="text-white/80 text-lg font-semibold mb-2">COMPANY NAME</h3>
             <label htmlFor="company" className="sr-only block text-sm text-white/60 mb-1">Company Name</label>
             <Input
@@ -80,7 +80,7 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
             {formErrors.company && <p className="text-red-500 text-sm mt-1">{formErrors.company}</p>}
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-2 mb-6">
           <h3 className="text-white/80 text-lg font-semibold mb-2">COMPANY CONTACT</h3>
           <div className="mt-3">
             <label htmlFor="contactName" className="sr-only hidden block text-sm text-white/60 mb-1">Contact Name</label>
@@ -130,7 +130,7 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
 
         <SingleEntryFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
 
-        <div className="col-span-2">
+        <div className="col-span-2 mb-6">
             <h3 className="text-white/80 text-lg font-semibold mb-2">BANQUET</h3>
             <div className="mt-3">
               <label className="sr-only block text-sm text-white/60 mb-1">Will You Attend Banquet?</label>
@@ -172,7 +172,7 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
         </div>
 
         {golfers.map((golfer, index) => (
-            <div className="col-span-2 md:col-span-full relative" key={`team-member-${index}`}>
+            <div className="col-span-2 md:col-span-full relative mb-6" key={`team-member-${index}`}>
                 <h3 className="text-white/80 text-lg font-semibold mb-2">{`PLAYER ${index + 1}`}</h3>
                 <div className="mt-3">
                     <label htmlFor={`player[${index + 1}Name]`} className="sr-only block text-sm text-white/60 mb-1">Player {index + 1} Name</label>

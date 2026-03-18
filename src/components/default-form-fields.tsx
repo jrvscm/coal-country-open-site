@@ -28,7 +28,7 @@ export default function DefaultFormFields({
 }: DefaultFormFieldsProps) {
   return (
     <>
-        <div className="col-span-2">
+        <div className="col-span-2 mb-6">
           <h3 className="text-white/80 text-lg font-semibold mb-2">COMPANY INFO</h3>
           <label htmlFor="company" className="sr-only block text-sm text-white/60 mb-1">Company Represented</label>
           <Input
@@ -44,7 +44,7 @@ export default function DefaultFormFields({
           {formErrors.company && <p className="text-red-500 text-sm mt-1">{formErrors.company}</p>}
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-2 mb-6">
           <h3 className="text-white/80 text-lg font-semibold mb-2">PERSONAL INFO</h3>
           <div className="mt-3">
             <label htmlFor="player1Name" className="sr-only hidden block text-sm text-white/60 mb-1">Name</label>
@@ -105,7 +105,7 @@ export default function DefaultFormFields({
         </div>
 
      {/* Banquet Info Group */}
-     <div className="col-span-2">
+     <div className="col-span-2 mb-6">
         <h3 className="text-white/80 text-lg font-semibold mb-2">BANQUET</h3>
         <div className="mt-3">
           <label className="sr-only block text-sm text-white/60 mb-1">Will You Attend Banquet?</label>
@@ -145,7 +145,7 @@ export default function DefaultFormFields({
           </Select>
         </div>
       </div>
-      <div className="col-span-2">
+      <div className="col-span-2 mb-6">
         <h3 className="text-white/80 text-lg font-semibold mb-2">SIZING INFO</h3>
         <div className="mt-3">
           <label htmlFor="player1TShirtSize" className="sr-only block text-sm text-white/60 mb-1">Shirt Size</label>

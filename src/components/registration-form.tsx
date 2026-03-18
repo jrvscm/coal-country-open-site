@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { FaLock, FaRegCheckCircle } from "react-icons/fa";
 import { Button } from '@/components/ui/button';
 import TeamFormFields from '@/components/team-form-fields';
@@ -396,11 +396,15 @@ function RegistrationFormContent() {
         }, [formData.dinnerTickets, primarySelection, pricingData, basePrices, selectedProductOptions, flagPrizeCost, stripeFee]);
 
         const checkoutSummaryItems = useMemo(() => {
+          const stripTrailingPriceFromLabel = (label: string) => (
+            label.replace(/\s*\(\$\d[\d,]*(?:\.\d{1,2})?\)\s*$/, '').trim()
+          );
+
           return checkoutItems
             .filter((item) => item.id !== 'processingFee')
             .map((item) => ({
             id: item.id,
-            label: item.name,
+            label: stripTrailingPriceFromLabel(item.name),
             quantity: item.quantity,
             total: item.amount * item.quantity,
             }));
@@ -427,31 +431,6 @@ function RegistrationFormContent() {
             setFormData((prev) => ({ ...prev, flagPrizeContribution: '' }));
           }
         };
-
-        const totalRef = useRef<HTMLDivElement | null>(null);
-        const [isSticky, setIsSticky] = useState(false);
-
-        useEffect(() => {
-          const observer = new IntersectionObserver(
-            ([entry]) => {
-              setIsSticky(!entry.isIntersecting && entry.boundingClientRect.top <= 0);
-            },
-            { root: null, threshold: 0 }
-          );
-
-          const currentRef = totalRef.current;
-
-          if (currentRef instanceof HTMLElement) {
-            observer.observe(currentRef);
-
-            const rect = currentRef.getBoundingClientRect();
-            setIsSticky(rect.top <= 0);
-          }
-
-          return () => {
-            if (currentRef) observer.unobserve(currentRef);
-          };
-        }, [totalRef]);
 
         const handleCheckout = async (e: React.MouseEvent<HTMLButtonElement>) => {
           e.preventDefault();
@@ -581,7 +560,7 @@ function RegistrationFormContent() {
 
         return (
           <>
-            <form className="grid grid-cols-1 md:grid-cols-2 gap-y-4 md:gap-y-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">
+            <form className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 bg-customBackground rounded-lg max-w-[1200px] m-auto py-6">
               <div className="col-span-full">
                 <h3 className="text-white/80 text-lg font-semibold mt-4">REGISTRATION INCLUDES:</h3>
                 <ul className="text-white/60 list-disc pl-5 mt-2 space-y-1 text-lg">
@@ -600,64 +579,7 @@ function RegistrationFormContent() {
                 <hr className="border-t border-white/20" />
               </div>
 
-              <div className="col-span-full">
-                <div ref={totalRef} className="mt-6 md:mt-0">
-                  <div className="w-full flex flex-col border border-customInputBorder rounded-lg p-3">
-                    <div className="flex flex-row justify-between items-center">
-                      <h3 className="text-white/80 text-2xl font-semibold mr-2">TOTAL:</h3>
-                      <p className="text-2xl text-white font-bold">${(totalPrice + stripeFee).toFixed(2)}</p>
-                    </div>
-
-                    <div className="flex flex-col text-white/60 mt-2 space-y-1">
-                      {checkoutSummaryItems.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between gap-2">
-                          <p>{item.label} x {item.quantity}: ${item.total.toFixed(2)}</p>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCheckoutItem(item.id)}
-                            className="text-white/70 hover:text-white font-bold px-2"
-                            aria-label={`Remove ${item.label}`}
-                          >
-                            X
-                          </button>
-                        </div>
-                      ))}
-                      <p className="mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {isSticky && (
-                  <div className="transition-all fixed top-[81px] md:top-[65px] left-0 right-0 bg-secondary-foreground md:bg-black/60 md:backdrop-blur-2xl text-white shadow-lg z-50 p-4 transition-transform">
-                    <div className="max-w-[1200px] mx-auto flex justify-between items-center">
-                      <div className="flex flex-col w-full">
-                        <div className="flex flex-row justify-between items-center">
-                          <h3 className="text-xl font-bold">TOTAL:</h3>
-                          <p className="text-2xl font-bold">${(totalPrice + stripeFee).toFixed(2)}</p>
-                        </div>
-
-                        <div className="flex flex-col text-white/60 mt-2 space-y-1">
-                          {checkoutSummaryItems.map((item) => (
-                            <div key={`sticky-${item.id}`} className="flex items-center justify-between gap-2">
-                              <p>{item.label} x {item.quantity}: ${item.total.toFixed(2)}</p>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveCheckoutItem(item.id)}
-                                className="text-white/70 hover:text-white font-bold px-2"
-                                aria-label={`Remove ${item.label}`}
-                              >
-                                X
-                              </button>
-                            </div>
-                          ))}
-                          <p className="mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
+              <div className="md:col-span-2 md:min-w-0">
               <div className="col-span-full">
                 <Accordion type="single" collapsible defaultValue={path.includes('sponsor') ? `sponsor-packages` : `individual-participants`} className="w-full">
                   <AccordionItem value="individual-participants" className="border-t border-white/80">
@@ -869,6 +791,33 @@ function RegistrationFormContent() {
               <div className="col-span-full mt-8">
                 <hr className="border-t border-white/20" />
               </div>
+              </div>
+
+              <aside className="md:col-span-1 md:self-start md:sticky md:top-[220px] md:z-30">
+                <div className="w-full flex flex-col border border-customInputBorder rounded-lg p-3 md:max-h-[calc(100vh-240px)] md:overflow-y-auto">
+                  <div className="flex flex-row justify-between items-center">
+                    <h3 className="text-white/80 text-2xl font-semibold mr-2">TOTAL:</h3>
+                    <p className="text-2xl text-white font-bold">${(totalPrice + stripeFee).toFixed(2)}</p>
+                  </div>
+
+                  <div className="flex flex-col text-white/60 mt-2 space-y-1">
+                    {checkoutSummaryItems.map((item) => (
+                      <div key={`summary-${item.id}`} className="flex items-center justify-between gap-2">
+                        <p>{item.label} x {item.quantity}: ${item.total.toFixed(2)}</p>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCheckoutItem(item.id)}
+                          className="text-white/70 hover:text-white font-bold px-2"
+                          aria-label={`Remove ${item.label}`}
+                        >
+                          X
+                        </button>
+                      </div>
+                    ))}
+                    <p className="mt-1">Processing Fee: ${stripeFee.toFixed(2)}</p>
+                  </div>
+                </div>
+              </aside>
             </form>
 
             {registrationStatus === 'success' && (

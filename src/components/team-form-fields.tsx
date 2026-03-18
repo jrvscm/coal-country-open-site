@@ -15,7 +15,7 @@ interface TeamFormFieldsProps {
 const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange, handleSelectChange, formErrors }) => {
     return (
     <>
-        <div className="col-span-2">
+        <div className="col-span-2 mb-6">
             <h3 className="text-white/80 text-lg font-semibold mb-2">TEAM NAME</h3>
             <label htmlFor="teamName" className="sr-only block text-sm text-white/60 mb-1">Team Name</label>
             <Input
@@ -31,7 +31,7 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
             {formErrors.teamName && <p className="text-red-500 text-sm mt-1">{formErrors.teamName}</p>}
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-2 mb-6">
           <h3 className="text-white/80 text-lg font-semibold mb-2">PLAYER ONE</h3>
           <div className="mt-3">
             <label htmlFor="player1Name" className="sr-only hidden block text-sm text-white/60 mb-1">Player One Name</label>
@@ -77,7 +77,7 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
           </div>
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-2 mb-6">
           <h3 className="text-white/80 text-lg font-semibold mb-2">PLAYER TWO</h3>
           <div className="mt-3">
             <label htmlFor="player2Name" className="sr-only hidden block text-sm text-white/60 mb-1">Player Two Name</label>
@@ -123,7 +123,7 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
           </div>
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-2 mb-6">
           <h3 className="text-white/80 text-lg font-semibold mb-2">PLAYER THREE</h3>
           <div className="mt-3">
             <label htmlFor="player3Name" className="sr-only hidden block text-sm text-white/60 mb-1">Player Three Name</label>
@@ -169,7 +169,7 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
           </div>
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-2 mb-6">
           <h3 className="text-white/80 text-lg font-semibold mb-2">TEAM CONTACT</h3>
           <div className="mt-3">
             <label htmlFor="contactName" className="sr-only hidden block text-sm text-white/60 mb-1">Team Contact Name</label>
@@ -217,7 +217,7 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
         </div>
 
         {/* Banquet Info Group */}
-        <div className="col-span-2">
+        <div className="col-span-2 mb-6">
             <h3 className="text-white/80 text-lg font-semibold mb-2">BANQUET</h3>
             <div className="mt-3">
               <label className="sr-only block text-sm text-white/60 mb-1">Will You Attend Banquet?</label>
