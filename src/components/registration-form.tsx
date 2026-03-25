@@ -1045,6 +1045,43 @@ function RegistrationFormContent() {
                     dangerouslySetInnerHTML={{ __html: sponsorshipNote.noteHtml }}
                   />
                 )}
+                <div className="col-span-full mb-6 rounded-lg border border-white/15 bg-black/40 p-4 md:p-5 text-sm md:text-base text-white/70 leading-relaxed space-y-3">
+                  <p>
+                    By registering for the Coal Country Open you consent to receive emails related to your
+                    participation, including updates, reminders, and event details.
+                  </p>
+                  <p>
+                    To stop receiving emails, reply &ldquo;unsubscribe&rdquo; or email{' '}
+                    <a
+                      href="mailto:coalcountryopen@gmail.com"
+                      className="text-customInputBorder underline underline-offset-2 hover:text-white"
+                    >
+                      coalcountryopen@gmail.com
+                    </a>
+                    .
+                  </p>
+                  <p>
+                    We respect your privacy and will not share your information. See our{' '}
+                    <a
+                      href="https://highplainsmedia.com/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-customInputBorder underline underline-offset-2 hover:text-white"
+                    >
+                      Privacy Policy
+                    </a>
+                    {' '}and{' '}
+                    <a
+                      href="https://highplainsmedia.com/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-customInputBorder underline underline-offset-2 hover:text-white"
+                    >
+                      Terms
+                    </a>{' '}
+                    for more information.
+                  </p>
+                </div>
                 <Button disabled={loading} onClick={handleCheckout} className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-full bg-customPrimary hover:bg-customPrimary/60 uppercase font-text font-bold flex flex-row justify-center items-center">
                   {loading ? 'Redirecting to Secure Payment...' : 'Continue to Secure Payment'} <FaLock className="h-16 w-16 font-bold" />
                 </Button>

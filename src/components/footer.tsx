@@ -54,6 +54,26 @@ export default function Footer() {
               <li><SmartLink href="/registration/player" className="hover:text-gray-400">Register</SmartLink></li>
               <li><SmartLink href="/registration/sponsor" className="hover:text-gray-400">Sponsors</SmartLink></li>
               <li><SmartLink href="/tournament/information" className="hover:text-gray-400">Information</SmartLink></li>
+              <li>
+                <a
+                  href="https://highplainsmedia.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-gray-400"
+                >
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://highplainsmedia.com/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-gray-400"
+                >
+                  Terms
+                </a>
+              </li>
             </ul>
           </div>
 
