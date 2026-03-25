@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { google } from 'googleapis';
 import { redis } from '@/lib/upstash';
+import {
+  playerColumnsFromGolfers,
+  type PersistedRegistrationSegment,
+} from '@/lib/registration-segments';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -50,13 +54,16 @@ type RegistrationFormData = {
   player10Name?: string;
   player10Handicap?: string;
   player10TShirtSize?: string;
+  segments?: PersistedRegistrationSegment[];
+  selectedProductIds?: string[];
 };
 
-function buildSheetRow(uid: string, formData: RegistrationFormData): string[] {
+function buildSheetRow(uid: string, formData: RegistrationFormData, columnC?: string): string[] {
+  const colC = columnC ?? formData.participantType ?? '';
   return [
     uid,
     new Date().toISOString(),
-    formData.participantType || '',
+    colC,
     formData.company || '',
     formData.banquet || '',
     formData.dinnerTickets || '',
@@ -98,6 +105,107 @@ function buildSheetRow(uid: string, formData: RegistrationFormData): string[] {
     formData.player10TShirtSize || '',
     'Paid',
   ];
+}
+
+function buildSparseProductSheetRow(uid: string, productId: string, timestamp: string): string[] {
+  return [
+    uid,
+    timestamp,
+    productId,
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    ...playerColumnsFromGolfers([]),
+    'Paid',
+  ];
+}
+
+function buildSheetRows(uid: string, formData: RegistrationFormData): string[][] {
+  const segments = formData.segments;
+  if (!segments || segments.length === 0) {
+    const productIds = formData.selectedProductIds ?? [];
+    const ts = new Date().toISOString();
+    if (productIds.length > 1) {
+      return [
+        buildSheetRow(uid, formData, productIds[0]),
+        ...productIds.slice(1).map((pid) => buildSparseProductSheetRow(uid, pid, ts)),
+      ];
+    }
+    if (productIds.length === 1) {
+      return [buildSheetRow(uid, formData, productIds[0])];
+    }
+    return [buildSheetRow(uid, formData)];
+  }
+
+  const rows: string[][] = [];
+  const segmentEntryIds = new Set(segments.map((s) => s.entryId));
+
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i] as PersistedRegistrationSegment;
+    const isFirst = i === 0;
+    const playerCols = playerColumnsFromGolfers(seg.golfers || []);
+    const teamName =
+      seg.entryId === 'teamSponsorEntry' ? (formData.teamName || '') : '';
+
+    const rowCompany = isFirst
+      ? (formData.company || '')
+      : (seg.company || '');
+    const rowContactName = isFirst
+      ? (formData.contactName || formData.player1Name || '')
+      : (seg.contactName || '');
+    const rowContactPhone = isFirst
+      ? (formData.contactPhone || '')
+      : (seg.contactPhone || '');
+    const rowContactEmail = isFirst
+      ? (formData.contactEmail || '')
+      : (seg.contactEmail || '');
+
+    rows.push([
+      uid,
+      new Date().toISOString(),
+      seg.entryId,
+      rowCompany,
+      seg.banquet || '',
+      seg.dinnerTickets || '',
+      isFirst ? (formData.doorPrize || '') : '',
+      isFirst ? (formData.flagPrizeContribution || '') : '',
+      teamName,
+      rowContactName,
+      rowContactPhone,
+      rowContactEmail,
+      ...playerCols,
+      'Paid',
+    ]);
+  }
+
+  const productIds = formData.selectedProductIds ?? [];
+  for (const productId of productIds) {
+    if (segmentEntryIds.has(productId)) continue;
+    rows.push([
+      uid,
+      new Date().toISOString(),
+      productId,
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      ...playerColumnsFromGolfers([]),
+      'Paid',
+    ]);
+  }
+
+  return rows;
 }
 
 export async function POST(req: NextRequest) {
@@ -149,7 +257,7 @@ export async function POST(req: NextRequest) {
           range: SHEET_RANGE,
           valueInputOption: 'USER_ENTERED',
           requestBody: {
-            values: [buildSheetRow(uid, formData)],
+            values: buildSheetRows(uid, formData),
           },
         });
 

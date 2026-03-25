@@ -13,7 +13,22 @@ import { useSearchParams, usePathname } from 'next/navigation';
 import { useTournamentDate } from '@/context/TournamentDateContext';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import GolfersFormFields from '@/components/golfers-form-fields';
+import IndividualSegmentFields from '@/components/individual-segment-fields';
 import { getTournamentPricingConfig } from '@/lib/contentful';
+import {
+  golferSlotsForEntryId,
+  sponsorPackageIds as regSponsorPackageIds,
+  sponsorProductIds as regSponsorProductIds,
+} from '@/lib/registration-selection';
+import {
+  emptySegmentFieldStateForSlots,
+  entryIdsWithGolferSlots,
+  masterColumnCParticipantType,
+  type PersistedRegistrationSegment,
+  type SegmentFieldState,
+} from '@/lib/registration-segments';
+import { ADDITIONAL_DINNER_TICKET_PRICE_USD } from '@/lib/dinner-ticket-price';
+import { normalizeRegistrationInput } from '@/lib/registration-input-normalize';
 import store from 'store';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -45,6 +60,7 @@ export type FormDataType = {
   player2TShirtSize?: string;
   player3TShirtSize?: string;
   selectedProductIds?: string[];
+  segments?: PersistedRegistrationSegment[];
 };
 
 type RegistrationStoreData = {
@@ -70,8 +86,8 @@ type ProductAvailability = {
   soldOut: boolean;
 };
 
-const sponsorPackageIds = ["platinumSponsorship", "goldSponsorship", "silverSponsorship"];
-const sponsorProductIds = ["flagPrizeSponsorship", "holeFlagSponsorship", "drivingRangeSponsorship", "teeBoxSponsorship", "websiteSponsorship"];
+const sponsorPackageIds = [...regSponsorPackageIds] as unknown as string[];
+const sponsorProductIds = [...regSponsorProductIds] as unknown as string[];
 
 export default function RegistrationForm() {
   return (
@@ -99,8 +115,9 @@ function RegistrationFormContent() {
         const path = usePathname();
         const [registrationStatus, setRegistrationStatus] = useState<'idle' | 'success' | 'canceled'>('idle');
         const [pricingData, setPricingData] = useState<PricingOption[]>([]);
-        const [primarySelection, setPrimarySelection] = useState('');
+        const [selectedEntryPackages, setSelectedEntryPackages] = useState<string[]>([]);
         const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+        const [segmentFields, setSegmentFields] = useState<Record<string, SegmentFieldState>>({});
 
         useEffect(() => {
           const fetchPricing = async () => {
@@ -167,12 +184,37 @@ function RegistrationFormContent() {
         const [productAvailability, setProductAvailability] = useState<Record<string, ProductAvailability>>({});
 
         const selectedOptionIds = useMemo(() => {
-          const ids = [
-            ...(primarySelection ? [primarySelection] : []),
-            ...selectedProducts,
-          ];
-          return Array.from(new Set(ids));
-        }, [primarySelection, selectedProducts]);
+          return Array.from(new Set([...selectedEntryPackages, ...selectedProducts]));
+        }, [selectedEntryPackages, selectedProducts]);
+
+        const orderedEntrySlotsIds = useMemo(
+          () => entryIdsWithGolferSlots(selectedEntryPackages, pricingData),
+          [selectedEntryPackages, pricingData],
+        );
+
+        const firstSponsorSlotEntryId = useMemo(
+          () => orderedEntrySlotsIds.find((id) => sponsorPackageIds.includes(id)),
+          [orderedEntrySlotsIds],
+        );
+
+        useEffect(() => {
+          setSegmentFields((prev) => {
+            const next = { ...prev };
+            for (const id of selectedEntryPackages) {
+              const slots = golferSlotsForEntryId(id, pricingData);
+              if (slots <= 0) continue;
+              if (!next[id]) {
+                next[id] = emptySegmentFieldStateForSlots(slots);
+              }
+            }
+            for (const key of Object.keys(next)) {
+              if (!selectedEntryPackages.includes(key)) {
+                delete next[key];
+              }
+            }
+            return next;
+          });
+        }, [selectedEntryPackages, pricingData]);
 
         const selectedPricingOptions = useMemo(() => {
           return pricingData.filter((item) => selectedOptionIds.includes(item.id));
@@ -182,7 +224,7 @@ function RegistrationFormContent() {
           return pricingData.filter((item) => selectedProducts.includes(item.id));
         }, [pricingData, selectedProducts]);
 
-        const effectiveParticipantType = primarySelection || selectedProducts[0] || '';
+        const effectiveParticipantType = selectedEntryPackages[0] || selectedProducts[0] || '';
 
         const sponsorshipNote = useMemo(() => {
           return pricingData.find(item => item.id === 'sponsorshipNote');
@@ -209,63 +251,102 @@ function RegistrationFormContent() {
 
         const validateForm = () => {
           const errors: FormErrorsType = {};
-          const hasPrimarySelection = Boolean(primarySelection);
-          const hasProductSelection = selectedProducts.length > 0;
-          const selectionForValidation = hasPrimarySelection ? primarySelection : selectedProducts[0];
+          const hasEntry = selectedEntryPackages.length > 0;
+          const hasProductOnly = !hasEntry && selectedProducts.length > 0;
+          const productsFirstId = selectedProducts[0];
 
-          if (!hasPrimarySelection && !hasProductSelection) {
+          if (!hasEntry && selectedProducts.length === 0) {
             errors.participantType = "Please select at least one registration option";
           }
 
-          if (selectionForValidation && sponsorProductIds.includes(selectionForValidation)) {
+          if (hasProductOnly && productsFirstId && sponsorProductIds.includes(productsFirstId)) {
             if (!formData.company) errors.company = "Company is required";
             if (!formData.player1Name) errors.player1Name = "Name is required";
             if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) errors.contactEmail = "Invalid email";
             if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) errors.contactPhone = "Invalid phone number";
           }
 
-          if (selectionForValidation && selectionForValidation !== 'teamSponsorEntry' && !sponsorPackageIds.includes(selectionForValidation) && !sponsorProductIds.includes(selectionForValidation)) {
-            if (!formData.player1Name) errors.player1Name = "Name is required";
-            if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) errors.contactEmail = "Invalid email";
-            if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) errors.contactPhone = "Invalid phone number";
-            if (!formData.player1Handicap || !handicapRegex.test(formData.player1Handicap)) errors.player1Handicap = "Enter a valid handicap";
-            if (!formData.company) errors.company = "Company is required";
-            if (!formData.player1TShirtSize) errors.player1TShirtSize = "Shirt size is required";
-          }
-
-          if (selectionForValidation === "teamSponsorEntry" && !sponsorPackageIds.includes(selectionForValidation) && !sponsorProductIds.includes(selectionForValidation)) {
-            if (!formData.teamName) errors.teamName = "Team Name is required";
-            if (!formData.player1Name) errors.player1Name = "Player One Name is required";
-            if (!formData.player2Name) errors.player2Name = "Player Two Name is required";
-            if (!formData.player3Name) errors.player3Name = "Player Three Name is required";
-            if (!formData.player1Handicap || !handicapRegex.test(formData.player1Handicap)) errors.player1Handicap = "Player One Handicap is required";
-            if (!formData.player2Handicap || !handicapRegex.test(formData.player2Handicap)) errors.player2Handicap = "Player Two Handicap is required";
-            if (!formData.player3Handicap || !handicapRegex.test(formData.player3Handicap)) errors.player3Handicap = "Player Three Handicap is required";
-            if (!formData.player1TShirtSize) errors.player1TShirtSize = "Player One T-Shirt size is required";
-            if (!formData.player2TShirtSize) errors.player2TShirtSize = "Player Two T-Shirt size is required";
-            if (!formData.player3TShirtSize) errors.player3TShirtSize = "Player Three T-Shirt size is required";
-            if (!formData.contactName) errors.contactName = "Team contact name is required";
-            if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) errors.contactPhone = "Contact phone is invalid";
-            if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) errors.contactEmail = "Contact email is invalid";
-          }
-
-          if (selectionForValidation && sponsorPackageIds.includes(selectionForValidation)) {
+          if (hasEntry && selectedEntryPackages.some((id) => sponsorPackageIds.includes(id))) {
             if (!formData.company) errors.company = "Company is required";
             if (!formData.contactName) errors.contactName = "Team contact name is required";
-            if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) errors.contactPhone = "Team contact phone is invalid";
-            if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) errors.contactEmail = "Team contact email is invalid";
-
-            formData.golfers.forEach((golfer, index) => {
-              if (!golfer.name) errors[`golfers.${index}.name`] = `Player ${index + 1} Name is required`;
-              if (!golfer.handicap || (!handicapRegex.test(golfer.handicap) && golfer.handicap.toString().toLowerCase() !== 'placeholder')) {
-                errors[`golfers.${index}.handicap`] = `Player ${index + 1} Handicap is required`;
-              } if (!golfer.tShirtSize) errors[`golfers.${index}.tShirtSize`] = `Player ${index + 1} T-Shirt Size is required`;
-            });
+            if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) {
+              errors.contactPhone = "Team contact phone is invalid";
+            }
+            if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) {
+              errors.contactEmail = "Team contact email is invalid";
+            }
           }
 
-          if (selectionForValidation && !formData.banquet && !sponsorProductIds.includes(selectionForValidation)) errors.banquet = "Banquet choice is required";
+          for (const entryId of orderedEntrySlotsIds) {
+            const slots = golferSlotsForEntryId(entryId, pricingData);
+            const opt = pricingData.find((o) => o.id === entryId);
+            const seg = segmentFields[entryId];
 
-          if (formData.flagPrizeContribution && !flagPrizeRegex.test(formData.flagPrizeContribution)) errors.flagPrizeContribution = "Use only whole numbers and no decimals"
+            if (sponsorPackageIds.includes(entryId)) {
+              const g = seg?.golfers ?? [];
+              for (let index = 0; index < slots; index++) {
+                const golfer = g[index];
+                if (!golfer?.name) errors[`segment.${entryId}.golfers.${index}.name`] = `Player ${index + 1} Name is required`;
+                if (!golfer?.handicap || (!handicapRegex.test(golfer.handicap) && golfer.handicap.toLowerCase() !== 'placeholder')) {
+                  errors[`segment.${entryId}.golfers.${index}.handicap`] = `Player ${index + 1} Handicap is required`;
+                }
+                if (!golfer?.tShirtSize) {
+                  errors[`segment.${entryId}.golfers.${index}.tShirtSize`] = `Player ${index + 1} T-Shirt Size is required`;
+                }
+              }
+              if (!seg?.banquet) errors[`segment.${entryId}.banquet`] = "Banquet choice is required";
+            }
+
+            if (entryId === 'teamSponsorEntry') {
+              if (!formData.company) errors.company = "Company is required";
+              if (!formData.teamName) errors.teamName = "Team Name is required";
+              if (!formData.player1Name) errors.player1Name = "Player One Name is required";
+              if (!formData.player2Name) errors.player2Name = "Player Two Name is required";
+              if (!formData.player3Name) errors.player3Name = "Player Three Name is required";
+              if (!formData.player1Handicap || !handicapRegex.test(formData.player1Handicap)) errors.player1Handicap = "Player One Handicap is required";
+              if (!formData.player2Handicap || !handicapRegex.test(formData.player2Handicap)) errors.player2Handicap = "Player Two Handicap is required";
+              if (!formData.player3Handicap || !handicapRegex.test(formData.player3Handicap)) errors.player3Handicap = "Player Three Handicap is required";
+              if (!formData.player1TShirtSize) errors.player1TShirtSize = "Player One T-Shirt size is required";
+              if (!formData.player2TShirtSize) errors.player2TShirtSize = "Player Two T-Shirt size is required";
+              if (!formData.player3TShirtSize) errors.player3TShirtSize = "Player Three T-Shirt size is required";
+              if (!formData.contactName) errors.contactName = "Team contact name is required";
+              if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) errors.contactPhone = "Contact phone is invalid";
+              if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) errors.contactEmail = "Contact email is invalid";
+              if (!formData.banquet) errors.banquet = "Banquet choice is required";
+            }
+
+            if (opt?.category === 'individual') {
+              const p = seg?.golfers[0];
+              if (!seg?.company) errors[`segment.${entryId}.company`] = "Company is required";
+              if (!seg?.contactEmail || !emailRegex.test(seg.contactEmail)) {
+                errors[`segment.${entryId}.contactEmail`] = "Invalid email";
+              }
+              if (!seg?.contactPhone || !phoneRegex.test(seg.contactPhone.replace(/\D/g, ""))) {
+                errors[`segment.${entryId}.contactPhone`] = "Invalid phone number";
+              }
+              if (!p?.name) errors[`segment.${entryId}.golfers.0.name`] = "Name is required";
+              if (!p?.handicap || !handicapRegex.test(p.handicap)) {
+                errors[`segment.${entryId}.golfers.0.handicap`] = "Enter a valid handicap";
+              }
+              if (!p?.tShirtSize) errors[`segment.${entryId}.golfers.0.tShirtSize`] = "Shirt size is required";
+              if (!seg?.banquet) errors[`segment.${entryId}.banquet`] = "Banquet choice is required";
+            }
+
+            if (entryId === 'singlePlayerSponsorEntry') {
+              if (!formData.player1Name) errors.player1Name = "Name is required";
+              if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) errors.contactEmail = "Invalid email";
+              if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) errors.contactPhone = "Invalid phone number";
+              if (!formData.player1Handicap || !handicapRegex.test(formData.player1Handicap)) errors.player1Handicap = "Enter a valid handicap";
+              if (!formData.company) errors.company = "Company is required";
+              if (!formData.player1TShirtSize) errors.player1TShirtSize = "Shirt size is required";
+              const sBanquet = seg?.banquet ?? formData.banquet;
+              if (!sBanquet) errors[`segment.${entryId}.banquet`] = "Banquet choice is required";
+            }
+          }
+
+          if (formData.flagPrizeContribution && !flagPrizeRegex.test(formData.flagPrizeContribution)) {
+            errors.flagPrizeContribution = "Use only whole numbers and no decimals";
+          }
 
           setFormErrors(errors);
           return Object.keys(errors).length === 0;
@@ -273,24 +354,31 @@ function RegistrationFormContent() {
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           const { name, value } = e.target;
+          const next = normalizeRegistrationInput(name, value);
+          setFormData((prev) => ({ ...prev, [name]: next }));
+          setFormErrors((prevErrors) => ({
+            ...prevErrors,
+            [name]: "",
+          }));
+        };
 
-          if (name === 'participantType') {
-            setPrimarySelection(value);
-            setFormData({
-              ...defaultFormState,
-              participantType: value,
-              golfers: Array(2).fill({ name: "", handicap: "", tShirtSize: "" })
-            });
+        const handleEntryPackageToggle = (packageId: string) => {
+          setSelectedEntryPackages((prev) => (
+            prev.includes(packageId)
+              ? prev.filter((id) => id !== packageId)
+              : [...prev, packageId]
+          ));
+          setFormErrors((prevErrors) => ({
+            ...prevErrors,
+            participantType: "",
+          }));
+        };
 
-            setFormErrors({});
-          } else {
-            setFormData((prev) => ({ ...prev, [name]: value }));
-
-            setFormErrors((prevErrors) => ({
-              ...prevErrors,
-              [name]: "",
-            }));
-          }
+        const updateSegmentField = (entryId: string, patch: Partial<SegmentFieldState>) => {
+          setSegmentFields((prev) => ({
+            ...prev,
+            [entryId]: { ...prev[entryId], ...patch } as SegmentFieldState,
+          }));
         };
 
         const isProductSoldOut = (productId: string) => {
@@ -326,18 +414,38 @@ function RegistrationFormContent() {
         const [dinnerTicketCost, setDinnerTicketCost] = useState(0);
         const [flagPrizeCost, setFlagPrizeCost] = useState(0);
 
+        const totalDinnerTicketUnits = useMemo(() => {
+          let n = 0;
+          if (selectedEntryPackages.length === 0) {
+            if (formData.dinnerTickets !== '') n += parseInt(formData.dinnerTickets, 10) || 0;
+            return n;
+          }
+          for (const id of selectedEntryPackages) {
+            const slots = golferSlotsForEntryId(id, pricingData);
+            if (slots <= 0) continue;
+            if (id === 'teamSponsorEntry') {
+              if (formData.dinnerTickets !== '') n += parseInt(formData.dinnerTickets, 10) || 0;
+              continue;
+            }
+            const seg = segmentFields[id];
+            const raw = seg?.dinnerTickets;
+            if (raw !== '' && raw !== undefined) n += parseInt(String(raw), 10) || 0;
+          }
+          return n;
+        }, [selectedEntryPackages, segmentFields, formData.dinnerTickets, pricingData]);
+
         useEffect(() => {
-          const primaryPrice = primarySelection ? (basePrices[primarySelection as keyof typeof basePrices] || 0) : 0;
+          const entryPrice = selectedEntryPackages.reduce((sum, id) => {
+            return sum + (basePrices[id as keyof typeof basePrices] || 0);
+          }, 0);
           const productsPrice = selectedProducts.reduce((sum, productId) => {
             return sum + (basePrices[productId as keyof typeof basePrices] || 0);
           }, 0);
-          const newBasePrice = primaryPrice + productsPrice;
-          let newDinnerTicketCost = 0;
+          const newBasePrice = entryPrice + productsPrice;
           let newFlagPrizeCost = 0;
 
-          if (formData.dinnerTickets !== '') {
-            newDinnerTicketCost = parseInt(formData.dinnerTickets, 10) * 32.0;
-          }
+          const newDinnerTicketCost =
+            totalDinnerTicketUnits * ADDITIONAL_DINNER_TICKET_PRICE_USD;
 
           if (formData.flagPrizeContribution && flagPrizeRegex.test(formData.flagPrizeContribution)) {
             newFlagPrizeCost = parseInt(formData.flagPrizeContribution, 10);
@@ -351,19 +459,24 @@ function RegistrationFormContent() {
           setFlagPrizeCost(newFlagPrizeCost);
           setTotalPrice(newTotal);
           setStripeFee(newStripeFee);
-        }, [basePrices, flagPrizeRegex, primarySelection, selectedProducts, formData.dinnerTickets, formData.flagPrizeContribution]);
+        }, [basePrices, flagPrizeRegex, selectedEntryPackages, selectedProducts, totalDinnerTicketUnits, formData.flagPrizeContribution]);
 
         const checkoutItems = useMemo<CheckoutItem[]>(() => {
-          const dinnerQuantity = Number.parseInt(formData.dinnerTickets || '0', 10);
+          const dinnerQuantity = totalDinnerTicketUnits;
+
+          const entryLines: CheckoutItem[] = selectedEntryPackages.map((entryId) => {
+            const option = pricingData.find((o) => o.id === entryId);
+            return {
+              id: entryId,
+              name: option?.label || entryId,
+              amount: basePrices[entryId as keyof typeof basePrices] || 0,
+              quantity: 1,
+              category: (option?.category || 'individual') as CheckoutItem['category'],
+            };
+          });
 
           return [
-            ...(primarySelection ? [{
-              id: primarySelection,
-              name: pricingData.find((option) => option.id === primarySelection)?.label || primarySelection,
-              amount: basePrices[primarySelection as keyof typeof basePrices] || 0,
-              quantity: 1,
-              category: pricingData.find((option) => option.id === primarySelection)?.category || 'individual',
-            }] : []),
+            ...entryLines,
             ...selectedProductOptions.map((option): CheckoutItem => ({
               id: option.id,
               name: option.label,
@@ -374,7 +487,7 @@ function RegistrationFormContent() {
             ...(dinnerQuantity > 0 ? [{
               id: 'dinnerTickets',
               name: 'Dinner Tickets',
-              amount: 32,
+              amount: ADDITIONAL_DINNER_TICKET_PRICE_USD,
               quantity: dinnerQuantity,
               category: 'addon',
             }] : []),
@@ -393,7 +506,7 @@ function RegistrationFormContent() {
               category: 'addon',
             }] : []),
           ] as CheckoutItem[];
-        }, [formData.dinnerTickets, primarySelection, pricingData, basePrices, selectedProductOptions, flagPrizeCost, stripeFee]);
+        }, [totalDinnerTicketUnits, selectedEntryPackages, pricingData, basePrices, selectedProductOptions, flagPrizeCost, stripeFee]);
 
         const checkoutSummaryItems = useMemo(() => {
           const stripTrailingPriceFromLabel = (label: string) => (
@@ -411,9 +524,8 @@ function RegistrationFormContent() {
         }, [checkoutItems]);
 
         const handleRemoveCheckoutItem = (itemId: string) => {
-          if (itemId === primarySelection) {
-            setPrimarySelection('');
-            setFormData((prev) => ({ ...prev, participantType: '' }));
+          if (selectedEntryPackages.includes(itemId)) {
+            setSelectedEntryPackages((prev) => prev.filter((id) => id !== itemId));
             return;
           }
 
@@ -424,6 +536,13 @@ function RegistrationFormContent() {
 
           if (itemId === 'dinnerTickets') {
             setFormData((prev) => ({ ...prev, dinnerTickets: '' }));
+            setSegmentFields((prev) => {
+              const next = { ...prev };
+              for (const k of Object.keys(next)) {
+                next[k] = { ...next[k], dinnerTickets: '' };
+              }
+              return next;
+            });
             return;
           }
 
@@ -432,39 +551,135 @@ function RegistrationFormContent() {
           }
         };
 
+        const buildPersistedSegments = (base: FormDataType): PersistedRegistrationSegment[] => {
+          return orderedEntrySlotsIds.map((entryId) => {
+            const label = pricingData.find((p) => p.id === entryId)?.label || entryId;
+            const slots = golferSlotsForEntryId(entryId, pricingData);
+            const seg = segmentFields[entryId];
+
+            if (sponsorPackageIds.includes(entryId)) {
+              let golfers = [...(seg?.golfers || [])];
+              while (golfers.length < slots) golfers.push({ name: '', handicap: '', tShirtSize: '' });
+              return {
+                entryId,
+                label,
+                banquet: seg?.banquet || '',
+                dinnerTickets: seg?.dinnerTickets || '',
+                golfers: golfers.slice(0, slots),
+                company: base.company || '',
+                contactName: base.contactName || '',
+                contactPhone: base.contactPhone || '',
+                contactEmail: base.contactEmail || '',
+              };
+            }
+
+            if (entryId === 'teamSponsorEntry') {
+              return {
+                entryId,
+                label,
+                banquet: base.banquet || '',
+                dinnerTickets: base.dinnerTickets || '',
+                golfers: [
+                  { name: base.player1Name || '', handicap: base.player1Handicap || '', tShirtSize: base.player1TShirtSize || '' },
+                  { name: base.player2Name || '', handicap: base.player2Handicap || '', tShirtSize: base.player2TShirtSize || '' },
+                  { name: base.player3Name || '', handicap: base.player3Handicap || '', tShirtSize: base.player3TShirtSize || '' },
+                ],
+                company: base.company || '',
+                contactName: base.contactName || '',
+                contactPhone: base.contactPhone || '',
+                contactEmail: base.contactEmail || '',
+              };
+            }
+
+            if (entryId === 'singlePlayerSponsorEntry') {
+              return {
+                entryId,
+                label,
+                banquet: seg?.banquet || base.banquet || '',
+                dinnerTickets: seg?.dinnerTickets || base.dinnerTickets || '',
+                golfers: [{
+                  name: base.player1Name || '',
+                  handicap: base.player1Handicap || '',
+                  tShirtSize: base.player1TShirtSize || '',
+                }],
+                company: base.company || '',
+                contactName: base.contactName || '',
+                contactPhone: base.contactPhone || '',
+                contactEmail: base.contactEmail || '',
+              };
+            }
+
+            const p = seg?.golfers[0];
+            return {
+              entryId,
+              label,
+              banquet: seg?.banquet || '',
+              dinnerTickets: seg?.dinnerTickets || '',
+              golfers: [{
+                name: p?.name || '',
+                handicap: p?.handicap || '',
+                tShirtSize: p?.tShirtSize || '',
+              }],
+              company: seg?.company || '',
+              contactName: p?.name || '',
+              contactPhone: seg?.contactPhone || '',
+              contactEmail: seg?.contactEmail || '',
+            };
+          });
+        };
+
         const handleCheckout = async (e: React.MouseEvent<HTMLButtonElement>) => {
           e.preventDefault();
 
           if (!validateForm()) return;
 
-          const participantTypeForSubmission = primarySelection || selectedProducts[0] || '';
-          const participantTypeForStorage = selectedOptionIds.join('|');
-
-          const maxGolfers = participantTypeForSubmission === "platinumSponsorship" ? 10 :
-            participantTypeForSubmission === "goldSponsorship" ? 5 :
-              participantTypeForSubmission === "silverSponsorship" ? 2 : 0;
+          const participantTypeForStorage = masterColumnCParticipantType(selectedEntryPackages, selectedProducts);
+          const productsOnlyLead = !selectedEntryPackages.length && selectedProducts[0] ? selectedProducts[0] : '';
 
           const adjustedFormData = { ...formData };
-          if (sponsorProductIds.includes(participantTypeForSubmission)) {
+          if (productsOnlyLead && sponsorProductIds.includes(productsOnlyLead)) {
             adjustedFormData.contactName = formData.player1Name;
-            adjustedFormData.player1Name = "";
+            adjustedFormData.player1Name = '';
           }
+
+          const firstSlot = orderedEntrySlotsIds[0];
+          const firstOpt = firstSlot ? pricingData.find((p) => p.id === firstSlot) : undefined;
+          if (firstOpt?.category === 'individual' && firstSlot && segmentFields[firstSlot]) {
+            const s = segmentFields[firstSlot];
+            const g0 = s.golfers[0];
+            adjustedFormData.company = s.company ?? adjustedFormData.company;
+            adjustedFormData.contactEmail = s.contactEmail ?? adjustedFormData.contactEmail;
+            adjustedFormData.contactPhone = s.contactPhone ?? adjustedFormData.contactPhone;
+            adjustedFormData.player1Name = g0?.name ?? adjustedFormData.player1Name;
+            adjustedFormData.player1Handicap = g0?.handicap ?? adjustedFormData.player1Handicap;
+            adjustedFormData.player1TShirtSize = g0?.tShirtSize ?? adjustedFormData.player1TShirtSize;
+          }
+
+          const segmentsPayload = orderedEntrySlotsIds.length > 0 ? buildPersistedSegments(adjustedFormData) : undefined;
+
+          const firstSeg = segmentsPayload?.[0];
+          const legacyMax = firstSeg ? Math.max(1, firstSeg.golfers.length) : 0;
+          const legacyPlayers = firstSeg?.golfers || [];
+          const legacyPlayerFlat = segmentsPayload
+            ? Object.fromEntries(
+                Array.from({ length: Math.max(legacyMax, 10) }, (_, i) => {
+                  const golfer = legacyPlayers[i] || { name: '', handicap: '', tShirtSize: '' };
+                  return [
+                    [`player${i + 1}Name`, golfer.name],
+                    [`player${i + 1}Handicap`, golfer.handicap],
+                    [`player${i + 1}TShirtSize`, golfer.tShirtSize],
+                  ];
+                }).flat(),
+              )
+            : {};
 
           try {
             const formattedFormData = {
               ...adjustedFormData,
-              participantType: participantTypeForStorage || participantTypeForSubmission,
+              participantType: participantTypeForStorage || productsOnlyLead,
               selectedProductIds: selectedProducts,
-              ...Object.fromEntries(
-                Array.from({ length: maxGolfers }, (_, i) => {
-                  const golfer = formData.golfers[i] || { name: "", handicap: "", tShirtSize: "" };
-                  return [
-                    [`player${i + 1}Name`, golfer.name],
-                    [`player${i + 1}Handicap`, golfer.handicap],
-                    [`player${i + 1}TShirtSize`, golfer.tShirtSize]
-                  ];
-                }).flat()
-              )
+              ...(legacyPlayerFlat),
+              ...(segmentsPayload ? { segments: segmentsPayload } : {}),
             };
             setLoading(true)
             const uid = uuidv4();
@@ -582,9 +797,9 @@ function RegistrationFormContent() {
               <div className="md:col-span-2 md:min-w-0">
               <div className="col-span-full">
                 <Accordion type="single" collapsible defaultValue={path.includes('sponsor') ? `sponsor-packages` : `individual-participants`} className="w-full">
-                  <AccordionItem value="individual-participants" className="border-t border-white/80">
+                  <AccordionItem value="individual-participants" className="border-t border-white/80 pb-8 md:pb-10">
                     <AccordionTrigger className="text-white/80 text-lg font-semibold [&>svg]:w-8 [&>svg]:h-8 [&>svg]:text-white/80">INDIVIDUAL PARTICIPANTS:</AccordionTrigger>
-                    <AccordionContent>
+                    <AccordionContent className="!pb-8 md:!pb-10">
                       <div className="space-y-1">
                         {pricingData
                           .filter((option) => option.category === 'individual')
@@ -600,19 +815,19 @@ function RegistrationFormContent() {
                                   <span>{option.label}</span>
                                   <div className="relative ml-auto">
                                     <input
-                                      type="radio"
-                                      name="participantType"
+                                      type="checkbox"
+                                      name={`entry-${option.id}`}
                                       value={option.id}
-                                      checked={primarySelection === option.id}
-                                      onChange={handleChange}
+                                      checked={selectedEntryPackages.includes(option.id)}
+                                      onChange={() => handleEntryPackageToggle(option.id)}
                                       className="sr-only peer"
                                     />
-                                    <div className="h-6 w-6 rounded-full border-2 border-customInputBorder"></div>
-                                    <div className="h-4 w-4 rounded-full bg-customInputBorder absolute top-1 left-1 scale-0 peer-checked:scale-100 transition-transform"></div>
+                                    <div className="h-6 w-6 rounded border-2 border-customInputBorder"></div>
+                                    <div className="h-4 w-4 rounded-sm bg-customInputBorder absolute top-1 left-1 scale-0 peer-checked:scale-100 transition-transform"></div>
                                   </div>
                                 </div>
 
-                                {primarySelection === option.id && (
+                                {selectedEntryPackages.includes(option.id) && (
                                   <div className="mt-2 text-sm text-white/60">
                                     {option.details}
                                   </div>
@@ -624,9 +839,9 @@ function RegistrationFormContent() {
                     </AccordionContent>
                   </AccordionItem>
 
-                  <AccordionItem value="sponsor-packages" className="border-white/80">
+                  <AccordionItem value="sponsor-packages" className="border-white/80 pb-8 md:pb-10">
                     <AccordionTrigger className="text-white/80 text-lg font-semibold [&>svg]:w-8 [&>svg]:h-8 [&>svg]:text-white/80">SPONSORSHIP PACKAGES:</AccordionTrigger>
-                    <AccordionContent>
+                    <AccordionContent className="!pb-8 md:!pb-10">
                       <div className="space-y-1">
                         {pricingData
                           .filter((option) => option.category === 'sponsor')
@@ -642,19 +857,19 @@ function RegistrationFormContent() {
                                   <span>{option.label}</span>
                                   <div className="relative ml-auto">
                                     <input
-                                      type="radio"
-                                      name="participantType"
+                                      type="checkbox"
+                                      name={`entry-${option.id}`}
                                       value={option.id}
-                                      checked={primarySelection === option.id}
-                                      onChange={handleChange}
+                                      checked={selectedEntryPackages.includes(option.id)}
+                                      onChange={() => handleEntryPackageToggle(option.id)}
                                       className="sr-only peer"
                                     />
-                                    <div className="h-6 w-6 rounded-full border-2 border-customInputBorder"></div>
-                                    <div className="h-4 w-4 rounded-full bg-customInputBorder absolute top-1 left-1 scale-0 peer-checked:scale-100 transition-transform"></div>
+                                    <div className="h-6 w-6 rounded border-2 border-customInputBorder"></div>
+                                    <div className="h-4 w-4 rounded-sm bg-customInputBorder absolute top-1 left-1 scale-0 peer-checked:scale-100 transition-transform"></div>
                                   </div>
                                 </div>
 
-                                {primarySelection === option.id && (
+                                {selectedEntryPackages.includes(option.id) && (
                                   <div className="mt-2 text-sm text-white/60">
                                     {option.details}
                                   </div>
@@ -666,9 +881,9 @@ function RegistrationFormContent() {
                     </AccordionContent>
                   </AccordionItem>
 
-                  <AccordionItem value="individual-sponsorship" className="border-white/80">
+                  <AccordionItem value="individual-sponsorship" className="border-white/80 pb-8 md:pb-10">
                     <AccordionTrigger className="text-white/80 text-lg font-semibold border-white/20 [&>svg]:w-8 [&>svg]:h-8 [&>svg]:text-white/80">SPONSORSHIP PRODUCTS:</AccordionTrigger>
-                    <AccordionContent>
+                    <AccordionContent className="!pb-8 md:!pb-10">
                       <div className="space-y-1">
                         {pricingData
                           .filter((option) => option.category === 'product')
@@ -739,40 +954,87 @@ function RegistrationFormContent() {
                 </div>
               )}
 
-              <div className="col-span-full my-8">
+              <div className="col-span-full mt-10 mb-10 pt-2 pb-2">
                 <hr className="border-t border-white/20" />
               </div>
 
-              {effectiveParticipantType === 'teamSponsorEntry' && !sponsorPackageIds.includes(effectiveParticipantType) && (
-                <TeamFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
-              )}
+              {orderedEntrySlotsIds.map((entryId) => {
+                const option = pricingData.find((p) => p.id === entryId);
+                const seg = segmentFields[entryId];
+                if (!seg) return null;
 
-              {Boolean(effectiveParticipantType) && effectiveParticipantType !== 'teamSponsorEntry' && !sponsorProductIds.includes(effectiveParticipantType) && !sponsorPackageIds.includes(effectiveParticipantType) && (
-                <DefaultFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
-              )}
+                const segmentCardClass =
+                  'col-span-2 w-full border border-customInputBorder rounded-lg p-4 md:p-6 mb-8 pb-8 md:pb-10';
 
-              {sponsorPackageIds.includes(effectiveParticipantType) && (
-                <GolfersFormFields
-                  setFormErrors={setFormErrors}
-                  handleSelectChange={handleSelectChange}
-                  handleChange={handleChange}
-                  golfers={formData.golfers}
-                  setFormData={setFormData}
-                  formErrors={formErrors}
-                  formData={formData}
-                  maxGolfers={
-                    effectiveParticipantType === "platinumSponsorship" ? 10 :
-                      effectiveParticipantType === "goldSponsorship" ? 5 :
-                        effectiveParticipantType === "silverSponsorship" ? 2 : 0
-                  }
-                />
-              )}
+                if (sponsorPackageIds.includes(entryId)) {
+                  const slots = golferSlotsForEntryId(entryId, pricingData);
+                  const rosterOnly = entryId !== firstSponsorSlotEntryId;
+                  return (
+                    <div key={entryId} className={segmentCardClass}>
+                      <GolfersFormFields
+                        setFormErrors={setFormErrors}
+                        handleSelectChange={handleSelectChange}
+                        handleChange={handleChange}
+                        golfers={seg.golfers}
+                        setFormData={setFormData}
+                        formErrors={formErrors}
+                        formData={formData}
+                        maxGolfers={slots}
+                        rosterOnly={rosterOnly}
+                        segmentEntryId={entryId}
+                        segmentTitle={option?.label ?? entryId}
+                        segmentBanquet={seg.banquet}
+                        segmentDinnerTickets={seg.dinnerTickets}
+                        onSegmentFieldChange={(field, value) => updateSegmentField(entryId, { [field]: value })}
+                        updateGolfers={(fn) => {
+                          setSegmentFields((p) => {
+                            const cur = p[entryId];
+                            if (!cur) return p;
+                            return { ...p, [entryId]: { ...cur, golfers: fn(cur.golfers) } };
+                          });
+                        }}
+                      />
+                    </div>
+                  );
+                }
 
-              {effectiveParticipantType === 'singlePlayerSponsorEntry' && (
-                <SingleEntryFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
-              )}
+                if (entryId === 'teamSponsorEntry') {
+                  return (
+                    <div key={entryId} className={segmentCardClass}>
+                      <h3 className="text-white/80 text-xl font-semibold mb-6">{option?.label ?? entryId}</h3>
+                      <TeamFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
+                    </div>
+                  );
+                }
 
-              {!primarySelection && selectedProducts.length > 0 && (
+                if (entryId === 'singlePlayerSponsorEntry') {
+                  return (
+                    <div key={entryId} className={segmentCardClass}>
+                      <h3 className="text-white/80 text-xl font-semibold mb-6">{option?.label ?? entryId}</h3>
+                      <DefaultFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
+                      <SingleEntryFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
+                    </div>
+                  );
+                }
+
+                if (option?.category === 'individual') {
+                  return (
+                    <div key={entryId} className={segmentCardClass}>
+                      <IndividualSegmentFields
+                        segmentId={entryId}
+                        segmentTitle={option.label ?? entryId}
+                        segment={seg}
+                        onSegmentChange={(id, patch) => updateSegmentField(id, patch)}
+                        formErrors={formErrors as Record<string, string | undefined>}
+                      />
+                    </div>
+                  );
+                }
+
+                return null;
+              })}
+
+              {!selectedEntryPackages.length && selectedProducts.length > 0 && (
                 <SponsorProductsFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
               )}
 

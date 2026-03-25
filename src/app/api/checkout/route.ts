@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { getProductAvailabilitySnapshot } from '@/lib/registration-product-availability';
+import {
+  getProductAvailabilitySnapshot,
+  LIMITED_PRODUCT_IDS,
+} from '@/lib/registration-product-availability';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
@@ -53,15 +56,17 @@ export async function POST(req: Request) {
       return acc;
     }, {} as Record<string, number>);
 
-    if (Object.keys(requestedProductQuantities).length > 0) {
+    const limitedProductIdsRequested = Object.keys(requestedProductQuantities).filter((id) =>
+      LIMITED_PRODUCT_IDS.has(id),
+    );
+    if (limitedProductIdsRequested.length > 0) {
       const availability = await getProductAvailabilitySnapshot();
-      const soldOutProducts = Object.entries(requestedProductQuantities)
-        .filter(([productId, quantity]) => {
-          const productAvailability = availability[productId];
-          if (!productAvailability) return false;
-          return productAvailability.remaining < quantity;
-        })
-        .map(([productId]) => productId);
+      const soldOutProducts = limitedProductIdsRequested.filter((productId) => {
+        const quantity = requestedProductQuantities[productId] ?? 0;
+        const productAvailability = availability[productId];
+        if (!productAvailability) return false;
+        return productAvailability.remaining < quantity;
+      });
 
       if (soldOutProducts.length > 0) {
         return NextResponse.json(

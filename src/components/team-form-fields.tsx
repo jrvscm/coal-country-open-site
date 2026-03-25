@@ -4,6 +4,7 @@ import React from 'react';
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { FormDataType } from '@/components/registration-form';
+import { ADDITIONAL_DINNER_TICKET_PRICE_USD } from '@/lib/dinner-ticket-price';
 import SingleEntryFields from '@/components/single-entry-fields';
 interface TeamFormFieldsProps {
   formData: FormDataType;
@@ -15,6 +16,22 @@ interface TeamFormFieldsProps {
 const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange, handleSelectChange, formErrors }) => {
     return (
     <>
+        <div className="col-span-2 mb-6">
+            <h3 className="text-white/80 text-lg font-semibold mb-2">COMPANY NAME</h3>
+            <label htmlFor="company-team" className="sr-only block text-sm text-white/60 mb-1">Company Represented</label>
+            <Input
+              id="company-team"
+              name="company"
+              placeholder="Company"
+              value={formData.company}
+              onChange={handleChange}
+              className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
+                ${formErrors.company ? 'border-red-500' : 'border-customInputBorder'}
+              `}
+            />
+            {formErrors.company && <p className="text-red-500 text-sm mt-1">{formErrors.company}</p>}
+        </div>
+
         <div className="col-span-2 mb-6">
             <h3 className="text-white/80 text-lg font-semibold mb-2">TEAM NAME</h3>
             <label htmlFor="teamName" className="sr-only block text-sm text-white/60 mb-1">Team Name</label>
@@ -191,7 +208,7 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
             <Input
               id="contactPhone"
               name="contactPhone"
-              placeholder="Team Contact Phone"
+              placeholder="(555) 555-5555"
               value={formData.contactPhone}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
@@ -236,11 +253,11 @@ const TeamFormFields: React.FC<TeamFormFieldsProps> = ({ formData, handleChange,
             </div>
             <div className="mt-3">
             <label className="sr-only block text-sm text-white/60 mb-1">{
-                `Additional Dinner Tickets (+$32.00 each)`
+                `Additional Dinner Tickets (+$${ADDITIONAL_DINNER_TICKET_PRICE_USD}.00 each)`
             }</label>
             <Select value={formData.dinnerTickets} onValueChange={(value) => handleSelectChange('dinnerTickets', value)}>
                 <SelectTrigger className="relative flex justify-start align-center w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg text-lg">
-                <SelectValue placeholder={`Additional Dinner Tickets (+$32.00 each)`} />
+                <SelectValue placeholder={`Additional Dinner Tickets (+$${ADDITIONAL_DINNER_TICKET_PRICE_USD}.00 each)`} />
                 </SelectTrigger>
                 <SelectContent>
                 <SelectItem value="1">1</SelectItem>

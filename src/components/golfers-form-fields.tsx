@@ -6,55 +6,91 @@ import SingleEntryFields from '@/components/single-entry-fields';
 import { MdClose } from "react-icons/md";
 import { TiUserAddOutline } from "react-icons/ti";
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ADDITIONAL_DINNER_TICKET_PRICE_USD } from '@/lib/dinner-ticket-price';
+import { uppercaseRegistrationText } from '@/lib/registration-input-normalize';
 
 type FormErrorsType = Record<string, string>;
 
+export type GolferRow = { name: string; handicap: string; tShirtSize: string };
+
 interface GolfersFormProps {
-  golfers: { name: string; handicap: string; tShirtSize: string }[];
+  golfers: GolferRow[];
   setFormData: React.Dispatch<React.SetStateAction<FormDataType>>;
   formData: FormDataType;
   maxGolfers: number;
   formErrors: Partial<FormDataType>;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: (name: string, value: string) => void;
-  setFormErrors: React.Dispatch<React.SetStateAction<FormErrorsType>>
+  setFormErrors: React.Dispatch<React.SetStateAction<FormErrorsType>>;
+  /** Second+ sponsor package blocks: company/contact collected on first package only */
+  rosterOnly?: boolean;
+  segmentEntryId?: string;
+  segmentBanquet?: string;
+  segmentDinnerTickets?: string;
+  onSegmentFieldChange?: (field: 'banquet' | 'dinnerTickets', value: string) => void;
+  updateGolfers?: (updater: (prev: GolferRow[]) => GolferRow[]) => void;
+  segmentTitle?: string;
 }
 
-const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, maxGolfers, formErrors, formData, handleChange, handleSelectChange, setFormErrors }) => {
+const GolfersFormFields: React.FC<GolfersFormProps> = ({
+  golfers,
+  setFormData,
+  maxGolfers,
+  formErrors,
+  formData,
+  handleChange,
+  handleSelectChange,
+  setFormErrors,
+  rosterOnly = false,
+  segmentEntryId,
+  segmentBanquet,
+  segmentDinnerTickets,
+  onSegmentFieldChange,
+  updateGolfers,
+  segmentTitle,
+}) => {
+  const golferErrorPrefix = segmentEntryId ? `segment.${segmentEntryId}.golfers` : 'golfers';
+
   const getError = (field: string): string | undefined => {
     return (formErrors as Record<string, string | undefined>)[field];
   };
-  
-  const addGolfer = () => {
-    if (golfers.length < maxGolfers) {
-      setFormData((prev) => ({
-        ...prev,
-        golfers: [...prev.golfers, { name: "", handicap: "", tShirtSize: "" }],
-      }));
+
+  const applyGolfers = (updater: (prev: GolferRow[]) => GolferRow[]) => {
+    if (updateGolfers) {
+      updateGolfers(updater);
+      return;
     }
-  };
-  
-  const removeGolfer = (index: number) => {
     setFormData((prev) => ({
       ...prev,
-      golfers: prev.golfers.filter((_, i) => i !== index),
+      golfers: updater(prev.golfers),
     }));
+  };
+
+  const addGolfer = () => {
+    if (golfers.length < maxGolfers) {
+      applyGolfers((prev) => [...prev, { name: "", handicap: "", tShirtSize: "" }]);
+    }
+  };
+
+  const removeGolfer = (index: number) => {
+    applyGolfers((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleGolferChange = (
     index: number,
-    field: keyof (typeof golfers)[number],
+    field: keyof GolferRow,
     value: string
   ) => {
-    const fieldKey = `golfers.${index}.${field}` as keyof FormDataType;
-  
-    setFormData((prev) => ({
-      ...prev,
-      golfers: prev.golfers.map((golfer, i) =>
-        i === index ? { ...golfer, [field]: value } : golfer
-      ),
-    }));
-  
+    const fieldKey = `${golferErrorPrefix}.${index}.${field}`;
+    const normalized =
+      field === 'name' || field === 'handicap' || field === 'tShirtSize'
+        ? uppercaseRegistrationText(value)
+        : value;
+
+    applyGolfers((prev) =>
+      prev.map((golfer, i) => (i === index ? { ...golfer, [field]: normalized } : golfer)),
+    );
+
     setFormErrors((prevErrors) => {
       const newErrors = { ...prevErrors };
       delete newErrors[fieldKey];
@@ -62,8 +98,36 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
     });
   };
 
+  const mealFromSegment = Boolean(onSegmentFieldChange);
+  const banquetValue = mealFromSegment ? (segmentBanquet ?? '') : formData.banquet;
+  const dinnerValue = mealFromSegment ? (segmentDinnerTickets ?? '') : formData.dinnerTickets;
+  const onBanquetChange = (v: string) => {
+    if (onSegmentFieldChange) {
+      onSegmentFieldChange('banquet', v);
+    } else {
+      handleSelectChange('banquet', v);
+    }
+  };
+  const onDinnerChange = (v: string) => {
+    if (onSegmentFieldChange) {
+      onSegmentFieldChange('dinnerTickets', v);
+    } else {
+      handleSelectChange('dinnerTickets', v);
+    }
+  };
+
+  const banquetErrorKey = segmentEntryId ? `segment.${segmentEntryId}.banquet` : 'banquet';
+  const banquetError = segmentEntryId
+    ? (formErrors as Record<string, string | undefined>)[banquetErrorKey]
+    : formErrors.banquet;
+
   return (
     <>
+        {segmentTitle ? (
+          <h3 className="text-white/80 text-xl font-semibold mb-6">{segmentTitle}</h3>
+        ) : null}
+        {!rosterOnly && (
+          <>
         <div className="col-span-2 mb-6">
             <h3 className="text-white/80 text-lg font-semibold mb-2">COMPANY NAME</h3>
             <label htmlFor="company" className="sr-only block text-sm text-white/60 mb-1">Company Name</label>
@@ -75,7 +139,7 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
                 ${formErrors.company ? 'border-red-500' : 'border-customInputBorder'}
-              `} 
+              `}
             />
             {formErrors.company && <p className="text-red-500 text-sm mt-1">{formErrors.company}</p>}
         </div>
@@ -92,7 +156,7 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
                 ${formErrors.contactName ? 'border-red-500' : 'border-customInputBorder'}
-              `} 
+              `}
             />
             {formErrors.contactName && <p className="text-red-500 text-sm mt-1">{formErrors.contactName}</p>}
           </div>
@@ -102,12 +166,12 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
             <Input
               id="contactPhone"
               name="contactPhone"
-              placeholder="Contact Phone"
+              placeholder="(555) 555-5555"
               value={formData.contactPhone}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
                 ${formErrors.contactPhone? 'border-red-500' : 'border-customInputBorder'}
-              `} 
+              `}
             />
             {formErrors.contactPhone && <p className="text-red-500 text-sm mt-1">{formErrors.contactPhone}</p>}
           </div>
@@ -122,21 +186,23 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
                 ${formErrors.contactEmail ? 'border-red-500' : 'border-customInputBorder'}
-              `} 
+              `}
             />
             {formErrors.contactEmail && <p className="text-red-500 text-sm mt-1">{formErrors.contactEmail}</p>}
           </div>
         </div>
 
         <SingleEntryFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
+          </>
+        )}
 
         <div className="col-span-2 mb-6">
             <h3 className="text-white/80 text-lg font-semibold mb-2">BANQUET</h3>
             <div className="mt-3">
               <label className="sr-only block text-sm text-white/60 mb-1">Will You Attend Banquet?</label>
-              <Select value={formData.banquet} onValueChange={(value) => handleSelectChange('banquet', value)}>
+              <Select value={banquetValue} onValueChange={onBanquetChange}>
                 <SelectTrigger className={`relative flex justify-start align-center w-full bg-customInputFill border p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg text-lg 
-                  ${formErrors.banquet ? 'border-red-500' : 'border-customInputBorder'}
+                  ${banquetError ? 'border-red-500' : 'border-customInputBorder'}
                 `}>
                   <SelectValue placeholder={`Will attend the banquet? (${maxGolfers} tickets incl.)`} />
                 </SelectTrigger>
@@ -145,15 +211,15 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
                   <SelectItem value="no">No</SelectItem>
                 </SelectContent>
               </Select>
-              {formErrors.banquet && <p className="text-red-500 text-sm mt-1">{formErrors.banquet}</p>}
+              {banquetError && <p className="text-red-500 text-sm mt-1">{banquetError}</p>}
             </div>
             <div className="mt-3">
-            <label className="sr-only block text-sm text-white/60 mb-1">{
-                `Additional Dinner Tickets (+$32.00 each)`
-            }</label>
-            <Select value={formData.dinnerTickets} onValueChange={(value) => handleSelectChange('dinnerTickets', value)}>
+            <label className="sr-only block text-sm text-white/60 mb-1">
+                {`Additional Dinner Tickets (+$${ADDITIONAL_DINNER_TICKET_PRICE_USD}.00 each)`}
+            </label>
+            <Select value={dinnerValue} onValueChange={onDinnerChange}>
                 <SelectTrigger className="relative flex justify-start align-center w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg text-lg">
-                <SelectValue placeholder={`Additional Dinner Tickets (+$32.00 each)`} />
+                <SelectValue placeholder={`Additional Dinner Tickets (+$${ADDITIONAL_DINNER_TICKET_PRICE_USD}.00 each)`} />
                 </SelectTrigger>
                 <SelectContent>
                 <SelectItem value="1">1</SelectItem>
@@ -172,7 +238,7 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
         </div>
 
         {golfers.map((golfer, index) => (
-            <div className="col-span-2 md:col-span-full relative mb-6" key={`team-member-${index}`}>
+            <div className="col-span-2 md:col-span-full relative mb-6" key={`${segmentEntryId ?? 'default'}-team-member-${index}`}>
                 <h3 className="text-white/80 text-lg font-semibold mb-2">{`PLAYER ${index + 1}`}</h3>
                 <div className="mt-3">
                     <label htmlFor={`player[${index + 1}Name]`} className="sr-only block text-sm text-white/60 mb-1">Player {index + 1} Name</label>
@@ -182,11 +248,11 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
                         value={golfers[index].name || ""}
                         onChange={(e) => handleGolferChange(index, 'name', e.target.value)}
                         className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
-                          ${getError(`golfers.${index}.name`) ? 'border-red-500' : 'border-customInputBorder'}
+                          ${getError(`${golferErrorPrefix}.${index}.name`) ? 'border-red-500' : 'border-customInputBorder'}
                         `}
                     />
-                    {getError(`golfers.${index}.name`) && (
-                      <p className="text-red-500 text-sm mt-1">{getError(`golfers.${index}.name`)}</p>
+                    {getError(`${golferErrorPrefix}.${index}.name`) && (
+                      <p className="text-red-500 text-sm mt-1">{getError(`${golferErrorPrefix}.${index}.name`)}</p>
                     )}
                 </div>
                 <div className="mt-3">
@@ -197,11 +263,11 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
                         value={golfers[index].handicap || ""}
                         onChange={(e) => handleGolferChange(index, 'handicap', e.target.value)}
                         className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
-                          ${getError(`golfers.${index}.handicap`) ? 'border-red-500' : 'border-customInputBorder'}
+                          ${getError(`${golferErrorPrefix}.${index}.handicap`) ? 'border-red-500' : 'border-customInputBorder'}
                         `}
                     />
-                    {getError(`golfers.${index}.handicap`) && (
-                      <p className="text-red-500 text-sm mt-1">{getError(`golfers.${index}.handicap`)}</p>
+                    {getError(`${golferErrorPrefix}.${index}.handicap`) && (
+                      <p className="text-red-500 text-sm mt-1">{getError(`${golferErrorPrefix}.${index}.handicap`)}</p>
                     )}
                 </div>
                 <div className="mt-3">
@@ -212,12 +278,12 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
                         value={golfers[index].tShirtSize || ""}
                         onChange={(e) => handleGolferChange(index, 'tShirtSize', e.target.value)}
                         className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
-                          ${getError(`golfers.${index}.tShirtSize`) ? 'border-red-500' : 'border-customInputBorder'}
+                          ${getError(`${golferErrorPrefix}.${index}.tShirtSize`) ? 'border-red-500' : 'border-customInputBorder'}
                         `}
                     />
-                    {getError(`golfers.${index}.tShirtSize`) && (
-                      <p className="text-red-500 text-sm mt-1">{getError(`golfers.${index}.tShirtSize`)}</p>
-                    )}               
+                    {getError(`${golferErrorPrefix}.${index}.tShirtSize`) && (
+                      <p className="text-red-500 text-sm mt-1">{getError(`${golferErrorPrefix}.${index}.tShirtSize`)}</p>
+                    )}
                 </div>
                 {index > 0 && (
                     <Button
@@ -234,8 +300,7 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
                 )}
             </div>
         ))}
-                   
-        {/* Add Golfer Button */}
+
         {golfers.length < maxGolfers && (
             <Button
             type="button"
@@ -243,7 +308,6 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
             className="w-[fit-content] text-sm bg-customPrimary text-white px-4 py-2 hover:bg-customPrimary/80"
             >
               <TiUserAddOutline style={{height: '100%', width: 'auto'}}/>
-              
             </Button>
         )}
     </>
