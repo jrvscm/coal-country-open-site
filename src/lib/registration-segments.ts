@@ -20,6 +20,10 @@ export type PersistedRegistrationSegment = {
   contactPhone?: string;
   contactEmail?: string;
   company?: string;
+  /** Team sponsor row: column I in sheet */
+  teamName?: string;
+  doorPrize?: string;
+  flagPrizeContribution?: string;
 };
 
 export type SegmentFieldState = {
@@ -30,6 +34,9 @@ export type SegmentFieldState = {
   contactPhone?: string;
   contactEmail?: string;
   company?: string;
+  teamName?: string;
+  doorPrize?: string;
+  flagPrizeContribution?: string;
 };
 
 /** Entries that allocate golfer slots (excludes category `product` add-ons). */
@@ -50,6 +57,9 @@ export function emptySegmentFieldStateForSlots(slots: number): SegmentFieldState
       contactName: '',
       contactPhone: '',
       contactEmail: '',
+      teamName: '',
+      doorPrize: '',
+      flagPrizeContribution: '',
     };
   }
   const startCount = Math.min(3, Math.max(1, slots));
@@ -65,6 +75,9 @@ export function emptySegmentFieldStateForSlots(slots: number): SegmentFieldState
     contactName: '',
     contactPhone: '',
     contactEmail: '',
+    teamName: '',
+    doorPrize: '',
+    flagPrizeContribution: '',
   };
 }
 

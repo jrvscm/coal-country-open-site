@@ -1,15 +1,13 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import type { FormDataType } from '@/components/registration-form';
-import SingleEntryFields from '@/components/single-entry-fields';
+import type { FormDataType, FormErrorsType } from '@/components/registration-form';
+import SegmentContributionFields from '@/components/segment-contribution-fields';
 import { MdClose } from "react-icons/md";
 import { TiUserAddOutline } from "react-icons/ti";
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ADDITIONAL_DINNER_TICKET_PRICE_USD } from '@/lib/dinner-ticket-price';
-import { uppercaseRegistrationText } from '@/lib/registration-input-normalize';
-
-type FormErrorsType = Record<string, string>;
+import { formatUsPhoneInput, uppercaseRegistrationText } from '@/lib/registration-input-normalize';
 
 export type GolferRow = { name: string; handicap: string; tShirtSize: string };
 
@@ -30,6 +28,21 @@ interface GolfersFormProps {
   onSegmentFieldChange?: (field: 'banquet' | 'dinnerTickets', value: string) => void;
   updateGolfers?: (updater: (prev: GolferRow[]) => GolferRow[]) => void;
   segmentTitle?: string;
+  /** Per-instance sponsor: company/contact stored on the segment, not global formData */
+  instanceContact?: {
+    company: string;
+    contactName: string;
+    contactPhone: string;
+    contactEmail: string;
+    onPatch: (patch: Partial<{ company: string; contactName: string; contactPhone: string; contactEmail: string }>) => void;
+  };
+  /** Per-instance door/flag when using segment-backed registration */
+  segmentContribution?: {
+    instanceId: string;
+    doorPrize: string;
+    flagPrizeContribution: string;
+    onPatch: (patch: { doorPrize?: string; flagPrizeContribution?: string }) => void;
+  };
 }
 
 const GolfersFormFields: React.FC<GolfersFormProps> = ({
@@ -48,8 +61,14 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({
   onSegmentFieldChange,
   updateGolfers,
   segmentTitle,
+  instanceContact,
+  segmentContribution,
 }) => {
   const golferErrorPrefix = segmentEntryId ? `segment.${segmentEntryId}.golfers` : 'golfers';
+  const contactErr = (field: string) =>
+    segmentEntryId
+      ? (formErrors as Record<string, string | undefined>)[`segment.${segmentEntryId}.${field}`]
+      : (formErrors as Record<string, string | undefined>)[field];
 
   const getError = (field: string): string | undefined => {
     return (formErrors as Record<string, string | undefined>)[field];
@@ -130,69 +149,138 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({
           <>
         <div className="col-span-2 mb-6">
             <h3 className="text-white/80 text-lg font-semibold mb-2">COMPANY NAME</h3>
-            <label htmlFor="company" className="sr-only block text-sm text-white/60 mb-1">Company Name</label>
+            <label htmlFor={segmentEntryId ? `company-${segmentEntryId}` : 'company'} className="sr-only block text-sm text-white/60 mb-1">Company Name</label>
             <Input
-              id="company"
+              id={segmentEntryId ? `company-${segmentEntryId}` : 'company'}
               name="company"
               placeholder="Company"
-              value={formData.company}
-              onChange={handleChange}
+              value={instanceContact ? instanceContact.company : formData.company}
+              onChange={
+                instanceContact
+                  ? (e) => {
+                      instanceContact.onPatch({ company: uppercaseRegistrationText(e.target.value) });
+                      if (segmentEntryId) {
+                        setFormErrors((prev) => {
+                          const next = { ...prev };
+                          delete next[`segment.${segmentEntryId}.company`];
+                          return next;
+                        });
+                      }
+                    }
+                  : handleChange
+              }
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
-                ${formErrors.company ? 'border-red-500' : 'border-customInputBorder'}
+                ${contactErr('company') || (!instanceContact && formErrors.company) ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
-            {formErrors.company && <p className="text-red-500 text-sm mt-1">{formErrors.company}</p>}
+            {(instanceContact ? contactErr('company') : formErrors.company) && (
+              <p className="text-red-500 text-sm mt-1">{instanceContact ? contactErr('company') : formErrors.company}</p>
+            )}
         </div>
 
         <div className="col-span-2 mb-6">
           <h3 className="text-white/80 text-lg font-semibold mb-2">COMPANY CONTACT</h3>
           <div className="mt-3">
-            <label htmlFor="contactName" className="sr-only hidden block text-sm text-white/60 mb-1">Contact Name</label>
+            <label htmlFor={segmentEntryId ? `contactName-${segmentEntryId}` : 'contactName'} className="sr-only hidden block text-sm text-white/60 mb-1">Contact Name</label>
             <Input
-              id="contactName"
+              id={segmentEntryId ? `contactName-${segmentEntryId}` : 'contactName'}
               name="contactName"
               placeholder="Contact Name"
-              value={formData.contactName}
-              onChange={handleChange}
+              value={instanceContact ? instanceContact.contactName : formData.contactName}
+              onChange={
+                instanceContact
+                  ? (e) => {
+                      instanceContact.onPatch({ contactName: uppercaseRegistrationText(e.target.value) });
+                      if (segmentEntryId) {
+                        setFormErrors((prev) => {
+                          const next = { ...prev };
+                          delete next[`segment.${segmentEntryId}.contactName`];
+                          return next;
+                        });
+                      }
+                    }
+                  : handleChange
+              }
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
-                ${formErrors.contactName ? 'border-red-500' : 'border-customInputBorder'}
+                ${contactErr('contactName') || (!instanceContact && formErrors.contactName) ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
-            {formErrors.contactName && <p className="text-red-500 text-sm mt-1">{formErrors.contactName}</p>}
+            {(instanceContact ? contactErr('contactName') : formErrors.contactName) && (
+              <p className="text-red-500 text-sm mt-1">{instanceContact ? contactErr('contactName') : formErrors.contactName}</p>
+            )}
           </div>
 
           <div className="mt-3">
-            <label htmlFor="contactPhone" className="sr-only hidden block text-sm text-white/60 mb-1">Contact Phone</label>
+            <label htmlFor={segmentEntryId ? `contactPhone-${segmentEntryId}` : 'contactPhone'} className="sr-only hidden block text-sm text-white/60 mb-1">Contact Phone</label>
             <Input
-              id="contactPhone"
+              id={segmentEntryId ? `contactPhone-${segmentEntryId}` : 'contactPhone'}
               name="contactPhone"
               placeholder="(555) 555-5555"
-              value={formData.contactPhone}
-              onChange={handleChange}
+              value={instanceContact ? instanceContact.contactPhone : formData.contactPhone}
+              onChange={
+                instanceContact
+                  ? (e) => {
+                      instanceContact.onPatch({ contactPhone: formatUsPhoneInput(e.target.value) });
+                      if (segmentEntryId) {
+                        setFormErrors((prev) => {
+                          const next = { ...prev };
+                          delete next[`segment.${segmentEntryId}.contactPhone`];
+                          return next;
+                        });
+                      }
+                    }
+                  : handleChange
+              }
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
-                ${formErrors.contactPhone? 'border-red-500' : 'border-customInputBorder'}
+                ${contactErr('contactPhone') || (!instanceContact && formErrors.contactPhone) ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
-            {formErrors.contactPhone && <p className="text-red-500 text-sm mt-1">{formErrors.contactPhone}</p>}
+            {(instanceContact ? contactErr('contactPhone') : formErrors.contactPhone) && (
+              <p className="text-red-500 text-sm mt-1">{instanceContact ? contactErr('contactPhone') : formErrors.contactPhone}</p>
+            )}
           </div>
 
           <div className="mt-3">
-            <label htmlFor="contactEmail" className="sr-only hidden block text-sm text-white/60 mb-1">Contact Email</label>
+            <label htmlFor={segmentEntryId ? `contactEmail-${segmentEntryId}` : 'contactEmail'} className="sr-only hidden block text-sm text-white/60 mb-1">Contact Email</label>
             <Input
-              id="contactEmail"
+              id={segmentEntryId ? `contactEmail-${segmentEntryId}` : 'contactEmail'}
               name="contactEmail"
               placeholder="Contact Email"
-              value={formData.contactEmail}
-              onChange={handleChange}
+              value={instanceContact ? instanceContact.contactEmail : formData.contactEmail}
+              onChange={
+                instanceContact
+                  ? (e) => {
+                      instanceContact.onPatch({ contactEmail: e.target.value });
+                      if (segmentEntryId) {
+                        setFormErrors((prev) => {
+                          const next = { ...prev };
+                          delete next[`segment.${segmentEntryId}.contactEmail`];
+                          return next;
+                        });
+                      }
+                    }
+                  : handleChange
+              }
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
-                ${formErrors.contactEmail ? 'border-red-500' : 'border-customInputBorder'}
+                ${contactErr('contactEmail') || (!instanceContact && formErrors.contactEmail) ? 'border-red-500' : 'border-customInputBorder'}
               `}
             />
-            {formErrors.contactEmail && <p className="text-red-500 text-sm mt-1">{formErrors.contactEmail}</p>}
+            {(instanceContact ? contactErr('contactEmail') : formErrors.contactEmail) && (
+              <p className="text-red-500 text-sm mt-1">{instanceContact ? contactErr('contactEmail') : formErrors.contactEmail}</p>
+            )}
           </div>
         </div>
 
-        <SingleEntryFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
+        {segmentContribution && (
+          <SegmentContributionFields
+            instanceId={segmentContribution.instanceId}
+            doorPrize={segmentContribution.doorPrize}
+            flagPrizeContribution={segmentContribution.flagPrizeContribution}
+            onPatch={segmentContribution.onPatch}
+            setFormErrors={setFormErrors}
+            formErrors={formErrors as unknown as FormErrorsType}
+          />
+        )}
           </>
         )}
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { google } from 'googleapis';
 import { redis } from '@/lib/upstash';
+import { isSponsorProductId } from '@/lib/registration-selection';
 import {
   playerColumnsFromGolfers,
   type PersistedRegistrationSegment,
@@ -60,6 +61,43 @@ type RegistrationFormData = {
 
 function buildSheetRow(uid: string, formData: RegistrationFormData, columnC?: string): string[] {
   const colC = columnC ?? formData.participantType ?? '';
+  /** Add-on sponsorship product rows: keep company + contact (J–L) but leave M–AP empty so “paid players” ARRAYFORMULA (M<>"") does not treat them as golfers. */
+  const isProductOnlyRow = isSponsorProductId(colC);
+  const contactJ = formData.contactName || formData.player1Name || '';
+  const playerTail = isProductOnlyRow
+    ? playerColumnsFromGolfers([])
+    : [
+        formData.player1Name || '',
+        formData.player1Handicap || '',
+        formData.player1TShirtSize || '',
+        formData.player2Name || '',
+        formData.player2Handicap || '',
+        formData.player2TShirtSize || '',
+        formData.player3Name || '',
+        formData.player3Handicap || '',
+        formData.player3TShirtSize || '',
+        formData.player4Name || '',
+        formData.player4Handicap || '',
+        formData.player4TShirtSize || '',
+        formData.player5Name || '',
+        formData.player5Handicap || '',
+        formData.player5TShirtSize || '',
+        formData.player6Name || '',
+        formData.player6Handicap || '',
+        formData.player6TShirtSize || '',
+        formData.player7Name || '',
+        formData.player7Handicap || '',
+        formData.player7TShirtSize || '',
+        formData.player8Name || '',
+        formData.player8Handicap || '',
+        formData.player8TShirtSize || '',
+        formData.player9Name || '',
+        formData.player9Handicap || '',
+        formData.player9TShirtSize || '',
+        formData.player10Name || '',
+        formData.player10Handicap || '',
+        formData.player10TShirtSize || '',
+      ];
   return [
     uid,
     new Date().toISOString(),
@@ -70,58 +108,10 @@ function buildSheetRow(uid: string, formData: RegistrationFormData, columnC?: st
     formData.doorPrize || '',
     formData.flagPrizeContribution || '',
     formData.teamName || '',
-    formData.contactName || formData.player1Name || '',
+    contactJ,
     formData.contactPhone || '',
     formData.contactEmail || '',
-    formData.player1Name || '',
-    formData.player1Handicap || '',
-    formData.player1TShirtSize || '',
-    formData.player2Name || '',
-    formData.player2Handicap || '',
-    formData.player2TShirtSize || '',
-    formData.player3Name || '',
-    formData.player3Handicap || '',
-    formData.player3TShirtSize || '',
-    formData.player4Name || '',
-    formData.player4Handicap || '',
-    formData.player4TShirtSize || '',
-    formData.player5Name || '',
-    formData.player5Handicap || '',
-    formData.player5TShirtSize || '',
-    formData.player6Name || '',
-    formData.player6Handicap || '',
-    formData.player6TShirtSize || '',
-    formData.player7Name || '',
-    formData.player7Handicap || '',
-    formData.player7TShirtSize || '',
-    formData.player8Name || '',
-    formData.player8Handicap || '',
-    formData.player8TShirtSize || '',
-    formData.player9Name || '',
-    formData.player9Handicap || '',
-    formData.player9TShirtSize || '',
-    formData.player10Name || '',
-    formData.player10Handicap || '',
-    formData.player10TShirtSize || '',
-    'Paid',
-  ];
-}
-
-function buildSparseProductSheetRow(uid: string, productId: string, timestamp: string): string[] {
-  return [
-    uid,
-    timestamp,
-    productId,
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    ...playerColumnsFromGolfers([]),
+    ...playerTail,
     'Paid',
   ];
 }
@@ -130,15 +120,8 @@ function buildSheetRows(uid: string, formData: RegistrationFormData): string[][]
   const segments = formData.segments;
   if (!segments || segments.length === 0) {
     const productIds = formData.selectedProductIds ?? [];
-    const ts = new Date().toISOString();
-    if (productIds.length > 1) {
-      return [
-        buildSheetRow(uid, formData, productIds[0]),
-        ...productIds.slice(1).map((pid) => buildSparseProductSheetRow(uid, pid, ts)),
-      ];
-    }
-    if (productIds.length === 1) {
-      return [buildSheetRow(uid, formData, productIds[0])];
+    if (productIds.length > 0) {
+      return productIds.map((productId) => buildSheetRow(uid, formData, productId));
     }
     return [buildSheetRow(uid, formData)];
   }
@@ -151,20 +134,41 @@ function buildSheetRows(uid: string, formData: RegistrationFormData): string[][]
     const isFirst = i === 0;
     const playerCols = playerColumnsFromGolfers(seg.golfers || []);
     const teamName =
-      seg.entryId === 'teamSponsorEntry' ? (formData.teamName || '') : '';
+      seg.entryId === 'teamSponsorEntry' ? (seg.teamName || formData.teamName || '') : '';
 
-    const rowCompany = isFirst
-      ? (formData.company || '')
-      : (seg.company || '');
-    const rowContactName = isFirst
-      ? (formData.contactName || formData.player1Name || '')
-      : (seg.contactName || '');
-    const rowContactPhone = isFirst
-      ? (formData.contactPhone || '')
-      : (seg.contactPhone || '');
-    const rowContactEmail = isFirst
-      ? (formData.contactEmail || '')
-      : (seg.contactEmail || '');
+    const rowCompany = seg.company?.trim()
+      ? seg.company
+      : isFirst
+        ? (formData.company || '')
+        : '';
+    const rowContactName = seg.contactName?.trim()
+      ? seg.contactName
+      : isFirst
+        ? (formData.contactName || formData.player1Name || '')
+        : '';
+    const rowContactPhone = seg.contactPhone?.trim()
+      ? seg.contactPhone
+      : isFirst
+        ? (formData.contactPhone || '')
+        : '';
+    const rowContactEmail = seg.contactEmail?.trim()
+      ? seg.contactEmail
+      : isFirst
+        ? (formData.contactEmail || '')
+        : '';
+
+    const rowDoor =
+      seg.doorPrize != null && seg.doorPrize !== ''
+        ? seg.doorPrize
+        : isFirst
+          ? (formData.doorPrize || '')
+          : '';
+    const rowFlag =
+      seg.flagPrizeContribution != null && seg.flagPrizeContribution !== ''
+        ? seg.flagPrizeContribution
+        : isFirst
+          ? (formData.flagPrizeContribution || '')
+          : '';
 
     rows.push([
       uid,
@@ -173,8 +177,8 @@ function buildSheetRows(uid: string, formData: RegistrationFormData): string[][]
       rowCompany,
       seg.banquet || '',
       seg.dinnerTickets || '',
-      isFirst ? (formData.doorPrize || '') : '',
-      isFirst ? (formData.flagPrizeContribution || '') : '',
+      rowDoor,
+      rowFlag,
       teamName,
       rowContactName,
       rowContactPhone,
@@ -187,22 +191,7 @@ function buildSheetRows(uid: string, formData: RegistrationFormData): string[][]
   const productIds = formData.selectedProductIds ?? [];
   for (const productId of productIds) {
     if (segmentEntryIds.has(productId)) continue;
-    rows.push([
-      uid,
-      new Date().toISOString(),
-      productId,
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      ...playerColumnsFromGolfers([]),
-      'Paid',
-    ]);
+    rows.push(buildSheetRow(uid, formData, productId));
   }
 
   return rows;

@@ -4,9 +4,9 @@ import { Suspense } from 'react';
 import { useState, useEffect, useMemo } from 'react';
 import { FaLock, FaRegCheckCircle } from "react-icons/fa";
 import { Button } from '@/components/ui/button';
-import TeamFormFields from '@/components/team-form-fields';
-import DefaultFormFields from '@/components/default-form-fields';
 import SingleEntryFields from '@/components/single-entry-fields';
+import TeamSegmentFields from '@/components/team-segment-fields';
+import SinglePlayerSegmentFields from '@/components/single-player-segment-fields';
 import SponsorProductsFields from '@/components/sponsor-products-fields';
 import { stripePromise } from '@/lib/stripe';
 import { useSearchParams, usePathname } from 'next/navigation';
@@ -22,7 +22,6 @@ import {
 } from '@/lib/registration-selection';
 import {
   emptySegmentFieldStateForSlots,
-  entryIdsWithGolferSlots,
   masterColumnCParticipantType,
   type PersistedRegistrationSegment,
   type SegmentFieldState,
@@ -36,6 +35,10 @@ export type Golfer = {
   name: string;
   handicap: string;
   tShirtSize: string;
+};
+
+export type FormErrorsType = {
+  [key: string]: string;
 };
 
 export type FormDataType = {
@@ -89,6 +92,43 @@ type ProductAvailability = {
 const sponsorPackageIds = [...regSponsorPackageIds] as unknown as string[];
 const sponsorProductIds = [...regSponsorProductIds] as unknown as string[];
 
+const MAX_PACKAGE_QTY = 20;
+const MAX_PRODUCT_QTY = 10;
+
+function effectivePackageQty(entryId: string, packageQuantities: Record<string, number>): number {
+  return Math.min(MAX_PACKAGE_QTY, Math.max(1, packageQuantities[entryId] ?? 1));
+}
+
+/** Website sponsorship is always a single slot — no quantity selector. */
+function effectiveProductQty(productId: string, productQuantities: Record<string, number>): number {
+  if (productId === 'websiteSponsorship') return 1;
+  return Math.min(MAX_PRODUCT_QTY, Math.max(1, productQuantities[productId] ?? 1));
+}
+
+function optionHasDisclaimer(opt: { subText?: string | null; highlightText?: string | null } | undefined): boolean {
+  return Boolean(opt?.subText?.length || opt?.highlightText?.length);
+}
+
+function RegistrationOptionDisclaimer({
+  option,
+}: {
+  option?: { subText?: string | null; highlightText?: string | null };
+}) {
+  if (!option || !optionHasDisclaimer(option)) return null;
+  return (
+    <div className="bg-black/50 mb-6 text-customInputBorder p-3 text-sm md:text-lg rounded-lg space-y-4">
+      {option.subText && <div dangerouslySetInnerHTML={{ __html: option.subText }} />}
+      {option.highlightText && (
+        <div
+          dangerouslySetInnerHTML={{
+            __html: `<p class="p-3 mt-3 text-sm md:text-lg bg-customYellow text-secondary-foreground font-bold rounded-lg">${option.highlightText}</p>`,
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
 export default function RegistrationForm() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -117,6 +157,8 @@ function RegistrationFormContent() {
         const [pricingData, setPricingData] = useState<PricingOption[]>([]);
         const [selectedEntryPackages, setSelectedEntryPackages] = useState<string[]>([]);
         const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+        const [packageQuantities, setPackageQuantities] = useState<Record<string, number>>({});
+        const [productQuantities, setProductQuantities] = useState<Record<string, number>>({});
         const [segmentFields, setSegmentFields] = useState<Record<string, SegmentFieldState>>({});
 
         useEffect(() => {
@@ -142,10 +184,6 @@ function RegistrationFormContent() {
         }, []);
 
         const [basePrices, setBasePrices] = useState<Record<string, number>>({});
-
-        type FormErrorsType = {
-          [key: string]: string;
-        };
 
         const defaultFormState = useMemo<FormDataType>(() => ({
           golfers: Array(3).fill({ name: "", handicap: "", tShirtSize: "" }),
@@ -187,34 +225,35 @@ function RegistrationFormContent() {
           return Array.from(new Set([...selectedEntryPackages, ...selectedProducts]));
         }, [selectedEntryPackages, selectedProducts]);
 
-        const orderedEntrySlotsIds = useMemo(
-          () => entryIdsWithGolferSlots(selectedEntryPackages, pricingData),
-          [selectedEntryPackages, pricingData],
-        );
-
-        const firstSponsorSlotEntryId = useMemo(
-          () => orderedEntrySlotsIds.find((id) => sponsorPackageIds.includes(id)),
-          [orderedEntrySlotsIds],
-        );
+        const lineInstances = useMemo(() => {
+          const out: { instanceId: string; entryId: string }[] = [];
+          for (const entryId of selectedEntryPackages) {
+            const slots = golferSlotsForEntryId(entryId, pricingData);
+            if (slots <= 0) continue;
+            const q = effectivePackageQty(entryId, packageQuantities);
+            for (let i = 0; i < q; i++) {
+              out.push({ instanceId: `${entryId}::${i}`, entryId });
+            }
+          }
+          return out;
+        }, [selectedEntryPackages, pricingData, packageQuantities]);
 
         useEffect(() => {
           setSegmentFields((prev) => {
             const next = { ...prev };
-            for (const id of selectedEntryPackages) {
-              const slots = golferSlotsForEntryId(id, pricingData);
-              if (slots <= 0) continue;
-              if (!next[id]) {
-                next[id] = emptySegmentFieldStateForSlots(slots);
-              }
-            }
+            const validIds = new Set(lineInstances.map((l) => l.instanceId));
             for (const key of Object.keys(next)) {
-              if (!selectedEntryPackages.includes(key)) {
-                delete next[key];
+              if (!validIds.has(key)) delete next[key];
+            }
+            for (const { instanceId, entryId } of lineInstances) {
+              if (!next[instanceId]) {
+                const slots = golferSlotsForEntryId(entryId, pricingData);
+                next[instanceId] = emptySegmentFieldStateForSlots(slots);
               }
             }
             return next;
           });
-        }, [selectedEntryPackages, pricingData]);
+        }, [lineInstances, pricingData]);
 
         const selectedPricingOptions = useMemo(() => {
           return pricingData.filter((item) => selectedOptionIds.includes(item.id));
@@ -252,99 +291,134 @@ function RegistrationFormContent() {
         const validateForm = () => {
           const errors: FormErrorsType = {};
           const hasEntry = selectedEntryPackages.length > 0;
-          const hasProductOnly = !hasEntry && selectedProducts.length > 0;
-          const productsFirstId = selectedProducts[0];
 
           if (!hasEntry && selectedProducts.length === 0) {
             errors.participantType = "Please select at least one registration option";
           }
 
-          if (hasProductOnly && productsFirstId && sponsorProductIds.includes(productsFirstId)) {
+          const hasSelectedSponsorProduct = selectedProducts.some((id) => sponsorProductIds.includes(id));
+          if (hasSelectedSponsorProduct) {
             if (!formData.company) errors.company = "Company is required";
             if (!formData.player1Name) errors.player1Name = "Name is required";
             if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) errors.contactEmail = "Invalid email";
             if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) errors.contactPhone = "Invalid phone number";
           }
 
-          if (hasEntry && selectedEntryPackages.some((id) => sponsorPackageIds.includes(id))) {
-            if (!formData.company) errors.company = "Company is required";
-            if (!formData.contactName) errors.contactName = "Team contact name is required";
-            if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) {
-              errors.contactPhone = "Team contact phone is invalid";
-            }
-            if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) {
-              errors.contactEmail = "Team contact email is invalid";
-            }
-          }
-
-          for (const entryId of orderedEntrySlotsIds) {
+          for (const { instanceId, entryId } of lineInstances) {
             const slots = golferSlotsForEntryId(entryId, pricingData);
             const opt = pricingData.find((o) => o.id === entryId);
-            const seg = segmentFields[entryId];
+            const seg = segmentFields[instanceId];
 
             if (sponsorPackageIds.includes(entryId)) {
               const g = seg?.golfers ?? [];
+              if (!seg?.company) errors[`segment.${instanceId}.company`] = "Company is required";
+              if (!seg?.contactName) errors[`segment.${instanceId}.contactName`] = "Contact name is required";
+              if (!seg?.contactPhone || !phoneRegex.test(seg.contactPhone.replace(/\D/g, ""))) {
+                errors[`segment.${instanceId}.contactPhone`] = "Contact phone is invalid";
+              }
+              if (!seg?.contactEmail || !emailRegex.test(seg.contactEmail)) {
+                errors[`segment.${instanceId}.contactEmail`] = "Contact email is invalid";
+              }
               for (let index = 0; index < slots; index++) {
                 const golfer = g[index];
-                if (!golfer?.name) errors[`segment.${entryId}.golfers.${index}.name`] = `Player ${index + 1} Name is required`;
+                if (!golfer?.name) errors[`segment.${instanceId}.golfers.${index}.name`] = `Player ${index + 1} Name is required`;
                 if (!golfer?.handicap || (!handicapRegex.test(golfer.handicap) && golfer.handicap.toLowerCase() !== 'placeholder')) {
-                  errors[`segment.${entryId}.golfers.${index}.handicap`] = `Player ${index + 1} Handicap is required`;
+                  errors[`segment.${instanceId}.golfers.${index}.handicap`] = `Player ${index + 1} Handicap is required`;
                 }
                 if (!golfer?.tShirtSize) {
-                  errors[`segment.${entryId}.golfers.${index}.tShirtSize`] = `Player ${index + 1} T-Shirt Size is required`;
+                  errors[`segment.${instanceId}.golfers.${index}.tShirtSize`] = `Player ${index + 1} T-Shirt Size is required`;
                 }
               }
-              if (!seg?.banquet) errors[`segment.${entryId}.banquet`] = "Banquet choice is required";
+              if (!seg?.banquet) errors[`segment.${instanceId}.banquet`] = "Banquet choice is required";
             }
 
-            if (entryId === 'teamSponsorEntry') {
-              if (!formData.company) errors.company = "Company is required";
-              if (!formData.teamName) errors.teamName = "Team Name is required";
-              if (!formData.player1Name) errors.player1Name = "Player One Name is required";
-              if (!formData.player2Name) errors.player2Name = "Player Two Name is required";
-              if (!formData.player3Name) errors.player3Name = "Player Three Name is required";
-              if (!formData.player1Handicap || !handicapRegex.test(formData.player1Handicap)) errors.player1Handicap = "Player One Handicap is required";
-              if (!formData.player2Handicap || !handicapRegex.test(formData.player2Handicap)) errors.player2Handicap = "Player Two Handicap is required";
-              if (!formData.player3Handicap || !handicapRegex.test(formData.player3Handicap)) errors.player3Handicap = "Player Three Handicap is required";
-              if (!formData.player1TShirtSize) errors.player1TShirtSize = "Player One T-Shirt size is required";
-              if (!formData.player2TShirtSize) errors.player2TShirtSize = "Player Two T-Shirt size is required";
-              if (!formData.player3TShirtSize) errors.player3TShirtSize = "Player Three T-Shirt size is required";
-              if (!formData.contactName) errors.contactName = "Team contact name is required";
-              if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) errors.contactPhone = "Contact phone is invalid";
-              if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) errors.contactEmail = "Contact email is invalid";
-              if (!formData.banquet) errors.banquet = "Banquet choice is required";
+            if (entryId === 'teamSponsorEntry' && seg) {
+              const g = seg.golfers ?? [];
+              if (!seg.company) errors[`segment.${instanceId}.company`] = "Company is required";
+              if (!seg.teamName?.trim()) errors[`segment.${instanceId}.teamName`] = "Team Name is required";
+              for (let index = 0; index < 3; index++) {
+                const golfer = g[index];
+                if (!golfer?.name) errors[`segment.${instanceId}.golfers.${index}.name`] = `Player ${index + 1} Name is required`;
+                if (!golfer?.handicap || !handicapRegex.test(golfer.handicap)) {
+                  errors[`segment.${instanceId}.golfers.${index}.handicap`] = `Player ${index + 1} Handicap is required`;
+                }
+                if (!golfer?.tShirtSize) {
+                  errors[`segment.${instanceId}.golfers.${index}.tShirtSize`] = `Player ${index + 1} T-Shirt size is required`;
+                }
+              }
+              if (!seg.contactName) errors[`segment.${instanceId}.contactName`] = "Team contact name is required";
+              if (!seg.contactPhone || !phoneRegex.test(seg.contactPhone.replace(/\D/g, ""))) {
+                errors[`segment.${instanceId}.contactPhone`] = "Contact phone is invalid";
+              }
+              if (!seg.contactEmail || !emailRegex.test(seg.contactEmail)) {
+                errors[`segment.${instanceId}.contactEmail`] = "Contact email is invalid";
+              }
+              if (!seg.banquet) errors[`segment.${instanceId}.banquet`] = "Banquet choice is required";
             }
 
             if (opt?.category === 'individual') {
               const p = seg?.golfers[0];
-              if (!seg?.company) errors[`segment.${entryId}.company`] = "Company is required";
+              if (!seg?.company) errors[`segment.${instanceId}.company`] = "Company is required";
               if (!seg?.contactEmail || !emailRegex.test(seg.contactEmail)) {
-                errors[`segment.${entryId}.contactEmail`] = "Invalid email";
+                errors[`segment.${instanceId}.contactEmail`] = "Invalid email";
               }
               if (!seg?.contactPhone || !phoneRegex.test(seg.contactPhone.replace(/\D/g, ""))) {
-                errors[`segment.${entryId}.contactPhone`] = "Invalid phone number";
+                errors[`segment.${instanceId}.contactPhone`] = "Invalid phone number";
               }
-              if (!p?.name) errors[`segment.${entryId}.golfers.0.name`] = "Name is required";
+              if (!p?.name) errors[`segment.${instanceId}.golfers.0.name`] = "Name is required";
               if (!p?.handicap || !handicapRegex.test(p.handicap)) {
-                errors[`segment.${entryId}.golfers.0.handicap`] = "Enter a valid handicap";
+                errors[`segment.${instanceId}.golfers.0.handicap`] = "Enter a valid handicap";
               }
-              if (!p?.tShirtSize) errors[`segment.${entryId}.golfers.0.tShirtSize`] = "Shirt size is required";
-              if (!seg?.banquet) errors[`segment.${entryId}.banquet`] = "Banquet choice is required";
+              if (!p?.tShirtSize) errors[`segment.${instanceId}.golfers.0.tShirtSize`] = "Shirt size is required";
+              if (!seg?.banquet) errors[`segment.${instanceId}.banquet`] = "Banquet choice is required";
             }
 
-            if (entryId === 'singlePlayerSponsorEntry') {
-              if (!formData.player1Name) errors.player1Name = "Name is required";
-              if (!formData.contactEmail || !emailRegex.test(formData.contactEmail)) errors.contactEmail = "Invalid email";
-              if (!formData.contactPhone || !phoneRegex.test(formData.contactPhone.replace(/\D/g, ""))) errors.contactPhone = "Invalid phone number";
-              if (!formData.player1Handicap || !handicapRegex.test(formData.player1Handicap)) errors.player1Handicap = "Enter a valid handicap";
-              if (!formData.company) errors.company = "Company is required";
-              if (!formData.player1TShirtSize) errors.player1TShirtSize = "Shirt size is required";
-              const sBanquet = seg?.banquet ?? formData.banquet;
-              if (!sBanquet) errors[`segment.${entryId}.banquet`] = "Banquet choice is required";
+            if (entryId === 'singlePlayerSponsorEntry' && seg) {
+              const p = seg.golfers[0];
+              if (!seg.company) errors[`segment.${instanceId}.company`] = "Company is required";
+              if (!p?.name) errors[`segment.${instanceId}.golfers.0.name`] = "Name is required";
+              if (!seg.contactEmail || !emailRegex.test(seg.contactEmail)) {
+                errors[`segment.${instanceId}.contactEmail`] = "Invalid email";
+              }
+              if (!seg.contactPhone || !phoneRegex.test(seg.contactPhone.replace(/\D/g, ""))) {
+                errors[`segment.${instanceId}.contactPhone`] = "Invalid phone number";
+              }
+              if (!p?.handicap || !handicapRegex.test(p.handicap)) {
+                errors[`segment.${instanceId}.golfers.0.handicap`] = "Enter a valid handicap";
+              }
+              if (!p?.tShirtSize) errors[`segment.${instanceId}.golfers.0.tShirtSize`] = "Shirt size is required";
+              if (!seg.banquet) errors[`segment.${instanceId}.banquet`] = "Banquet choice is required";
+            }
+
+            const slotsForContrib = golferSlotsForEntryId(entryId, pricingData);
+            if (slotsForContrib > 0 && seg) {
+              if (!(seg.doorPrize ?? '').trim()) {
+                errors[`segment.${instanceId}.doorPrize`] = 'Door prize description is required';
+              }
+              const flagVal = seg.flagPrizeContribution ?? '';
+              if (flagVal && !flagPrizeRegex.test(flagVal)) {
+                errors[`segment.${instanceId}.flagPrizeContribution`] =
+                  'Use only whole numbers and no decimals';
+              }
             }
           }
 
-          if (formData.flagPrizeContribution && !flagPrizeRegex.test(formData.flagPrizeContribution)) {
+          for (const productId of selectedProducts) {
+            const q = effectiveProductQty(productId, productQuantities);
+            if (productId === 'websiteSponsorship') {
+              const rem = productAvailability.websiteSponsorship?.remaining;
+              if (rem !== undefined && q > rem) {
+                errors.participantType = `Only ${rem} website sponsorship slot(s) available`;
+              }
+            }
+          }
+
+          if (
+            selectedEntryPackages.length === 0 &&
+            lineInstances.length === 0 &&
+            formData.flagPrizeContribution &&
+            !flagPrizeRegex.test(formData.flagPrizeContribution)
+          ) {
             errors.flagPrizeContribution = "Use only whole numbers and no decimals";
           }
 
@@ -363,21 +437,45 @@ function RegistrationFormContent() {
         };
 
         const handleEntryPackageToggle = (packageId: string) => {
-          setSelectedEntryPackages((prev) => (
-            prev.includes(packageId)
-              ? prev.filter((id) => id !== packageId)
-              : [...prev, packageId]
-          ));
+          setSelectedEntryPackages((prev) => {
+            if (prev.includes(packageId)) {
+              setPackageQuantities((pq) => {
+                const n = { ...pq };
+                delete n[packageId];
+                return n;
+              });
+              return prev.filter((id) => id !== packageId);
+            }
+            setPackageQuantities((pq) => ({ ...pq, [packageId]: 1 }));
+            return [...prev, packageId];
+          });
           setFormErrors((prevErrors) => ({
             ...prevErrors,
             participantType: "",
           }));
         };
 
-        const updateSegmentField = (entryId: string, patch: Partial<SegmentFieldState>) => {
+        const bumpPackageQuantity = (entryId: string, delta: number) => {
+          setPackageQuantities((prev) => {
+            const cur = prev[entryId] ?? 1;
+            const next = Math.min(MAX_PACKAGE_QTY, Math.max(1, cur + delta));
+            return { ...prev, [entryId]: next };
+          });
+        };
+
+        const bumpProductQuantity = (productId: string, delta: number) => {
+          if (productId === 'websiteSponsorship') return;
+          setProductQuantities((prev) => {
+            const cur = prev[productId] ?? 1;
+            const next = Math.min(MAX_PRODUCT_QTY, Math.max(1, cur + delta));
+            return { ...prev, [productId]: next };
+          });
+        };
+
+        const updateSegmentField = (instanceId: string, patch: Partial<SegmentFieldState>) => {
           setSegmentFields((prev) => ({
             ...prev,
-            [entryId]: { ...prev[entryId], ...patch } as SegmentFieldState,
+            [instanceId]: { ...prev[instanceId], ...patch } as SegmentFieldState,
           }));
         };
 
@@ -387,13 +485,27 @@ function RegistrationFormContent() {
         };
 
         const handleProductToggle = (productId: string) => {
-          setSelectedProducts((prev) => (
-            prev.includes(productId)
-              ? prev.filter((id) => id !== productId)
-              : isProductSoldOut(productId)
-                ? prev
-                : [...prev, productId]
-          ));
+          setSelectedProducts((prev) => {
+            if (prev.includes(productId)) {
+              setProductQuantities((pq) => {
+                const n = { ...pq };
+                delete n[productId];
+                return n;
+              });
+              return prev.filter((id) => id !== productId);
+            }
+            if (isProductSoldOut(productId)) return prev;
+            setProductQuantities((pq) => {
+              const n = { ...pq };
+              if (productId === 'websiteSponsorship') {
+                delete n[productId];
+              } else {
+                n[productId] = 1;
+              }
+              return n;
+            });
+            return [...prev, productId];
+          });
 
           setFormErrors((prevErrors) => ({
             ...prevErrors,
@@ -420,57 +532,75 @@ function RegistrationFormContent() {
             if (formData.dinnerTickets !== '') n += parseInt(formData.dinnerTickets, 10) || 0;
             return n;
           }
-          for (const id of selectedEntryPackages) {
-            const slots = golferSlotsForEntryId(id, pricingData);
+          for (const { instanceId, entryId } of lineInstances) {
+            const slots = golferSlotsForEntryId(entryId, pricingData);
             if (slots <= 0) continue;
-            if (id === 'teamSponsorEntry') {
-              if (formData.dinnerTickets !== '') n += parseInt(formData.dinnerTickets, 10) || 0;
-              continue;
-            }
-            const seg = segmentFields[id];
+            const seg = segmentFields[instanceId];
             const raw = seg?.dinnerTickets;
             if (raw !== '' && raw !== undefined) n += parseInt(String(raw), 10) || 0;
           }
           return n;
-        }, [selectedEntryPackages, segmentFields, formData.dinnerTickets, pricingData]);
+        }, [selectedEntryPackages, lineInstances, segmentFields, formData.dinnerTickets, pricingData]);
+
+        const totalFlagPrizeDollars = useMemo(() => {
+          let sum = 0;
+          for (const { instanceId } of lineInstances) {
+            const raw = segmentFields[instanceId]?.flagPrizeContribution ?? '';
+            if (raw && flagPrizeRegex.test(raw)) sum += parseInt(raw, 10);
+          }
+          if (
+            lineInstances.length === 0 &&
+            formData.flagPrizeContribution &&
+            flagPrizeRegex.test(formData.flagPrizeContribution)
+          ) {
+            sum += parseInt(formData.flagPrizeContribution, 10);
+          }
+          return sum;
+        }, [lineInstances, segmentFields, formData.flagPrizeContribution, flagPrizeRegex]);
 
         useEffect(() => {
           const entryPrice = selectedEntryPackages.reduce((sum, id) => {
-            return sum + (basePrices[id as keyof typeof basePrices] || 0);
+            const qty = effectivePackageQty(id, packageQuantities);
+            return sum + (basePrices[id as keyof typeof basePrices] || 0) * qty;
           }, 0);
           const productsPrice = selectedProducts.reduce((sum, productId) => {
-            return sum + (basePrices[productId as keyof typeof basePrices] || 0);
+            const q = effectiveProductQty(productId, productQuantities);
+            return sum + (basePrices[productId as keyof typeof basePrices] || 0) * q;
           }, 0);
           const newBasePrice = entryPrice + productsPrice;
-          let newFlagPrizeCost = 0;
 
           const newDinnerTicketCost =
             totalDinnerTicketUnits * ADDITIONAL_DINNER_TICKET_PRICE_USD;
 
-          if (formData.flagPrizeContribution && flagPrizeRegex.test(formData.flagPrizeContribution)) {
-            newFlagPrizeCost = parseInt(formData.flagPrizeContribution, 10);
-          }
-
-          const newTotal = newBasePrice + newDinnerTicketCost + newFlagPrizeCost;
+          const newTotal = newBasePrice + newDinnerTicketCost + totalFlagPrizeDollars;
           const newStripeFee = (newTotal * 0.029) + 0.30;
 
           setBasePrice(newBasePrice);
           setDinnerTicketCost(newDinnerTicketCost);
-          setFlagPrizeCost(newFlagPrizeCost);
+          setFlagPrizeCost(totalFlagPrizeDollars);
           setTotalPrice(newTotal);
           setStripeFee(newStripeFee);
-        }, [basePrices, flagPrizeRegex, selectedEntryPackages, selectedProducts, totalDinnerTicketUnits, formData.flagPrizeContribution]);
+        }, [
+          basePrices,
+          selectedEntryPackages,
+          selectedProducts,
+          packageQuantities,
+          productQuantities,
+          totalDinnerTicketUnits,
+          totalFlagPrizeDollars,
+        ]);
 
         const checkoutItems = useMemo<CheckoutItem[]>(() => {
           const dinnerQuantity = totalDinnerTicketUnits;
 
           const entryLines: CheckoutItem[] = selectedEntryPackages.map((entryId) => {
             const option = pricingData.find((o) => o.id === entryId);
+            const qty = effectivePackageQty(entryId, packageQuantities);
             return {
               id: entryId,
               name: option?.label || entryId,
               amount: basePrices[entryId as keyof typeof basePrices] || 0,
-              quantity: 1,
+              quantity: qty,
               category: (option?.category || 'individual') as CheckoutItem['category'],
             };
           });
@@ -481,7 +611,7 @@ function RegistrationFormContent() {
               id: option.id,
               name: option.label,
               amount: option.price,
-              quantity: 1,
+              quantity: effectiveProductQty(option.id, productQuantities),
               category: 'product',
             })),
             ...(dinnerQuantity > 0 ? [{
@@ -506,7 +636,7 @@ function RegistrationFormContent() {
               category: 'addon',
             }] : []),
           ] as CheckoutItem[];
-        }, [totalDinnerTicketUnits, selectedEntryPackages, pricingData, basePrices, selectedProductOptions, flagPrizeCost, stripeFee]);
+        }, [totalDinnerTicketUnits, selectedEntryPackages, packageQuantities, productQuantities, pricingData, basePrices, selectedProductOptions, flagPrizeCost, stripeFee]);
 
         const checkoutSummaryItems = useMemo(() => {
           const stripTrailingPriceFromLabel = (label: string) => (
@@ -526,11 +656,21 @@ function RegistrationFormContent() {
         const handleRemoveCheckoutItem = (itemId: string) => {
           if (selectedEntryPackages.includes(itemId)) {
             setSelectedEntryPackages((prev) => prev.filter((id) => id !== itemId));
+            setPackageQuantities((pq) => {
+              const n = { ...pq };
+              delete n[itemId];
+              return n;
+            });
             return;
           }
 
           if (selectedProducts.includes(itemId)) {
             setSelectedProducts((prev) => prev.filter((id) => id !== itemId));
+            setProductQuantities((pq) => {
+              const n = { ...pq };
+              delete n[itemId];
+              return n;
+            });
             return;
           }
 
@@ -548,14 +688,21 @@ function RegistrationFormContent() {
 
           if (itemId === 'flagPrizeContribution') {
             setFormData((prev) => ({ ...prev, flagPrizeContribution: '' }));
+            setSegmentFields((prev) => {
+              const next = { ...prev };
+              for (const k of Object.keys(next)) {
+                next[k] = { ...next[k], flagPrizeContribution: '' };
+              }
+              return next;
+            });
           }
         };
 
-        const buildPersistedSegments = (base: FormDataType): PersistedRegistrationSegment[] => {
-          return orderedEntrySlotsIds.map((entryId) => {
+        const buildPersistedSegments = (_base: FormDataType): PersistedRegistrationSegment[] => {
+          return lineInstances.map(({ instanceId, entryId }) => {
             const label = pricingData.find((p) => p.id === entryId)?.label || entryId;
             const slots = golferSlotsForEntryId(entryId, pricingData);
-            const seg = segmentFields[entryId];
+            const seg = segmentFields[instanceId];
 
             if (sponsorPackageIds.includes(entryId)) {
               let golfers = [...(seg?.golfers || [])];
@@ -566,46 +713,52 @@ function RegistrationFormContent() {
                 banquet: seg?.banquet || '',
                 dinnerTickets: seg?.dinnerTickets || '',
                 golfers: golfers.slice(0, slots),
-                company: base.company || '',
-                contactName: base.contactName || '',
-                contactPhone: base.contactPhone || '',
-                contactEmail: base.contactEmail || '',
+                company: seg?.company || '',
+                contactName: seg?.contactName || '',
+                contactPhone: seg?.contactPhone || '',
+                contactEmail: seg?.contactEmail || '',
+                doorPrize: seg?.doorPrize ?? '',
+                flagPrizeContribution: seg?.flagPrizeContribution ?? '',
               };
             }
 
             if (entryId === 'teamSponsorEntry') {
+              let golfers = [...(seg?.golfers || [])];
+              while (golfers.length < 3) golfers.push({ name: '', handicap: '', tShirtSize: '' });
               return {
                 entryId,
                 label,
-                banquet: base.banquet || '',
-                dinnerTickets: base.dinnerTickets || '',
-                golfers: [
-                  { name: base.player1Name || '', handicap: base.player1Handicap || '', tShirtSize: base.player1TShirtSize || '' },
-                  { name: base.player2Name || '', handicap: base.player2Handicap || '', tShirtSize: base.player2TShirtSize || '' },
-                  { name: base.player3Name || '', handicap: base.player3Handicap || '', tShirtSize: base.player3TShirtSize || '' },
-                ],
-                company: base.company || '',
-                contactName: base.contactName || '',
-                contactPhone: base.contactPhone || '',
-                contactEmail: base.contactEmail || '',
+                banquet: seg?.banquet || '',
+                dinnerTickets: seg?.dinnerTickets || '',
+                golfers: golfers.slice(0, 3),
+                company: seg?.company || '',
+                contactName: seg?.contactName || '',
+                contactPhone: seg?.contactPhone || '',
+                contactEmail: seg?.contactEmail || '',
+                teamName: seg?.teamName || '',
+                doorPrize: seg?.doorPrize ?? '',
+                flagPrizeContribution: seg?.flagPrizeContribution ?? '',
               };
             }
 
             if (entryId === 'singlePlayerSponsorEntry') {
+              const g0 = seg?.golfers[0];
               return {
                 entryId,
                 label,
-                banquet: seg?.banquet || base.banquet || '',
-                dinnerTickets: seg?.dinnerTickets || base.dinnerTickets || '',
+                banquet: seg?.banquet || '',
+                dinnerTickets: seg?.dinnerTickets || '',
                 golfers: [{
-                  name: base.player1Name || '',
-                  handicap: base.player1Handicap || '',
-                  tShirtSize: base.player1TShirtSize || '',
+                  name: g0?.name || '',
+                  handicap: g0?.handicap || '',
+                  tShirtSize: g0?.tShirtSize || '',
                 }],
-                company: base.company || '',
-                contactName: base.contactName || '',
-                contactPhone: base.contactPhone || '',
-                contactEmail: base.contactEmail || '',
+                company: seg?.company || '',
+                contactName: g0?.name || '',
+                contactPhone: seg?.contactPhone || '',
+                contactEmail: seg?.contactEmail || '',
+                doorPrize: seg?.doorPrize ?? '',
+                flagPrizeContribution: seg?.flagPrizeContribution ?? '',
               };
             }
 
@@ -624,6 +777,8 @@ function RegistrationFormContent() {
               contactName: p?.name || '',
               contactPhone: seg?.contactPhone || '',
               contactEmail: seg?.contactEmail || '',
+              doorPrize: seg?.doorPrize ?? '',
+              flagPrizeContribution: seg?.flagPrizeContribution ?? '',
             };
           });
         };
@@ -642,42 +797,19 @@ function RegistrationFormContent() {
             adjustedFormData.player1Name = '';
           }
 
-          const firstSlot = orderedEntrySlotsIds[0];
-          const firstOpt = firstSlot ? pricingData.find((p) => p.id === firstSlot) : undefined;
-          if (firstOpt?.category === 'individual' && firstSlot && segmentFields[firstSlot]) {
-            const s = segmentFields[firstSlot];
-            const g0 = s.golfers[0];
-            adjustedFormData.company = s.company ?? adjustedFormData.company;
-            adjustedFormData.contactEmail = s.contactEmail ?? adjustedFormData.contactEmail;
-            adjustedFormData.contactPhone = s.contactPhone ?? adjustedFormData.contactPhone;
-            adjustedFormData.player1Name = g0?.name ?? adjustedFormData.player1Name;
-            adjustedFormData.player1Handicap = g0?.handicap ?? adjustedFormData.player1Handicap;
-            adjustedFormData.player1TShirtSize = g0?.tShirtSize ?? adjustedFormData.player1TShirtSize;
-          }
+          const segmentsPayload = lineInstances.length > 0 ? buildPersistedSegments(adjustedFormData) : undefined;
 
-          const segmentsPayload = orderedEntrySlotsIds.length > 0 ? buildPersistedSegments(adjustedFormData) : undefined;
-
-          const firstSeg = segmentsPayload?.[0];
-          const legacyMax = firstSeg ? Math.max(1, firstSeg.golfers.length) : 0;
-          const legacyPlayers = firstSeg?.golfers || [];
-          const legacyPlayerFlat = segmentsPayload
-            ? Object.fromEntries(
-                Array.from({ length: Math.max(legacyMax, 10) }, (_, i) => {
-                  const golfer = legacyPlayers[i] || { name: '', handicap: '', tShirtSize: '' };
-                  return [
-                    [`player${i + 1}Name`, golfer.name],
-                    [`player${i + 1}Handicap`, golfer.handicap],
-                    [`player${i + 1}TShirtSize`, golfer.tShirtSize],
-                  ];
-                }).flat(),
-              )
-            : {};
+          /** Segments carry golfer/contact per row; do not mirror the first segment onto root form fields. */
+          const legacyPlayerFlat: Record<string, string> = {};
 
           try {
+            const expandedProductIds = selectedProducts.flatMap((id) =>
+              Array.from({ length: effectiveProductQty(id, productQuantities) }, () => id),
+            );
             const formattedFormData = {
               ...adjustedFormData,
               participantType: participantTypeForStorage || productsOnlyLead,
-              selectedProductIds: selectedProducts,
+              selectedProductIds: expandedProductIds,
               ...(legacyPlayerFlat),
               ...(segmentsPayload ? { segments: segmentsPayload } : {}),
             };
@@ -832,6 +964,49 @@ function RegistrationFormContent() {
                                     {option.details}
                                   </div>
                                 )}
+                                {selectedEntryPackages.includes(option.id) &&
+                                  golferSlotsForEntryId(option.id, pricingData) > 0 && (
+                                    <div
+                                      className="mt-3 flex flex-wrap items-center gap-3 text-white/80"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                      }}
+                                    >
+                                      <span className="text-sm font-semibold uppercase tracking-wide">Quantity</span>
+                                      <div className="flex items-center gap-0 border border-customInputBorder rounded-lg overflow-hidden">
+                                        <button
+                                          type="button"
+                                          className="px-4 py-2 text-lg hover:bg-white/10 disabled:opacity-40"
+                                          disabled={effectivePackageQty(option.id, packageQuantities) <= 1}
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            bumpPackageQuantity(option.id, -1);
+                                          }}
+                                          aria-label="Decrease quantity"
+                                        >
+                                          −
+                                        </button>
+                                        <span className="min-w-[2.5rem] text-center tabular-nums px-2">
+                                          {effectivePackageQty(option.id, packageQuantities)}
+                                        </span>
+                                        <button
+                                          type="button"
+                                          className="px-4 py-2 text-lg hover:bg-white/10 disabled:opacity-40"
+                                          disabled={effectivePackageQty(option.id, packageQuantities) >= MAX_PACKAGE_QTY}
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            bumpPackageQuantity(option.id, 1);
+                                          }}
+                                          aria-label="Increase quantity"
+                                        >
+                                          +
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
                               </label>
                             </div>
                           ))}
@@ -874,6 +1049,49 @@ function RegistrationFormContent() {
                                     {option.details}
                                   </div>
                                 )}
+                                {selectedEntryPackages.includes(option.id) &&
+                                  golferSlotsForEntryId(option.id, pricingData) > 0 && (
+                                    <div
+                                      className="mt-3 flex flex-wrap items-center gap-3 text-white/80"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                      }}
+                                    >
+                                      <span className="text-sm font-semibold uppercase tracking-wide">Quantity</span>
+                                      <div className="flex items-center gap-0 border border-customInputBorder rounded-lg overflow-hidden">
+                                        <button
+                                          type="button"
+                                          className="px-4 py-2 text-lg hover:bg-white/10 disabled:opacity-40"
+                                          disabled={effectivePackageQty(option.id, packageQuantities) <= 1}
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            bumpPackageQuantity(option.id, -1);
+                                          }}
+                                          aria-label="Decrease quantity"
+                                        >
+                                          −
+                                        </button>
+                                        <span className="min-w-[2.5rem] text-center tabular-nums px-2">
+                                          {effectivePackageQty(option.id, packageQuantities)}
+                                        </span>
+                                        <button
+                                          type="button"
+                                          className="px-4 py-2 text-lg hover:bg-white/10 disabled:opacity-40"
+                                          disabled={effectivePackageQty(option.id, packageQuantities) >= MAX_PACKAGE_QTY}
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            bumpPackageQuantity(option.id, 1);
+                                          }}
+                                          aria-label="Increase quantity"
+                                        >
+                                          +
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
                               </label>
                             </div>
                           ))}
@@ -921,6 +1139,48 @@ function RegistrationFormContent() {
                                     {option.details}
                                   </div>
                                 )}
+                                {selectedProducts.includes(option.id) && option.id !== 'websiteSponsorship' && (
+                                  <div
+                                    className="mt-3 flex flex-wrap items-center gap-3 text-white/80"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                    }}
+                                  >
+                                    <span className="text-sm font-semibold uppercase tracking-wide">Quantity</span>
+                                    <div className="flex items-center gap-0 border border-customInputBorder rounded-lg overflow-hidden">
+                                      <button
+                                        type="button"
+                                        className="px-4 py-2 text-lg hover:bg-white/10 disabled:opacity-40"
+                                        disabled={(productQuantities[option.id] ?? 1) <= 1}
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          bumpProductQuantity(option.id, -1);
+                                        }}
+                                        aria-label="Decrease quantity"
+                                      >
+                                        −
+                                      </button>
+                                      <span className="min-w-[2.5rem] text-center tabular-nums px-2">
+                                        {Math.min(MAX_PRODUCT_QTY, Math.max(1, productQuantities[option.id] ?? 1))}
+                                      </span>
+                                      <button
+                                        type="button"
+                                        className="px-4 py-2 text-lg hover:bg-white/10 disabled:opacity-40"
+                                        disabled={(productQuantities[option.id] ?? 1) >= MAX_PRODUCT_QTY}
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          bumpProductQuantity(option.id, 1);
+                                        }}
+                                        aria-label="Increase quantity"
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
                               </label>
                             </div>
                           ))}
@@ -933,44 +1193,28 @@ function RegistrationFormContent() {
                 )}
               </div>
 
-              {selectedPricingOptions.some((option) => option.subText?.length || option.highlightText?.length) && (
-                <div className="bg-black/50 mt-6 text-customInputBorder col-span-full p-3 text-sm md:text-lg rounded-lg space-y-4">
-                  {selectedPricingOptions.map((option) => (
-                    <div key={`selected-message-${option.id}`}>
-                      {option.subText && (
-                        <div
-                          dangerouslySetInnerHTML={{ __html: option.subText }}
-                        />
-                      )}
-                      {option.highlightText && (
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: `<p class="p-3 mt-3 text-sm md:text-lg bg-customYellow text-secondary-foreground font-bold rounded-lg">${option.highlightText}</p>`,
-                          }}
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
               <div className="col-span-full mt-10 mb-10 pt-2 pb-2">
                 <hr className="border-t border-white/20" />
               </div>
 
-              {orderedEntrySlotsIds.map((entryId) => {
+              {lineInstances.map(({ instanceId, entryId }) => {
                 const option = pricingData.find((p) => p.id === entryId);
-                const seg = segmentFields[entryId];
+                const seg = segmentFields[instanceId];
                 if (!seg) return null;
 
                 const segmentCardClass =
                   'col-span-2 w-full border border-customInputBorder rounded-lg p-4 md:p-6 mb-8 pb-8 md:pb-10';
 
+                const pkgQty = effectivePackageQty(entryId, packageQuantities);
+                const ordinal =
+                  lineInstances.filter((l) => l.entryId === entryId).findIndex((l) => l.instanceId === instanceId) + 1;
+                const blockTitle = `${option?.label ?? entryId}${pkgQty > 1 ? ` (${ordinal} of ${pkgQty})` : ''}`;
+
                 if (sponsorPackageIds.includes(entryId)) {
                   const slots = golferSlotsForEntryId(entryId, pricingData);
-                  const rosterOnly = entryId !== firstSponsorSlotEntryId;
                   return (
-                    <div key={entryId} className={segmentCardClass}>
+                    <div key={instanceId} className={segmentCardClass}>
+                      <RegistrationOptionDisclaimer option={option} />
                       <GolfersFormFields
                         setFormErrors={setFormErrors}
                         handleSelectChange={handleSelectChange}
@@ -980,17 +1224,30 @@ function RegistrationFormContent() {
                         formErrors={formErrors}
                         formData={formData}
                         maxGolfers={slots}
-                        rosterOnly={rosterOnly}
-                        segmentEntryId={entryId}
-                        segmentTitle={option?.label ?? entryId}
+                        rosterOnly={false}
+                        segmentContribution={{
+                          instanceId,
+                          doorPrize: seg.doorPrize ?? '',
+                          flagPrizeContribution: seg.flagPrizeContribution ?? '',
+                          onPatch: (patch) => updateSegmentField(instanceId, patch),
+                        }}
+                        segmentEntryId={instanceId}
+                        segmentTitle={blockTitle}
                         segmentBanquet={seg.banquet}
                         segmentDinnerTickets={seg.dinnerTickets}
-                        onSegmentFieldChange={(field, value) => updateSegmentField(entryId, { [field]: value })}
+                        instanceContact={{
+                          company: seg.company ?? '',
+                          contactName: seg.contactName ?? '',
+                          contactPhone: seg.contactPhone ?? '',
+                          contactEmail: seg.contactEmail ?? '',
+                          onPatch: (patch) => updateSegmentField(instanceId, patch),
+                        }}
+                        onSegmentFieldChange={(field, value) => updateSegmentField(instanceId, { [field]: value })}
                         updateGolfers={(fn) => {
                           setSegmentFields((p) => {
-                            const cur = p[entryId];
+                            const cur = p[instanceId];
                             if (!cur) return p;
-                            return { ...p, [entryId]: { ...cur, golfers: fn(cur.golfers) } };
+                            return { ...p, [instanceId]: { ...cur, golfers: fn(cur.golfers) } };
                           });
                         }}
                       />
@@ -1000,32 +1257,47 @@ function RegistrationFormContent() {
 
                 if (entryId === 'teamSponsorEntry') {
                   return (
-                    <div key={entryId} className={segmentCardClass}>
-                      <h3 className="text-white/80 text-xl font-semibold mb-6">{option?.label ?? entryId}</h3>
-                      <TeamFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
+                    <div key={instanceId} className={segmentCardClass}>
+                      <RegistrationOptionDisclaimer option={option} />
+                      <h3 className="text-white/80 text-xl font-semibold mb-6">{blockTitle}</h3>
+                      <TeamSegmentFields
+                        instanceId={instanceId}
+                        segment={seg}
+                        onPatch={(patch) => updateSegmentField(instanceId, patch)}
+                        setFormErrors={setFormErrors}
+                        formErrors={formErrors}
+                      />
                     </div>
                   );
                 }
 
                 if (entryId === 'singlePlayerSponsorEntry') {
                   return (
-                    <div key={entryId} className={segmentCardClass}>
-                      <h3 className="text-white/80 text-xl font-semibold mb-6">{option?.label ?? entryId}</h3>
-                      <DefaultFormFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
-                      <SingleEntryFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
+                    <div key={instanceId} className={segmentCardClass}>
+                      <RegistrationOptionDisclaimer option={option} />
+                      <h3 className="text-white/80 text-xl font-semibold mb-6">{blockTitle}</h3>
+                      <SinglePlayerSegmentFields
+                        instanceId={instanceId}
+                        segment={seg}
+                        onPatch={(patch) => updateSegmentField(instanceId, patch)}
+                        setFormErrors={setFormErrors}
+                        formErrors={formErrors}
+                      />
                     </div>
                   );
                 }
 
                 if (option?.category === 'individual') {
                   return (
-                    <div key={entryId} className={segmentCardClass}>
+                    <div key={instanceId} className={segmentCardClass}>
+                      <RegistrationOptionDisclaimer option={option} />
                       <IndividualSegmentFields
-                        segmentId={entryId}
-                        segmentTitle={option.label ?? entryId}
+                        segmentId={instanceId}
+                        segmentTitle={blockTitle}
                         segment={seg}
                         onSegmentChange={(id, patch) => updateSegmentField(id, patch)}
-                        formErrors={formErrors as Record<string, string | undefined>}
+                        setFormErrors={setFormErrors}
+                        formErrors={formErrors}
                       />
                     </div>
                   );
@@ -1034,8 +1306,15 @@ function RegistrationFormContent() {
                 return null;
               })}
 
-              {!selectedEntryPackages.length && selectedProducts.length > 0 && (
-                <SponsorProductsFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
+              {selectedProducts.some((id) => sponsorProductIds.includes(id)) && (
+                <div className="col-span-2 w-full border border-customInputBorder rounded-lg p-4 md:p-6 mb-8 pb-8 md:pb-10 space-y-6">
+                  <h3 className="text-white/80 text-xl font-semibold mb-4">Sponsorship product contact</h3>
+                  <SponsorProductsFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
+                  {selectedProducts.map((productId) => {
+                    const opt = pricingData.find((p) => p.id === productId);
+                    return <RegistrationOptionDisclaimer key={`product-disclaimer-${productId}`} option={opt} />;
+                  })}
+                </div>
               )}
 
               <div className="col-span-full">

@@ -1,18 +1,20 @@
 'use client';
 
+import type { Dispatch, SetStateAction } from 'react';
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import type { SegmentFieldState } from '@/lib/registration-segments';
 import { ADDITIONAL_DINNER_TICKET_PRICE_USD } from '@/lib/dinner-ticket-price';
 import { formatUsPhoneInput, uppercaseRegistrationText } from '@/lib/registration-input-normalize';
-
-type FormErrorsType = Record<string, string | undefined>;
+import type { FormErrorsType } from '@/components/registration-form';
+import SegmentContributionFields from '@/components/segment-contribution-fields';
 
 type IndividualSegmentFieldsProps = {
   segmentId: string;
   segmentTitle: string;
   segment: SegmentFieldState;
   onSegmentChange: (segmentId: string, patch: Partial<SegmentFieldState>) => void;
+  setFormErrors: Dispatch<SetStateAction<FormErrorsType>>;
   formErrors: FormErrorsType;
 };
 
@@ -21,6 +23,7 @@ export default function IndividualSegmentFields({
   segmentTitle,
   segment,
   onSegmentChange,
+  setFormErrors,
   formErrors,
 }: IndividualSegmentFieldsProps) {
   const p = segment.golfers[0] || { name: '', handicap: '', tShirtSize: '' };
@@ -135,6 +138,15 @@ export default function IndividualSegmentFields({
           </SelectContent>
         </Select>
       </div>
+
+      <SegmentContributionFields
+        instanceId={segmentId}
+        doorPrize={segment.doorPrize ?? ''}
+        flagPrizeContribution={segment.flagPrizeContribution ?? ''}
+        onPatch={(patch) => onSegmentChange(segmentId, patch)}
+        setFormErrors={setFormErrors}
+        formErrors={formErrors}
+      />
     </div>
   );
 }
