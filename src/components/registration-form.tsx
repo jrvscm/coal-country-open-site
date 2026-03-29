@@ -288,9 +288,15 @@ function RegistrationFormContent() {
           return selectedPricingOptions.some((item) => item.category === 'sponsor');
         }, [selectedPricingOptions]);
 
-        const validateForm = () => {
+        const manualEntryMode = params.get('manual') === '1';
+        const [adminManualSecret, setAdminManualSecret] = useState('');
+        const [manualSheetSuccess, setManualSheetSuccess] = useState(false);
+        const [submittingMode, setSubmittingMode] = useState<'stripe' | 'manual' | null>(null);
+
+        const validateForm = (options?: { bypassWebsiteCapacity?: boolean }) => {
           const errors: FormErrorsType = {};
           const hasEntry = selectedEntryPackages.length > 0;
+          const bypassWebsite = Boolean(options?.bypassWebsiteCapacity);
 
           if (!hasEntry && selectedProducts.length === 0) {
             errors.participantType = "Please select at least one registration option";
@@ -403,12 +409,14 @@ function RegistrationFormContent() {
             }
           }
 
-          for (const productId of selectedProducts) {
-            const q = effectiveProductQty(productId, productQuantities);
-            if (productId === 'websiteSponsorship') {
-              const rem = productAvailability.websiteSponsorship?.remaining;
-              if (rem !== undefined && q > rem) {
-                errors.participantType = `Only ${rem} website sponsorship slot(s) available`;
+          if (!bypassWebsite) {
+            for (const productId of selectedProducts) {
+              const q = effectiveProductQty(productId, productQuantities);
+              if (productId === 'websiteSponsorship') {
+                const rem = productAvailability.websiteSponsorship?.remaining;
+                if (rem !== undefined && q > rem) {
+                  errors.participantType = `Only ${rem} website sponsorship slot(s) available`;
+                }
               }
             }
           }
@@ -783,11 +791,11 @@ function RegistrationFormContent() {
           });
         };
 
-        const handleCheckout = async (e: React.MouseEvent<HTMLButtonElement>) => {
-          e.preventDefault();
-
-          if (!validateForm()) return;
-
+        const getFormattedRegistrationPayload = (): FormDataType & {
+          participantType: string;
+          selectedProductIds: string[];
+          segments?: PersistedRegistrationSegment[];
+        } => {
           const participantTypeForStorage = masterColumnCParticipantType(selectedEntryPackages, selectedProducts);
           const productsOnlyLead = !selectedEntryPackages.length && selectedProducts[0] ? selectedProducts[0] : '';
 
@@ -798,22 +806,69 @@ function RegistrationFormContent() {
           }
 
           const segmentsPayload = lineInstances.length > 0 ? buildPersistedSegments(adjustedFormData) : undefined;
-
-          /** Segments carry golfer/contact per row; do not mirror the first segment onto root form fields. */
           const legacyPlayerFlat: Record<string, string> = {};
+          const expandedProductIds = selectedProducts.flatMap((id) =>
+            Array.from({ length: effectiveProductQty(id, productQuantities) }, () => id),
+          );
+          return {
+            ...adjustedFormData,
+            participantType: participantTypeForStorage || productsOnlyLead,
+            selectedProductIds: expandedProductIds,
+            ...legacyPlayerFlat,
+            ...(segmentsPayload ? { segments: segmentsPayload } : {}),
+          };
+        };
+
+        const handleManualSubmitToSheet = async (e: React.MouseEvent<HTMLButtonElement>) => {
+          e.preventDefault();
+          if (!adminManualSecret.trim()) {
+            alert('Enter the admin password.');
+            return;
+          }
+          if (!validateForm({ bypassWebsiteCapacity: true })) return;
 
           try {
-            const expandedProductIds = selectedProducts.flatMap((id) =>
-              Array.from({ length: effectiveProductQty(id, productQuantities) }, () => id),
-            );
-            const formattedFormData = {
-              ...adjustedFormData,
-              participantType: participantTypeForStorage || productsOnlyLead,
-              selectedProductIds: expandedProductIds,
-              ...(legacyPlayerFlat),
-              ...(segmentsPayload ? { segments: segmentsPayload } : {}),
-            };
-            setLoading(true)
+            setSubmittingMode('manual');
+            setLoading(true);
+            const formattedFormData = getFormattedRegistrationPayload();
+            const res = await fetch('/api/admin/manual-registration', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                adminSecret: adminManualSecret,
+                formData: formattedFormData,
+              }),
+            });
+
+            if (res.status === 403 || res.status === 404) {
+              alert('Invalid admin password or manual entry is not enabled on this server.');
+              return;
+            }
+            if (!res.ok) {
+              alert('Could not write to the registration sheet. Please try again.');
+              return;
+            }
+            setManualSheetSuccess(true);
+            setRegistrationStatus('success');
+            handleScrollDown();
+          } catch (err) {
+            console.error('Manual registration error:', err);
+            alert('An unexpected error occurred.');
+          } finally {
+            setLoading(false);
+            setSubmittingMode(null);
+          }
+        };
+
+        const handleCheckout = async (e: React.MouseEvent<HTMLButtonElement>) => {
+          e.preventDefault();
+
+          if (!validateForm()) return;
+
+          try {
+            const formattedFormData = getFormattedRegistrationPayload();
+            setSubmittingMode('stripe');
+            setLoading(true);
             const uid = uuidv4();
             store.set<RegistrationStoreData>('registrationData', { uid, formData: formattedFormData });
 
@@ -890,6 +945,7 @@ function RegistrationFormContent() {
             alert('An unexpected error occurred. Please refresh and try again.');
           } finally {
             setLoading(false);
+            setSubmittingMode(null);
           }
         };
 
@@ -900,6 +956,7 @@ function RegistrationFormContent() {
         useEffect(() => {
           const confirmed = params.get('confirmed');
           if (confirmed) {
+            setManualSheetSuccess(false);
             setRegistrationStatus('success');
             handleScrollDown();
           }
@@ -925,6 +982,29 @@ function RegistrationFormContent() {
               <div className="col-span-full my-8">
                 <hr className="border-t border-white/20" />
               </div>
+
+              {manualEntryMode && (
+                <div className="col-span-full rounded-lg border border-amber-500/60 bg-amber-950/40 p-4 md:p-5 text-amber-100/90 space-y-3">
+                  <p className="font-semibold text-lg">Board manual entry</p>
+                  <p className="text-sm text-amber-100/80">
+                    Rows are written directly to the Registrations sheet. No payment.
+                  </p>
+                  <div>
+                    <label htmlFor="admin-manual-secret" className="sr-only">
+                      Admin password
+                    </label>
+                    <input
+                      id="admin-manual-secret"
+                      type="password"
+                      autoComplete="off"
+                      placeholder="Admin password"
+                      value={adminManualSecret}
+                      onChange={(e) => setAdminManualSecret(e.target.value)}
+                      className="block w-full max-w-md bg-customInputFill border border-customInputBorder p-4 rounded-xl text-white placeholder:text-white/50"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="md:col-span-2 md:min-w-0">
               <div className="col-span-full">
@@ -1361,9 +1441,30 @@ function RegistrationFormContent() {
                     for more information.
                   </p>
                 </div>
-                <Button disabled={loading} onClick={handleCheckout} className="p-0 md:p-6 mr-[1rem] border border-customPrimary w-full bg-customPrimary hover:bg-customPrimary/60 uppercase font-text font-bold flex flex-row justify-center items-center">
-                  {loading ? 'Redirecting to Secure Payment...' : 'Continue to Secure Payment'} <FaLock className="h-16 w-16 font-bold" />
-                </Button>
+                <div className={`flex flex-col gap-3 ${manualEntryMode ? 'sm:flex-row sm:flex-wrap' : ''}`}>
+                  <Button
+                    disabled={loading}
+                    onClick={handleCheckout}
+                    className="p-0 md:p-6 border border-customPrimary w-full sm:flex-1 bg-customPrimary hover:bg-customPrimary/60 uppercase font-text font-bold flex flex-row justify-center items-center"
+                  >
+                    {loading && submittingMode === 'stripe'
+                      ? 'Redirecting to Secure Payment...'
+                      : 'Continue to Secure Payment'}{' '}
+                    <FaLock className="h-16 w-16 font-bold" />
+                  </Button>
+                  {manualEntryMode && (
+                    <Button
+                      type="button"
+                      disabled={loading}
+                      onClick={handleManualSubmitToSheet}
+                      className="p-0 md:p-6 border border-amber-600 w-full sm:flex-1 bg-amber-700 hover:bg-amber-600 text-white uppercase font-text font-bold flex flex-row justify-center items-center"
+                    >
+                      {loading && submittingMode === 'manual'
+                        ? 'Writing to sheet...'
+                        : 'Submit to sheet (no payment)'}
+                    </Button>
+                  )}
+                </div>
               </div>
 
               <div className="col-span-full mt-8">
@@ -1404,11 +1505,18 @@ function RegistrationFormContent() {
                   <FaRegCheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
                   <h2 className="text-2xl font-bold mb-2">You&apos;re all set!</h2>
                   <p className="mb-2">See you at the tournament on {tournamentStartDate} {new Date().getFullYear()}.</p>
-                  <p className="text-sm text-gray-600">Check your email for payment receipt and details.</p>
+                  {manualSheetSuccess ? (
+                    <p className="text-sm text-gray-600">
+                      Registration row(s) were added to the sheet. No payment was processed.
+                    </p>
+                  ) : (
+                    <p className="text-sm text-gray-600">Check your email for payment receipt and details.</p>
+                  )}
                   <button
                     className="mt-6 bg-customPrimary text-white px-4 py-2 rounded hover:bg-customPrimary/80"
                     onClick={() => {
                       setRegistrationStatus('idle');
+                      setManualSheetSuccess(false);
                       const url = new URL(window.location.href);
                       url.searchParams.delete('confirmed');
                       window.history.replaceState({}, document.title, url.toString());

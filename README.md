@@ -18,6 +18,12 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Environment variables
+
+For **board manual registration** (bookmark `/registration/player?manual=1`, submit to the Google Sheet without Stripe), set `REGISTRATION_ADMIN_SECRET` in Netlify or `.env.local` to a strong random value. If it is missing or empty, `POST /api/admin/manual-registration` is disabled (404). See [`.env.example`](./.env.example).
+
+**Feature documentation** for registration, payments, and CMS behavior lives in [`features/README.md`](./features/README.md).
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
