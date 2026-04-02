@@ -132,17 +132,7 @@ function RegistrationOptionDisclaimer({
 export default function RegistrationForm() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <div className="bg-customBackground rounded-lg max-w-[1200px] m-auto py-24 px-8 mt-32">
-        <div className="text-center">
-          <div className="text-white/80 text-4xl font-bold mb-8">Registration Closed</div>
-          <div className="text-white/60 text-lg max-w-2xl mx-auto leading-relaxed">
-            Registration for this year&apos;s tournament has ended. Please check back next year for registration details.
-          </div>
-        </div>
-      </div>
-      
-
-      {/* <RegistrationFormContent /> */}
+      <RegistrationFormContent />
     </Suspense>
   );
 }
