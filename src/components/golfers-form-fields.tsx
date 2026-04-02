@@ -1,60 +1,115 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import type { FormDataType } from '@/components/registration-form';
-import SingleEntryFields from '@/components/single-entry-fields';
+import type { FormDataType, FormErrorsType } from '@/components/registration-form';
+import SegmentContributionFields from '@/components/segment-contribution-fields';
 import { MdClose } from "react-icons/md";
 import { TiUserAddOutline } from "react-icons/ti";
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ADDITIONAL_DINNER_TICKET_PRICE_USD } from '@/lib/dinner-ticket-price';
+import { formatUsPhoneInput, uppercaseRegistrationText } from '@/lib/registration-input-normalize';
 
-type FormErrorsType = Record<string, string>;
+export type GolferRow = { name: string; handicap: string; tShirtSize: string };
 
 interface GolfersFormProps {
-  golfers: { name: string; handicap: string; tShirtSize: string }[];
+  golfers: GolferRow[];
   setFormData: React.Dispatch<React.SetStateAction<FormDataType>>;
   formData: FormDataType;
   maxGolfers: number;
   formErrors: Partial<FormDataType>;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: (name: string, value: string) => void;
-  setFormErrors: React.Dispatch<React.SetStateAction<FormErrorsType>>
+  setFormErrors: React.Dispatch<React.SetStateAction<FormErrorsType>>;
+  /** Second+ sponsor package blocks: company/contact collected on first package only */
+  rosterOnly?: boolean;
+  segmentEntryId?: string;
+  segmentBanquet?: string;
+  segmentDinnerTickets?: string;
+  onSegmentFieldChange?: (field: 'banquet' | 'dinnerTickets', value: string) => void;
+  updateGolfers?: (updater: (prev: GolferRow[]) => GolferRow[]) => void;
+  segmentTitle?: string;
+  /** Per-instance sponsor: company/contact stored on the segment, not global formData */
+  instanceContact?: {
+    company: string;
+    contactName: string;
+    contactPhone: string;
+    contactEmail: string;
+    onPatch: (patch: Partial<{ company: string; contactName: string; contactPhone: string; contactEmail: string }>) => void;
+  };
+  /** Per-instance door/flag when using segment-backed registration */
+  segmentContribution?: {
+    instanceId: string;
+    doorPrize: string;
+    flagPrizeContribution: string;
+    onPatch: (patch: { doorPrize?: string; flagPrizeContribution?: string }) => void;
+  };
 }
 
-const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, maxGolfers, formErrors, formData, handleChange, handleSelectChange, setFormErrors }) => {
+const GolfersFormFields: React.FC<GolfersFormProps> = ({
+  golfers,
+  setFormData,
+  maxGolfers,
+  formErrors,
+  formData,
+  handleChange,
+  handleSelectChange,
+  setFormErrors,
+  rosterOnly = false,
+  segmentEntryId,
+  segmentBanquet,
+  segmentDinnerTickets,
+  onSegmentFieldChange,
+  updateGolfers,
+  segmentTitle,
+  instanceContact,
+  segmentContribution,
+}) => {
+  const golferErrorPrefix = segmentEntryId ? `segment.${segmentEntryId}.golfers` : 'golfers';
+  const contactErr = (field: string) =>
+    segmentEntryId
+      ? (formErrors as Record<string, string | undefined>)[`segment.${segmentEntryId}.${field}`]
+      : (formErrors as Record<string, string | undefined>)[field];
+
   const getError = (field: string): string | undefined => {
     return (formErrors as Record<string, string | undefined>)[field];
   };
-  
-  const addGolfer = () => {
-    if (golfers.length < maxGolfers) {
-      setFormData((prev) => ({
-        ...prev,
-        golfers: [...prev.golfers, { name: "", handicap: "", tShirtSize: "" }],
-      }));
+
+  const applyGolfers = (updater: (prev: GolferRow[]) => GolferRow[]) => {
+    if (updateGolfers) {
+      updateGolfers(updater);
+      return;
     }
-  };
-  
-  const removeGolfer = (index: number) => {
     setFormData((prev) => ({
       ...prev,
-      golfers: prev.golfers.filter((_, i) => i !== index),
+      golfers: updater(prev.golfers),
     }));
+  };
+
+  const addGolfer = () => {
+    if (golfers.length < maxGolfers) {
+      applyGolfers((prev) => [...prev, { name: "", handicap: "", tShirtSize: "" }]);
+    }
+  };
+
+  const removeGolfer = (index: number) => {
+    applyGolfers((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleGolferChange = (
     index: number,
-    field: keyof (typeof golfers)[number],
+    field: keyof GolferRow,
     value: string
   ) => {
-    const fieldKey = `golfers.${index}.${field}` as keyof FormDataType;
-  
-    setFormData((prev) => ({
-      ...prev,
-      golfers: prev.golfers.map((golfer, i) =>
-        i === index ? { ...golfer, [field]: value } : golfer
-      ),
-    }));
-  
+    const fieldKey = `${golferErrorPrefix}.${index}.${field}`;
+    const normalized =
+      field === 'name' || field === 'handicap' || field === 'tShirtSize'
+        ? uppercaseRegistrationText(value)
+        : value;
+
+    applyGolfers((prev) =>
+      prev.map((golfer, i) => (i === index ? { ...golfer, [field]: normalized } : golfer)),
+    );
+
     setFormErrors((prevErrors) => {
       const newErrors = { ...prevErrors };
       delete newErrors[fieldKey];
@@ -62,81 +117,180 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
     });
   };
 
+  const mealFromSegment = Boolean(onSegmentFieldChange);
+  const banquetValue = mealFromSegment ? (segmentBanquet ?? '') : formData.banquet;
+  const dinnerValue = mealFromSegment ? (segmentDinnerTickets ?? '') : formData.dinnerTickets;
+  const onBanquetChange = (v: string) => {
+    if (onSegmentFieldChange) {
+      onSegmentFieldChange('banquet', v);
+    } else {
+      handleSelectChange('banquet', v);
+    }
+  };
+  const onDinnerChange = (v: string) => {
+    if (onSegmentFieldChange) {
+      onSegmentFieldChange('dinnerTickets', v);
+    } else {
+      handleSelectChange('dinnerTickets', v);
+    }
+  };
+
+  const banquetErrorKey = segmentEntryId ? `segment.${segmentEntryId}.banquet` : 'banquet';
+  const banquetError = segmentEntryId
+    ? (formErrors as Record<string, string | undefined>)[banquetErrorKey]
+    : formErrors.banquet;
+
   return (
     <>
-        <div className="col-span-2">
+        {segmentTitle ? (
+          <h3 className="text-white/80 text-xl font-semibold mb-6">{segmentTitle}</h3>
+        ) : null}
+        {!rosterOnly && (
+          <>
+        <div className="col-span-2 mb-6">
             <h3 className="text-white/80 text-lg font-semibold mb-2">COMPANY NAME</h3>
-            <label htmlFor="company" className="sr-only block text-sm text-white/60 mb-1">Company Name</label>
+            <label htmlFor={segmentEntryId ? `company-${segmentEntryId}` : 'company'} className="sr-only block text-sm text-white/60 mb-1">Company Name</label>
             <Input
-              id="company"
+              id={segmentEntryId ? `company-${segmentEntryId}` : 'company'}
               name="company"
               placeholder="Company"
-              value={formData.company}
-              onChange={handleChange}
+              value={instanceContact ? instanceContact.company : formData.company}
+              onChange={
+                instanceContact
+                  ? (e) => {
+                      instanceContact.onPatch({ company: uppercaseRegistrationText(e.target.value) });
+                      if (segmentEntryId) {
+                        setFormErrors((prev) => {
+                          const next = { ...prev };
+                          delete next[`segment.${segmentEntryId}.company`];
+                          return next;
+                        });
+                      }
+                    }
+                  : handleChange
+              }
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
-                ${formErrors.company ? 'border-red-500' : 'border-customInputBorder'}
-              `} 
+                ${contactErr('company') || (!instanceContact && formErrors.company) ? 'border-red-500' : 'border-customInputBorder'}
+              `}
             />
-            {formErrors.company && <p className="text-red-500 text-sm mt-1">{formErrors.company}</p>}
+            {(instanceContact ? contactErr('company') : formErrors.company) && (
+              <p className="text-red-500 text-sm mt-1">{instanceContact ? contactErr('company') : formErrors.company}</p>
+            )}
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-2 mb-6">
           <h3 className="text-white/80 text-lg font-semibold mb-2">COMPANY CONTACT</h3>
           <div className="mt-3">
-            <label htmlFor="contactName" className="sr-only hidden block text-sm text-white/60 mb-1">Contact Name</label>
+            <label htmlFor={segmentEntryId ? `contactName-${segmentEntryId}` : 'contactName'} className="sr-only hidden block text-sm text-white/60 mb-1">Contact Name</label>
             <Input
-              id="contactName"
+              id={segmentEntryId ? `contactName-${segmentEntryId}` : 'contactName'}
               name="contactName"
               placeholder="Contact Name"
-              value={formData.contactName}
-              onChange={handleChange}
+              value={instanceContact ? instanceContact.contactName : formData.contactName}
+              onChange={
+                instanceContact
+                  ? (e) => {
+                      instanceContact.onPatch({ contactName: uppercaseRegistrationText(e.target.value) });
+                      if (segmentEntryId) {
+                        setFormErrors((prev) => {
+                          const next = { ...prev };
+                          delete next[`segment.${segmentEntryId}.contactName`];
+                          return next;
+                        });
+                      }
+                    }
+                  : handleChange
+              }
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
-                ${formErrors.contactName ? 'border-red-500' : 'border-customInputBorder'}
-              `} 
+                ${contactErr('contactName') || (!instanceContact && formErrors.contactName) ? 'border-red-500' : 'border-customInputBorder'}
+              `}
             />
-            {formErrors.contactName && <p className="text-red-500 text-sm mt-1">{formErrors.contactName}</p>}
+            {(instanceContact ? contactErr('contactName') : formErrors.contactName) && (
+              <p className="text-red-500 text-sm mt-1">{instanceContact ? contactErr('contactName') : formErrors.contactName}</p>
+            )}
           </div>
 
           <div className="mt-3">
-            <label htmlFor="contactPhone" className="sr-only hidden block text-sm text-white/60 mb-1">Contact Phone</label>
+            <label htmlFor={segmentEntryId ? `contactPhone-${segmentEntryId}` : 'contactPhone'} className="sr-only hidden block text-sm text-white/60 mb-1">Contact Phone</label>
             <Input
-              id="contactPhone"
+              id={segmentEntryId ? `contactPhone-${segmentEntryId}` : 'contactPhone'}
               name="contactPhone"
-              placeholder="Contact Phone"
-              value={formData.contactPhone}
-              onChange={handleChange}
+              placeholder="(555) 555-5555"
+              value={instanceContact ? instanceContact.contactPhone : formData.contactPhone}
+              onChange={
+                instanceContact
+                  ? (e) => {
+                      instanceContact.onPatch({ contactPhone: formatUsPhoneInput(e.target.value) });
+                      if (segmentEntryId) {
+                        setFormErrors((prev) => {
+                          const next = { ...prev };
+                          delete next[`segment.${segmentEntryId}.contactPhone`];
+                          return next;
+                        });
+                      }
+                    }
+                  : handleChange
+              }
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
-                ${formErrors.contactPhone? 'border-red-500' : 'border-customInputBorder'}
-              `} 
+                ${contactErr('contactPhone') || (!instanceContact && formErrors.contactPhone) ? 'border-red-500' : 'border-customInputBorder'}
+              `}
             />
-            {formErrors.contactPhone && <p className="text-red-500 text-sm mt-1">{formErrors.contactPhone}</p>}
+            {(instanceContact ? contactErr('contactPhone') : formErrors.contactPhone) && (
+              <p className="text-red-500 text-sm mt-1">{instanceContact ? contactErr('contactPhone') : formErrors.contactPhone}</p>
+            )}
           </div>
 
           <div className="mt-3">
-            <label htmlFor="contactEmail" className="sr-only hidden block text-sm text-white/60 mb-1">Contact Email</label>
+            <label htmlFor={segmentEntryId ? `contactEmail-${segmentEntryId}` : 'contactEmail'} className="sr-only hidden block text-sm text-white/60 mb-1">Contact Email</label>
             <Input
-              id="contactEmail"
+              id={segmentEntryId ? `contactEmail-${segmentEntryId}` : 'contactEmail'}
               name="contactEmail"
               placeholder="Contact Email"
-              value={formData.contactEmail}
-              onChange={handleChange}
+              value={instanceContact ? instanceContact.contactEmail : formData.contactEmail}
+              onChange={
+                instanceContact
+                  ? (e) => {
+                      instanceContact.onPatch({ contactEmail: e.target.value });
+                      if (segmentEntryId) {
+                        setFormErrors((prev) => {
+                          const next = { ...prev };
+                          delete next[`segment.${segmentEntryId}.contactEmail`];
+                          return next;
+                        });
+                      }
+                    }
+                  : handleChange
+              }
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
-                ${formErrors.contactEmail ? 'border-red-500' : 'border-customInputBorder'}
-              `} 
+                ${contactErr('contactEmail') || (!instanceContact && formErrors.contactEmail) ? 'border-red-500' : 'border-customInputBorder'}
+              `}
             />
-            {formErrors.contactEmail && <p className="text-red-500 text-sm mt-1">{formErrors.contactEmail}</p>}
+            {(instanceContact ? contactErr('contactEmail') : formErrors.contactEmail) && (
+              <p className="text-red-500 text-sm mt-1">{instanceContact ? contactErr('contactEmail') : formErrors.contactEmail}</p>
+            )}
           </div>
         </div>
 
-        <SingleEntryFields formData={formData} handleChange={handleChange} handleSelectChange={handleSelectChange} formErrors={formErrors} />
+        {segmentContribution && (
+          <SegmentContributionFields
+            instanceId={segmentContribution.instanceId}
+            doorPrize={segmentContribution.doorPrize}
+            flagPrizeContribution={segmentContribution.flagPrizeContribution}
+            onPatch={segmentContribution.onPatch}
+            setFormErrors={setFormErrors}
+            formErrors={formErrors as unknown as FormErrorsType}
+          />
+        )}
+          </>
+        )}
 
-        <div className="col-span-2">
+        <div className="col-span-2 mb-6">
             <h3 className="text-white/80 text-lg font-semibold mb-2">BANQUET</h3>
             <div className="mt-3">
               <label className="sr-only block text-sm text-white/60 mb-1">Will You Attend Banquet?</label>
-              <Select value={formData.banquet} onValueChange={(value) => handleSelectChange('banquet', value)}>
+              <Select value={banquetValue} onValueChange={onBanquetChange}>
                 <SelectTrigger className={`relative flex justify-start align-center w-full bg-customInputFill border p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg text-lg 
-                  ${formErrors.banquet ? 'border-red-500' : 'border-customInputBorder'}
+                  ${banquetError ? 'border-red-500' : 'border-customInputBorder'}
                 `}>
                   <SelectValue placeholder={`Will attend the banquet? (${maxGolfers} tickets incl.)`} />
                 </SelectTrigger>
@@ -145,15 +299,15 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
                   <SelectItem value="no">No</SelectItem>
                 </SelectContent>
               </Select>
-              {formErrors.banquet && <p className="text-red-500 text-sm mt-1">{formErrors.banquet}</p>}
+              {banquetError && <p className="text-red-500 text-sm mt-1">{banquetError}</p>}
             </div>
             <div className="mt-3">
-            <label className="sr-only block text-sm text-white/60 mb-1">{
-                `Additional Dinner Tickets (+$32.00 each)`
-            }</label>
-            <Select value={formData.dinnerTickets} onValueChange={(value) => handleSelectChange('dinnerTickets', value)}>
+            <label className="sr-only block text-sm text-white/60 mb-1">
+                {`Additional Dinner Tickets (+$${ADDITIONAL_DINNER_TICKET_PRICE_USD}.00 each)`}
+            </label>
+            <Select value={dinnerValue} onValueChange={onDinnerChange}>
                 <SelectTrigger className="relative flex justify-start align-center w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary appearance-none placeholder:text-lg text-lg">
-                <SelectValue placeholder={`Additional Dinner Tickets (+$32.00 each)`} />
+                <SelectValue placeholder={`Additional Dinner Tickets (+$${ADDITIONAL_DINNER_TICKET_PRICE_USD}.00 each)`} />
                 </SelectTrigger>
                 <SelectContent>
                 <SelectItem value="1">1</SelectItem>
@@ -172,7 +326,7 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
         </div>
 
         {golfers.map((golfer, index) => (
-            <div className="col-span-2 md:col-span-full relative" key={`team-member-${index}`}>
+            <div className="col-span-2 md:col-span-full relative mb-6" key={`${segmentEntryId ?? 'default'}-team-member-${index}`}>
                 <h3 className="text-white/80 text-lg font-semibold mb-2">{`PLAYER ${index + 1}`}</h3>
                 <div className="mt-3">
                     <label htmlFor={`player[${index + 1}Name]`} className="sr-only block text-sm text-white/60 mb-1">Player {index + 1} Name</label>
@@ -182,11 +336,11 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
                         value={golfers[index].name || ""}
                         onChange={(e) => handleGolferChange(index, 'name', e.target.value)}
                         className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
-                          ${getError(`golfers.${index}.name`) ? 'border-red-500' : 'border-customInputBorder'}
+                          ${getError(`${golferErrorPrefix}.${index}.name`) ? 'border-red-500' : 'border-customInputBorder'}
                         `}
                     />
-                    {getError(`golfers.${index}.name`) && (
-                      <p className="text-red-500 text-sm mt-1">{getError(`golfers.${index}.name`)}</p>
+                    {getError(`${golferErrorPrefix}.${index}.name`) && (
+                      <p className="text-red-500 text-sm mt-1">{getError(`${golferErrorPrefix}.${index}.name`)}</p>
                     )}
                 </div>
                 <div className="mt-3">
@@ -197,11 +351,11 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
                         value={golfers[index].handicap || ""}
                         onChange={(e) => handleGolferChange(index, 'handicap', e.target.value)}
                         className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
-                          ${getError(`golfers.${index}.handicap`) ? 'border-red-500' : 'border-customInputBorder'}
+                          ${getError(`${golferErrorPrefix}.${index}.handicap`) ? 'border-red-500' : 'border-customInputBorder'}
                         `}
                     />
-                    {getError(`golfers.${index}.handicap`) && (
-                      <p className="text-red-500 text-sm mt-1">{getError(`golfers.${index}.handicap`)}</p>
+                    {getError(`${golferErrorPrefix}.${index}.handicap`) && (
+                      <p className="text-red-500 text-sm mt-1">{getError(`${golferErrorPrefix}.${index}.handicap`)}</p>
                     )}
                 </div>
                 <div className="mt-3">
@@ -212,12 +366,12 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
                         value={golfers[index].tShirtSize || ""}
                         onChange={(e) => handleGolferChange(index, 'tShirtSize', e.target.value)}
                         className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg
-                          ${getError(`golfers.${index}.tShirtSize`) ? 'border-red-500' : 'border-customInputBorder'}
+                          ${getError(`${golferErrorPrefix}.${index}.tShirtSize`) ? 'border-red-500' : 'border-customInputBorder'}
                         `}
                     />
-                    {getError(`golfers.${index}.tShirtSize`) && (
-                      <p className="text-red-500 text-sm mt-1">{getError(`golfers.${index}.tShirtSize`)}</p>
-                    )}               
+                    {getError(`${golferErrorPrefix}.${index}.tShirtSize`) && (
+                      <p className="text-red-500 text-sm mt-1">{getError(`${golferErrorPrefix}.${index}.tShirtSize`)}</p>
+                    )}
                 </div>
                 {index > 0 && (
                     <Button
@@ -234,8 +388,7 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
                 )}
             </div>
         ))}
-                   
-        {/* Add Golfer Button */}
+
         {golfers.length < maxGolfers && (
             <Button
             type="button"
@@ -243,7 +396,6 @@ const GolfersFormFields: React.FC<GolfersFormProps> = ({ golfers, setFormData, m
             className="w-[fit-content] text-sm bg-customPrimary text-white px-4 py-2 hover:bg-customPrimary/80"
             >
               <TiUserAddOutline style={{height: '100%', width: 'auto'}}/>
-              
             </Button>
         )}
     </>

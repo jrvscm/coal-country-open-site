@@ -17,7 +17,7 @@ export default function SponsorProductFields({
 }: SponsorProductProps) {
   return (
     <>
-        <div className="col-span-2">
+        <div className="col-span-2 mb-6">
           <h3 className="text-white/80 text-lg font-semibold mb-2">COMPANY INFO</h3>
           <label htmlFor="company" className="sr-only block text-sm text-white/60 mb-1">Company Represented</label>
           <Input
@@ -33,7 +33,7 @@ export default function SponsorProductFields({
           {formErrors.company && <p className="text-red-500 text-sm mt-1">{formErrors.company}</p>}
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-2 mb-6">
           <h3 className="text-white/80 text-lg font-semibold mb-2">PERSONAL INFO</h3>
           <div className="mt-3">
             <label htmlFor="player1Name" className="sr-only hidden block text-sm text-white/60 mb-1">Name</label>
@@ -68,7 +68,7 @@ export default function SponsorProductFields({
             <Input
               id="contactPhone"
               name="contactPhone"
-              placeholder="Phone Number"
+              placeholder="(555) 555-5555"
               value={formData.contactPhone}
               onChange={handleChange}
               className={`block w-full bg-customInputFill border border-customInputBorder p-6 rounded-xl text-white/60 focus:outline-none focus:ring-2 focus:ring-customPrimary placeholder:text-white/60 placeholder:text-lg text-lg

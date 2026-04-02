@@ -33,29 +33,31 @@ export async function POST(req: NextRequest) {
       range: 'Registrations!A:A',
     });
 
-    const rowIndex = data.data.values?.findIndex((row) => row[0] === uid);
+    const values = data.data.values || [];
+    const rowIndices = values
+      .map((row, idx) => (row[0] === uid ? idx : -1))
+      .filter((idx) => idx >= 0);
 
-    if (rowIndex === -1 || rowIndex === undefined) {
+    if (rowIndices.length === 0) {
       return NextResponse.json({ error: 'UID not found' }, { status: 404 });
     }
 
-    await sheets.spreadsheets.batchUpdate({
-        spreadsheetId,
-        requestBody: {
-          requests: [
-            {
-              deleteDimension: {
-                range: {
-                  sheetId: 0,
-                  dimension: 'ROWS',
-                  startIndex: rowIndex,
-                  endIndex: rowIndex + 1,
-                },
-              },
-            },
-          ],
+    const sortedDescending = [...rowIndices].sort((a, b) => b - a);
+    const requests = sortedDescending.map((rowIndex) => ({
+      deleteDimension: {
+        range: {
+          sheetId: 0,
+          dimension: 'ROWS',
+          startIndex: rowIndex,
+          endIndex: rowIndex + 1,
         },
-      });
+      },
+    }));
+
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: { requests },
+    });
 
     return NextResponse.json({ message: 'Registration canceled successfully' });
   } catch (error) {

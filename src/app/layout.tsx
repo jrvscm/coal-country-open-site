@@ -41,7 +41,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head> 
-        <link rel="icon" href="/images/favicon.png" />
+        <link rel="icon" href="/favicon.png" />
         <link rel="preconnect" href="https://images.ctfassets.net" crossOrigin="anonymous" />
       </head>
       <body
