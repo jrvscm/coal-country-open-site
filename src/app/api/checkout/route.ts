@@ -4,6 +4,7 @@ import {
   getProductAvailabilitySnapshot,
   LIMITED_PRODUCT_IDS,
 } from '@/lib/registration-product-availability';
+import { totalCentsFromCheckoutLineItems } from '@/lib/checkout-total-cents';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
@@ -38,16 +39,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid checkout item payload' }, { status: 400 });
     }
 
-    const computedTotal = parsedItems.reduce((sum, item) => sum + (item.amount * item.quantity), 0);
+    const computedCents = totalCentsFromCheckoutLineItems(parsedItems);
 
-    if (!Number.isFinite(computedTotal) || computedTotal <= 0) {
+    if (computedCents <= 0) {
       return NextResponse.json({ error: 'Checkout total must be greater than 0' }, { status: 400 });
     }
 
     const suppliedTotal = Number.parseFloat(totalPrice);
-    if (Number.isNaN(suppliedTotal) || Math.round(suppliedTotal * 100) !== Math.round(computedTotal * 100)) {
+    const suppliedCents = Math.round(suppliedTotal * 100);
+    if (Number.isNaN(suppliedTotal) || suppliedCents !== computedCents) {
       return NextResponse.json({ error: 'Checkout total does not match items' }, { status: 400 });
     }
+
+    const computedTotal = computedCents / 100;
 
     const requestedProductQuantities = parsedItems.reduce((acc, item) => {
       if (item.category === 'product') {

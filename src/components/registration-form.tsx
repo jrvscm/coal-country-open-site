@@ -27,6 +27,7 @@ import {
   type SegmentFieldState,
 } from '@/lib/registration-segments';
 import { ADDITIONAL_DINNER_TICKET_PRICE_USD } from '@/lib/dinner-ticket-price';
+import { totalCentsFromCheckoutLineItems } from '@/lib/checkout-total-cents';
 import { normalizeRegistrationInput } from '@/lib/registration-input-normalize';
 import store from 'store';
 import { v4 as uuidv4 } from 'uuid';
@@ -634,6 +635,16 @@ function RegistrationFormContent() {
           ] as CheckoutItem[];
         }, [totalDinnerTicketUnits, selectedEntryPackages, packageQuantities, productQuantities, pricingData, basePrices, selectedProductOptions, flagPrizeCost, stripeFee]);
 
+        /**
+         * Must match /api/checkout: total is sum of line items (esp. processing fee uses
+         * Number(stripeFee.toFixed(2)), not raw stripeFee — (totalPrice+stripeFee).toFixed(2) can be off by ¢).
+         */
+        const checkoutTotalCents = useMemo(
+          () => totalCentsFromCheckoutLineItems(checkoutItems),
+          [checkoutItems],
+        );
+        const checkoutTotalDollars = checkoutTotalCents / 100;
+
         const checkoutSummaryItems = useMemo(() => {
           const stripTrailingPriceFromLabel = (label: string) => (
             label.replace(/\s*\(\$\d[\d,]*(?:\.\d{1,2})?\)\s*$/, '').trim()
@@ -885,7 +896,7 @@ function RegistrationFormContent() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 uid: uid,
-                totalPrice: (totalPrice + stripeFee).toFixed(2),
+                totalPrice: checkoutTotalDollars.toFixed(2),
                 items: checkoutItems,
                 breakdown: {
                   basePrice: basePrice.toFixed(2),
@@ -1464,7 +1475,7 @@ function RegistrationFormContent() {
                 <div className="w-full flex flex-col border border-customInputBorder rounded-lg p-3 md:max-h-[calc(100vh-240px)] md:overflow-y-auto">
                   <div className="flex flex-row justify-between items-center">
                     <h3 className="text-white/80 text-2xl font-semibold mr-2">TOTAL:</h3>
-                    <p className="text-2xl text-white font-bold">${(totalPrice + stripeFee).toFixed(2)}</p>
+                    <p className="text-2xl text-white font-bold">${checkoutTotalDollars.toFixed(2)}</p>
                   </div>
 
                   <div className="flex flex-col text-white/60 mt-2 space-y-1">

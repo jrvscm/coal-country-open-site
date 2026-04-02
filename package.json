@@ -7,7 +7,8 @@
     "dev:stripe": "node scripts/dev-with-stripe.mjs",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "repro:checkout-total": "node scripts/reproduce-checkout-total-mismatch.mjs"
   },
   "dependencies": {
     "@netlify/functions": "^3.0.0",
