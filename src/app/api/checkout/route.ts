@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { REGISTRATION_OPEN } from '@/lib/registration-status';
 import Stripe from 'stripe';
 import {
   getProductAvailabilitySnapshot,
@@ -13,6 +14,10 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  if (!REGISTRATION_OPEN) {
+    return NextResponse.json({ error: 'Registration is closed' }, { status: 403 });
+  }
+
   try {
     const { totalPrice, uid, breakdown, items } = await req.json();
 
