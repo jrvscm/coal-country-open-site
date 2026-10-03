@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { REGISTRATION_OPEN } from '@/lib/registration-status';
 import { redis } from '@/lib/upstash';
 
 const DRAFT_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
@@ -8,6 +9,10 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  if (!REGISTRATION_OPEN) {
+    return NextResponse.json({ error: 'Registration is closed' }, { status: 403 });
+  }
+
   try {
     const { formData, uid } = await req.json();
 

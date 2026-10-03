@@ -6,6 +6,7 @@ import RegistrationForm from '@/components/registration-form';
 import { ArrowDown } from 'lucide-react';
 import { formatTournamentDate } from '@/lib/utils';
 import { useTournamentDate } from '@/context/TournamentDateContext';
+import { REGISTRATION_OPEN } from '@/lib/registration-status';
 
 export default function ClientPage() {
   const tournamentDate = useTournamentDate();
@@ -18,6 +19,8 @@ export default function ClientPage() {
 
 
   useEffect(() => {
+    if (!REGISTRATION_OPEN) return;
+
     const fetchRegistrations = async () => {
       try {
         const response = await fetch(`/api/registration/players-count?cb=${Date.now()}`);
@@ -75,9 +78,9 @@ export default function ClientPage() {
             transform -rotate-6 
             z-30
           ">
-            Register Today!<br />
+            {REGISTRATION_OPEN ? 'Register Today!' : 'See You Next Year!'}<br />
             {/* Dynamic Registration Count */}
-            {isHydrated && registrationCount !== null && registrationCount !== 0 && (
+            {REGISTRATION_OPEN && isHydrated && registrationCount !== null && registrationCount !== 0 && (
               <span className="text-xl md:text-4xl"><span className="font-heading">{registrationCount}</span> already registered!</span>
             )}
           </h2>

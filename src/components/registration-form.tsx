@@ -31,6 +31,7 @@ import { totalCentsFromCheckoutLineItems } from '@/lib/checkout-total-cents';
 import { normalizeRegistrationInput } from '@/lib/registration-input-normalize';
 import store from 'store';
 import { v4 as uuidv4 } from 'uuid';
+import { REGISTRATION_OPEN } from '@/lib/registration-status';
 
 export type Golfer = {
   name: string;
@@ -133,7 +134,18 @@ function RegistrationOptionDisclaimer({
 export default function RegistrationForm() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <RegistrationFormContent />
+      {REGISTRATION_OPEN ? (
+        <RegistrationFormContent />
+      ) : (
+        <div className="bg-customBackground rounded-lg max-w-[1200px] m-auto py-24 px-8 mt-32">
+          <div className="text-center">
+            <div className="text-white/80 text-4xl font-bold mb-8">Registration Closed</div>
+            <div className="text-white/60 text-lg max-w-2xl mx-auto leading-relaxed">
+              Player and sponsor registration for this year&apos;s tournament has ended. Please check back next year for registration details.
+            </div>
+          </div>
+        </div>
+      )}
     </Suspense>
   );
 }
